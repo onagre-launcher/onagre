@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 iced = { git = "https://github.com/hecrj/iced", features = ["glow"] }
+iced_native = { git = "https://github.com/hecrj/iced" }
 fuzzy-matcher = "0.3.7"
 async-std = "1.6.5"
 dirs = "3.0.1"

@@ -1920,6 +1920,7 @@ dependencies = [
  "dirs 3.0.1",
  "fuzzy-matcher",
  "iced",
+ "iced_native",
  "serde",
  "serde_ini",
 ]
