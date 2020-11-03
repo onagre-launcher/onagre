@@ -3,18 +3,18 @@ extern crate serde_derive;
 
 mod desktop;
 
-use std::path::{PathBuf, Path};
+use std::path::{PathBuf};
 
-use async_std::prelude::*;
 use async_std::fs;
 use iced::futures::executor::block_on;
 use iced::futures::StreamExt;
-use crate::desktop::DesktopEntry;
+use crate::desktop::{DesktopEntry, OnagreEntry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 
-use iced::{button, scrollable, text_input, Align, Application, Rule, Button, Checkbox, Column, Command, Container, Element, Font, HorizontalAlignment, Length, Row, Scrollable, Settings, Text, TextInput, Subscription, Color};
+use iced::{scrollable, text_input, Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Scrollable, Settings, Text, TextInput, Subscription};
 use fuzzy_matcher::FuzzyMatcher;
-use iced_native::{Widget, Event};
+use iced_native::{Event};
+use std::process::exit;
 
 fn main() -> iced::Result {
     Onagre::run(Settings::default())
@@ -22,7 +22,7 @@ fn main() -> iced::Result {
 
 #[derive(Debug)]
 struct Onagre {
-    desktop_entries: Vec<String>,
+    desktop_entries: Vec<OnagreEntry>,
     state: State,
 }
 
@@ -32,7 +32,7 @@ struct State {
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
-    matches: Vec<String>,
+    matches: Vec<OnagreEntry>,
 }
 
 #[derive(Debug, Clone)]
@@ -47,20 +47,23 @@ impl Application for Onagre {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        let desktop_entries: Vec<String> = block_on(get_all_app())
-            .iter().filter_map(|entry| entry.entry.as_ref())
-            .map(|entry| entry.name.clone())
+        let desktop_entries: Vec<OnagreEntry> = block_on(get_all_app())
+            .iter()
+            .filter_map(|entry| entry.content.as_ref())
+            .map(OnagreEntry::from)
             .collect();
+
+        let matches: Vec<OnagreEntry> = desktop_entries.clone();
 
         let state = State {
             selected: 0,
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
-            matches: desktop_entries.clone(),
+            matches,
         };
 
-        (Onagre { desktop_entries, state: state }, Command::none())
+        (Onagre { desktop_entries, state }, Command::none())
     }
 
     fn title(&self) -> String {
@@ -77,7 +80,7 @@ impl Application for Onagre {
                 self.state.input_value = input;
 
                 if self.state.input_value == "" {
-                    self.state.matches = self.desktop_entries.clone()
+                    self.state.matches = self.desktop_entries.clone();
                 } else {
                     self.state.matches = self.search(&self.state.input_value);
                 }
@@ -89,6 +92,10 @@ impl Application for Onagre {
                 Command::none()
             }
         }
+    }
+
+    fn subscription(&self) -> Subscription<Message> {
+        iced_native::subscription::events().map(Message::EventOccurred)
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
@@ -119,8 +126,8 @@ impl Application for Onagre {
 
         // let mut text = vec![];
 
-       // let rows = Row::with_children(text)
-       //     .height(Length::Fill);
+        // let rows = Row::with_children(text)
+        //     .height(Length::Fill);
 
 
         let mut scrollable = Scrollable::new(&mut self.state.scroll)
@@ -129,7 +136,6 @@ impl Application for Onagre {
 
 
         for (idx, entry) in self.state.matches.iter().enumerate() {
-
             let color = if idx == self.state.selected {
                 [0.0, 1.0, 0.0]
             } else {
@@ -137,32 +143,59 @@ impl Application for Onagre {
             };
 
             scrollable = scrollable.push(Row::new()
-                .push(Text::new(entry).color(color).width(Length::Shrink))
-
+                .push(Text::new(&entry.name).color(color).width(Length::Shrink))
             );
         }
 
         scrollable.into()
-
-    }
-
-    fn subscription(&self) -> Subscription<Message> {
-        iced_native::subscription::events().map(Message::EventOccurred)
     }
 }
 
 
 impl Onagre {
+    fn run_command(&self) {
+        let selected = self.state.selected;
+        println!("selected : {}", selected);
+        let entry = self.state.matches.get(selected).unwrap();
+        println!("entry : {:?}", entry);
+        let argv = format!("\"{}\"", &entry.exec);
+        println!("{}", argv);
+        let err = std::process::Command::new("swaymsg")
+            .arg("exec")
+            .arg(argv)
+            .output()
+            .unwrap();
+
+        println!("{:?}", err.status);
+        println!("{:?}", String::from_utf8(err.stderr));
+        println!("{:?}", String::from_utf8(err.stdout));
+
+
+        exit(0);
+    }
+
+    fn search<'a>(&self, input: &str) -> Vec<OnagreEntry> {
+        let matcher = SkimMatcherV2::default()
+            .ignore_case();
+
+        self.desktop_entries.iter()
+            .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
+            .filter(|(_, score)| *score > 10i64)
+            .map(|(entry, _)| entry.clone())
+            .collect()
+    }
+
     fn handle_hotkey(&mut self, event: iced_native::Event) -> Option<Message> {
         use iced_native::keyboard::KeyCode;
 
         match event {
             Event::Keyboard(keyboard_event) => {
                 match keyboard_event {
-                    iced_native::keyboard::Event::KeyPressed { key_code, modifiers } => {
+                    iced_native::keyboard::Event::KeyPressed { key_code, .. } => {
                         match key_code {
-                            KeyCode::Up => if self.state.selected != 0  { self.state.selected -=1 },
-                            KeyCode::Down => if self.state.selected != self.state.matches.len() - 1 { self.state.selected += 1},
+                            KeyCode::Up => if self.state.selected != 0 { self.state.selected -= 1 },
+                            KeyCode::Down => if self.state.selected != self.state.matches.len() - 1 { self.state.selected += 1 },
+                            KeyCode::Enter => self.run_command(),
                             _ => {}
                         }
                     }
@@ -174,20 +207,7 @@ impl Onagre {
 
         None
     }
-
 }
-impl Onagre {
-    fn search(&self, input: &str) -> Vec<String> {
-        let matcher = SkimMatcherV2::default();
-
-        self.desktop_entries.iter()
-            .map(|entry| (entry, matcher.fuzzy_match(entry, input).unwrap_or(0)))
-            .filter(|(_, score)| *score > 10i64)
-            .map(|(name, _)| name.clone())
-            .collect()
-    }
-}
-
 
 async fn get_all_app() -> Vec<DesktopEntry> {
     let mut apps = get_apps().await;
