@@ -1,0 +1,17 @@
+[package]
+name = "onagre"
+version = "0.1.0"
+authors = ["Paul Delafosse <paul.delafosse@protonmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+iced = { git = "https://github.com/hecrj/iced", features = ["glow"] }
+fuzzy-matcher = "0.3.7"
+async-std = "1.6.5"
+dirs = "3.0.1"
+anyhow="1.0.34"
+serde_ini = "0.2.0"
+serde = "1.0.117"
+alt_serde_derive = "1.0.104"
