@@ -2,6 +2,7 @@
 extern crate serde_derive;
 
 mod desktop;
+mod style;
 
 use std::path::{PathBuf};
 
@@ -11,10 +12,11 @@ use iced::futures::StreamExt;
 use crate::desktop::{DesktopEntry, OnagreEntry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 
-use iced::{scrollable, text_input, Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Scrollable, Settings, Text, TextInput, Subscription};
+use iced::{scrollable, text_input, Application, Column, Command, Element, HorizontalAlignment, Length, Row, Scrollable, Settings, Text, Subscription, Align, TextInput, Container};
 use fuzzy_matcher::FuzzyMatcher;
 use iced_native::{Event};
 use std::process::exit;
+use crate::style::{Theme};
 
 fn main() -> iced::Result {
     Onagre::run(Settings::default())
@@ -23,6 +25,7 @@ fn main() -> iced::Result {
 #[derive(Debug)]
 struct Onagre {
     desktop_entries: Vec<OnagreEntry>,
+    theme: style::Theme,
     state: State,
 }
 
@@ -47,23 +50,53 @@ impl Application for Onagre {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+        // Tells sway to enable floating mode for Onagre
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] floating enable")
+            .output()
+            .expect("not on sway");
+
+        // Tells sway to focus on startup
+        std::process::Command::new("swaymsg")
+            .arg("[app_id=\"Onagre\"] focus")
+            .output()
+            .expect("not on sway");
+
+        // Tells sway to remove borders on startup
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] border none ")
+            .output()
+            .expect("not on sway");
+
+        // Tells sway to remove borders on startup
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] resize set width 45 ppt height  35 ppt")
+            .output()
+            .expect("not on sway");
+
+        //
+
+        // Get xdg desktop entries and map them to our internal representation
         let desktop_entries: Vec<OnagreEntry> = block_on(get_all_app())
             .iter()
             .filter_map(|entry| entry.content.as_ref())
             .map(OnagreEntry::from)
             .collect();
 
+        // All entries are displayed on startup
         let matches: Vec<OnagreEntry> = desktop_entries.clone();
 
+        // By default the first entry is selected
+        let selected = 0;
         let state = State {
-            selected: 0,
-            scroll: Default::default(),
-            input: Default::default(),
-            input_value: "".to_string(),
+            selected,
             matches,
+            scroll: Default::default(),
+            input: text_input::State::default(),
+            input_value: "".to_string(),
         };
 
-        (Onagre { desktop_entries, state }, Command::none())
+        (Onagre { desktop_entries, theme: Theme, state }, Command::none())
     }
 
     fn title(&self) -> String {
@@ -73,22 +106,12 @@ impl Application for Onagre {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::InputChanged(input) => {
-                if self.state.input_value != input {
-                    self.state.selected = 0;
-                }
-
                 self.state.input_value = input;
-
-                if self.state.input_value == "" {
-                    self.state.matches = self.desktop_entries.clone();
-                } else {
-                    self.state.matches = self.search(&self.state.input_value);
-                }
-
+                self.reset_matches();
                 Command::none()
             }
             Message::EventOccurred(event) => {
-                self.handle_hotkey(event);
+                self.handle_input(event);
                 Command::none()
             }
         }
@@ -99,41 +122,26 @@ impl Application for Onagre {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let title = Text::new("Onagre")
-            .width(Length::Fill)
-            .size(100)
-            .color([0.5, 0.5, 0.5])
-            .horizontal_alignment(HorizontalAlignment::Center);
+        let state = &mut self.state.input;
+        state.focus(true);
 
         let input = TextInput::new(
-            &mut self.state.input,
+            state,
             "Search",
-            &mut self.state.input_value,
+            &self.state.input_value,
             Message::InputChanged,
-        ).padding(15)
-            .size(30);
+        )
+            .style(self.theme);
 
-        let content = Column::new()
+
+        let search_bar = Column::new()
             .max_width(800)
             .spacing(20)
-            .push(title)
             .push(input);
 
-
-        /* let rows: Vec<Row<Message>> = self.state.matches.iter()
-             .map(|text| Row::new().push(Text::new(text)))
-             .collect();*/
-
-        // let mut text = vec![];
-
-        // let rows = Row::with_children(text)
-        //     .height(Length::Fill);
-
-
         let mut scrollable = Scrollable::new(&mut self.state.scroll)
-            .padding(40)
-            .push(Container::new(content));
-
+            .style(Theme)
+            .padding(40);
 
         for (idx, entry) in self.state.matches.iter().enumerate() {
             let color = if idx == self.state.selected {
@@ -143,11 +151,23 @@ impl Application for Onagre {
             };
 
             scrollable = scrollable.push(Row::new()
-                .push(Text::new(&entry.name).color(color).width(Length::Shrink))
+                .push(Text::new(&entry.name)
+                    .color(color)
+                    .width(Length::Fill)
+                    .horizontal_alignment(HorizontalAlignment::Center))
+                .align_items(Align::Center)
             );
         }
 
-        scrollable.into()
+        Container::new(Column::new().width(Length::Fill)
+            .push(search_bar)
+            .push(scrollable)
+            .width(Length::Fill)
+            .align_items(Align::Center))
+            .style(self.theme)
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .into()
     }
 }
 
@@ -185,7 +205,7 @@ impl Onagre {
             .collect()
     }
 
-    fn handle_hotkey(&mut self, event: iced_native::Event) -> Option<Message> {
+    fn handle_input(&mut self, event: iced_native::Event) -> Option<Message> {
         use iced_native::keyboard::KeyCode;
 
         match event {
@@ -196,6 +216,12 @@ impl Onagre {
                             KeyCode::Up => if self.state.selected != 0 { self.state.selected -= 1 },
                             KeyCode::Down => if self.state.selected != self.state.matches.len() - 1 { self.state.selected += 1 },
                             KeyCode::Enter => self.run_command(),
+                            KeyCode::Backspace => {
+                                self.reset_matches();
+                            }
+                            KeyCode::Escape => {
+                                exit(0);
+                            }
                             _ => {}
                         }
                     }
@@ -206,6 +232,16 @@ impl Onagre {
         }
 
         None
+    }
+
+    fn reset_matches(&mut self) {
+        self.state.selected = 0;
+
+        if self.state.input_value == "" {
+            self.state.matches = self.desktop_entries.clone();
+        } else {
+            self.state.matches = self.search(&self.state.input_value);
+        }
     }
 }
 
