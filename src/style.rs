@@ -1,6 +1,5 @@
 use iced::{
-    button, checkbox, container, progress_bar, radio, rule, scrollable,
-    slider, text_input, Color,
+    button, checkbox, container, progress_bar, radio, rule, scrollable, slider, text_input, Color,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -8,58 +7,57 @@ pub struct Theme;
 
 impl From<Theme> for Box<dyn container::StyleSheet> {
     fn from(_: Theme) -> Self {
-            Container.into()
+        Container.into()
     }
 }
 
 impl From<Theme> for Box<dyn radio::StyleSheet> {
     fn from(_: Theme) -> Self {
-            Radio.into()
+        Radio.into()
     }
 }
 
 impl From<Theme> for Box<dyn text_input::StyleSheet> {
     fn from(_: Theme) -> Self {
-            TextInput.into()
+        TextInput.into()
     }
 }
 
 impl From<Theme> for Box<dyn button::StyleSheet> {
     fn from(_: Theme) -> Self {
-            Button.into()
+        Button.into()
     }
 }
 
 impl From<Theme> for Box<dyn scrollable::StyleSheet> {
     fn from(_: Theme) -> Self {
-            Scrollable.into()
+        Scrollable.into()
     }
 }
 
 impl From<Theme> for Box<dyn slider::StyleSheet> {
     fn from(_: Theme) -> Self {
-            Slider.into()
+        Slider.into()
     }
 }
 
 impl From<Theme> for Box<dyn progress_bar::StyleSheet> {
     fn from(_: Theme) -> Self {
-            ProgressBar.into()
-        }
+        ProgressBar.into()
+    }
 }
 
 impl From<Theme> for Box<dyn checkbox::StyleSheet> {
-    fn from(theme: Theme) -> Self {
-            Checkbox.into()
+    fn from(_: Theme) -> Self {
+        Checkbox.into()
     }
 }
 
 impl From<Theme> for Box<dyn rule::StyleSheet> {
-    fn from(theme: Theme) -> Self {
-            Rule.into()
+    fn from(_: Theme) -> Self {
+        Rule.into()
     }
 }
-
 
 const SURFACE: Color = Color::from_rgb(
     0x40 as f32 / 255.0,
@@ -79,8 +77,6 @@ const ACTIVE: Color = Color::from_rgb(
     0xDA as f32 / 255.0,
 );
 
-use iced_style::*;
-
 const HOVERED: Color = Color::from_rgb(
     0x67 as f32 / 255.0,
     0x7B as f32 / 255.0,
@@ -94,6 +90,18 @@ impl container::StyleSheet for Container {
         container::Style {
             background: Color::from_rgb8(0x36, 0x39, 0x3F).into(),
             text_color: Color::WHITE.into(),
+            ..container::Style::default()
+        }
+    }
+}
+
+pub struct ContainerSelected;
+
+impl container::StyleSheet for ContainerSelected {
+    fn style(&self) -> container::Style {
+        container::Style {
+            background: Color::from_rgb(1.0, 0.0, 0.0).into(),
+            text_color: Color::BLACK.into(),
             ..container::Style::default()
         }
     }
@@ -290,8 +298,7 @@ pub struct Checkbox;
 impl checkbox::StyleSheet for Checkbox {
     fn active(&self, is_checked: bool) -> checkbox::Style {
         checkbox::Style {
-            background: if is_checked { ACTIVE } else { SURFACE }
-                .into(),
+            background: if is_checked { ACTIVE } else { SURFACE }.into(),
             checkmark_color: Color::WHITE,
             border_radius: 2,
             border_width: 1,
@@ -305,7 +312,7 @@ impl checkbox::StyleSheet for Checkbox {
                 a: 0.8,
                 ..if is_checked { ACTIVE } else { SURFACE }
             }
-                .into(),
+            .into(),
             ..self.active(is_checked)
         }
     }

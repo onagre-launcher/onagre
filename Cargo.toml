@@ -7,11 +7,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { path = "../../Rust/iced", features = ["glow"] }
-iced_native = { path = "../../Rust/iced/native" }
-iced_style = { path = "../../Rust/iced/style" }
+iced = { git = "https://github.com/oknozor/iced", features = ["glow"] }
+iced_native = { git = "https://github.com/oknozor/iced" }
+iced_style = { git = "https://github.com/oknozor/iced" }
+iced_futures = { git = "https://github.com/oknozor/iced" }
 fuzzy-matcher = "0.3.7"
 async-std = "1.6.5"
+futures = "0.3.7"
 dirs = "3.0.1"
 anyhow="1.0.34"
 serde_ini = "0.2.0"

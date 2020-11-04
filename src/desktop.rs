@@ -22,7 +22,7 @@ impl From<&DesktopEntryContent> for OnagreEntry {
     fn from(desktop_entry: &DesktopEntryContent) -> Self {
         OnagreEntry {
             name: desktop_entry.name.clone(),
-            exec: desktop_entry.exec.clone()
+            exec: desktop_entry.exec.clone(),
         }
     }
 }
