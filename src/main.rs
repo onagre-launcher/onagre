@@ -178,11 +178,11 @@ impl Onagre {
         println!("selected : {}", selected);
         let entry = self.state.matches.get(selected).unwrap();
         println!("entry : {:?}", entry);
-        let argv = format!("\"{}\"", &entry.exec);
-        println!("{}", argv);
-        let err = std::process::Command::new("swaymsg")
-            .arg("exec")
-            .arg(argv)
+        let argv = shell_words::split(&entry.exec);
+        let argv = argv.as_ref().unwrap().as_slice();
+        println!("{:?}", &argv);
+        let err = std::process::Command::new(&argv[0])
+            .args(&argv[1..])
             .output()
             .unwrap();
 
