@@ -13,7 +13,7 @@ pub struct FileWalker {
 impl FileWalker {
     pub fn to_subscription() -> iced::Subscription<OnagreEntry> {
         iced::Subscription::from_recipe(FileWalker {
-            path: "cocuou".to_string(),
+            path: "file_walker_subscription".to_string(),
         })
     }
 }

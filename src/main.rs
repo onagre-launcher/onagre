@@ -9,10 +9,7 @@ mod style;
 use crate::desktop::OnagreEntry;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
-use iced::{
-    scrollable, text_input, Align, Application, Column, Command, Container, Element,
-    HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
-};
+use iced::{Color, scrollable, text_input, Align, Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, window};
 
 use crate::style::{ContainerSelected, Theme};
 
@@ -23,7 +20,15 @@ use std::process::exit;
 use std::rc::{Rc, Weak};
 
 fn main() -> iced::Result {
-    Onagre::run(Settings::default())
+    Onagre::run(Settings {
+        window: window::Settings {
+            transparent: true,
+            ..Default::default()
+        },
+        default_text_size: 20,
+        antialiasing: true,
+        ..Default::default()
+    })
 }
 
 #[derive(Debug)]
@@ -58,13 +63,18 @@ impl Application for Onagre {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        println!("Initializing the app");
-        // Tells sway to enable floating mode for Onagre
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] opacity 12")
+            .output()
+            .expect("not on sway");
+
+        // Tell sway to enable floating mode for Onagre
         std::process::Command::new("swaymsg")
             .arg("for_window [app_id=\"Onagre\"] floating enable")
             .output()
             .expect("not on sway");
 
+        // [set|plus|minus] <value>
         // Tells sway to focus on startup
         std::process::Command::new("swaymsg")
             .arg("[app_id=\"Onagre\"] focus")
@@ -112,6 +122,10 @@ impl Application for Onagre {
         "Onagre".to_string()
     }
 
+    fn background_color(&self) -> Color {
+        Color::TRANSPARENT
+    }
+
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
 
@@ -146,9 +160,9 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-        .style(self.theme);
+            .style(self.theme);
 
-        let search_bar = Column::new().max_width(800).spacing(20).push(input);
+        let search_bar = Row::new().max_width(800).spacing(20).push(input);
 
         let mut buttons = Row::new();
 
@@ -169,7 +183,7 @@ impl Application for Onagre {
                         Container::new(
                             Text::new(mode).horizontal_alignment(HorizontalAlignment::Left),
                         )
-                        .style(style::Container),
+                        .style(style::RowContainer),
                     )
                     .spacing(10)
                     .padding(10);
@@ -181,35 +195,42 @@ impl Application for Onagre {
             .padding(40);
 
         for (idx, entry) in self.state.matches.iter().enumerate() {
-            let color = if idx == self.state.selected {
-                [0.0, 1.0, 0.0]
-            } else {
-                [0.5, 0.5, 0.5]
-            };
-
-            scrollable = scrollable.push(
-                Row::new().push(
+            let container = if idx == self.state.selected {
+                Container::new(Row::new().push(
                     Text::new(&entry.upgrade().unwrap().as_ref().name)
-                        .color(color)
                         .width(Length::Fill)
                         .horizontal_alignment(HorizontalAlignment::Left),
-                ),
-            );
+                )).style(ContainerSelected)
+            } else {
+                Container::new(Row::new().push(
+                    Text::new(&entry.upgrade().unwrap().as_ref().name)
+                        .width(Length::Fill)
+                        .horizontal_alignment(HorizontalAlignment::Left),
+                )).style(style::RowContainer)
+            };
+
+            scrollable = scrollable.push(container);
         }
 
         Container::new(
-            Column::new()
-                .width(Length::Fill)
-                .push(buttons)
-                .push(search_bar)
-                .push(scrollable)
-                .width(Length::Fill)
-                .align_items(Align::Center),
+            Container::new(
+                Column::new()
+                    .push(buttons)
+                    .push(search_bar.width(Length::Shrink)
+                        .align_items(Align::Center)
+                        .width(Length::FillPortion(1))
+                        .padding(2)
+                    )
+                    .push(scrollable
+                        .width(Length::FillPortion(1))
+                    )
+                    .align_items(Align::Start))
+                .padding(20)
+                .style(style::MainContainer)
         )
-        .style(self.theme)
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .into()
+        .style(style::TransparentContainer)
+            .padding(40)
+            .into()
     }
 }
 

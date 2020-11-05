@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { git = "https://github.com/oknozor/iced", features = ["glow"] }
+iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "debug", "palette" ] }
 iced_native = { git = "https://github.com/oknozor/iced" }
 iced_style = { git = "https://github.com/oknozor/iced" }
 iced_futures = { git = "https://github.com/oknozor/iced" }
