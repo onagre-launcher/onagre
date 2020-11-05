@@ -3,21 +3,23 @@ extern crate serde_derive;
 
 mod config;
 mod desktop;
-mod dir_walk;
 mod style;
+mod subscriptions;
 
-use crate::desktop::OnagreEntry;
+use crate::desktop::{OnagreEntry, FileEntry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 
 use iced::{Color, scrollable, text_input, Align, Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, window};
 
 use crate::style::{ContainerSelected, Theme};
 
-use crate::dir_walk::FileWalker;
+use subscriptions::desktop_entries::DesktopEntryWalker;
+use subscriptions::home_entries::HomeWalker;
 use fuzzy_matcher::FuzzyMatcher;
 use iced_native::Event;
 use std::process::exit;
 use std::rc::{Rc, Weak};
+use crate::subscriptions::ToSubScription;
 
 fn main() -> iced::Result {
     Onagre::run(Settings {
@@ -33,8 +35,9 @@ fn main() -> iced::Result {
 
 #[derive(Debug)]
 struct Onagre {
-    modes: Vec<String>,
-    entries: Vec<Rc<OnagreEntry>>,
+    modes: Vec<Mode>,
+    desktop_entries: Vec<Rc<OnagreEntry>>,
+    home_files: Vec<Rc<FileEntry>>,
     theme: style::Theme,
     state: State,
 }
@@ -44,7 +47,8 @@ struct State {
     loading: bool,
     current_mode: usize,
     selected: usize,
-    matches: Vec<Weak<OnagreEntry>>,
+    desktop_entry_matches: Vec<Weak<OnagreEntry>>,
+    home_mathces: Vec<Weak<FileEntry>>,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
@@ -53,8 +57,15 @@ struct State {
 #[derive(Debug, Clone)]
 enum Message {
     InputChanged(String),
-    FileWalkEvent(OnagreEntry),
+    DesktopEntryEvent(OnagreEntry),
+    FileEntryEnvent(FileEntry),
     EventOccurred(iced_native::Event),
+}
+
+#[derive(Debug, Clone)]
+enum Mode {
+    Drun,
+    XdgOpen
 }
 
 impl Application for Onagre {
@@ -99,18 +110,18 @@ impl Application for Onagre {
             loading: true,
             current_mode: 0,
             selected,
-            matches: vec![],
+            desktop_entry_matches: vec![],
+            home_mathces: vec![],
             scroll: Default::default(),
             input: text_input::State::default(),
             input_value: "".to_string(),
         };
 
-        let mode = vec!["Drun".into(), "Open".into()];
-
         (
             Onagre {
-                modes: mode,
-                entries: vec![],
+                modes: vec![Mode::Drun, Mode::XdgOpen],
+                desktop_entries: vec![],
+                home_files: vec![],
                 theme: Theme,
                 state,
             },
@@ -139,9 +150,14 @@ impl Application for Onagre {
                 self.handle_input(event);
                 Command::none()
             }
-            Message::FileWalkEvent(entry) => {
-                self.entries.push(Rc::new(entry));
-                self.state.matches = self.entries_as_refs();
+            Message::DesktopEntryEvent(entry) => {
+                self.desktop_entries.push(Rc::new(entry));
+                self.state.desktop_entry_matches = downgrade_all(&self.desktop_entries);
+                Command::none()
+            }
+            Message::FileEntryEnvent(entry) => {
+                self.home_files.push(Rc::new(entry));
+                self.state.home_mathces = downgrade_all(&self.home_files);
                 Command::none()
             }
         }
@@ -149,8 +165,9 @@ impl Application for Onagre {
 
     fn subscription(&self) -> Subscription<Message> {
         let event = iced_native::subscription::events().map(Message::EventOccurred);
-        let file = FileWalker::to_subscription().map(Message::FileWalkEvent);
-        Subscription::batch(vec![event, file])
+        let desktop_entries = DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent);
+        // let home_entries = HomeWalker::subscription().map(Message::FileEntryEnvent);
+        Subscription::batch(vec![event, desktop_entries ])
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
@@ -171,7 +188,7 @@ impl Application for Onagre {
                 buttons = buttons
                     .push(
                         Container::new(
-                            Text::new(mode).horizontal_alignment(HorizontalAlignment::Left),
+                            Text::new(mode.as_str()).horizontal_alignment(HorizontalAlignment::Left),
                         )
                         .style(ContainerSelected),
                     )
@@ -181,7 +198,7 @@ impl Application for Onagre {
                 buttons = buttons
                     .push(
                         Container::new(
-                            Text::new(mode).horizontal_alignment(HorizontalAlignment::Left),
+                            Text::new(mode.as_str()).horizontal_alignment(HorizontalAlignment::Left),
                         )
                         .style(style::RowContainer),
                     )
@@ -194,7 +211,7 @@ impl Application for Onagre {
             .style(Theme)
             .padding(40);
 
-        for (idx, entry) in self.state.matches.iter().enumerate() {
+        for (idx, entry) in self.state.desktop_entry_matches.iter().enumerate() {
             let container = if idx == self.state.selected {
                 Container::new(Row::new().push(
                     Text::new(&entry.upgrade().unwrap().as_ref().name)
@@ -237,7 +254,7 @@ impl Application for Onagre {
 impl Onagre {
     fn run_command(&self) {
         let selected = self.state.selected;
-        let entry = self.state.matches.get(selected).unwrap();
+        let entry = self.state.desktop_entry_matches.get(selected).unwrap();
         let argv = shell_words::split(&entry.upgrade().unwrap().exec);
 
         let argv = argv
@@ -255,17 +272,10 @@ impl Onagre {
         exit(0);
     }
 
-    fn entries_as_refs(&mut self) -> Vec<Weak<OnagreEntry>> {
-        self.entries
-            .iter()
-            .map(|entry| Rc::downgrade(&entry))
-            .collect()
-    }
-
     fn update_matches(&self, input: &str) -> Vec<Weak<OnagreEntry>> {
         let matcher = SkimMatcherV2::default().ignore_case();
 
-        self.entries
+        self.desktop_entries
             .iter()
             .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
             .filter(|(_, score)| *score > 10i64)
@@ -285,7 +295,7 @@ impl Onagre {
                         }
                     }
                     KeyCode::Down => {
-                        if self.state.selected != self.state.matches.len() - 1 {
+                        if self.state.selected != self.state.desktop_entry_matches.len() - 1 {
                             self.state.selected += 1
                         }
                     }
@@ -309,9 +319,9 @@ impl Onagre {
         self.state.selected = 0;
 
         if self.state.input_value == "" {
-            self.state.matches = self.entries_as_refs()
+            self.state.desktop_entry_matches = downgrade_all(&self.desktop_entries)
         } else {
-            self.state.matches = self.update_matches(&self.state.input_value)
+            self.state.desktop_entry_matches = self.update_matches(&self.state.input_value)
         }
     }
 
@@ -320,6 +330,22 @@ impl Onagre {
             self.state.current_mode = 0
         } else {
             self.state.current_mode += 1
+        }
+    }
+}
+
+fn downgrade_all<T>(vec_rc: &Vec<Rc<T>>) -> Vec<Weak<T>> {
+    vec_rc
+    .iter()
+        .map(|entry| Rc::downgrade(&entry))
+        .collect()
+}
+
+impl Mode {
+    fn as_str(&self) -> &'static str {
+        match &self {
+            Mode::Drun => "Drun",
+            Mode::XdgOpen => "XdgOpen"
         }
     }
 }

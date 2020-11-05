@@ -5,20 +5,22 @@ use futures::future::{BoxFuture, FutureExt};
 use iced_native::futures::stream::BoxStream;
 use iced_native::futures::StreamExt;
 use std::hash::Hash;
+use crate::subscriptions::ToSubScription;
+use iced_native::Subscription;
 
-pub struct FileWalker {
-    path: String,
+pub struct DesktopEntryWalker {
+    id: String,
 }
 
-impl FileWalker {
-    pub fn to_subscription() -> iced::Subscription<OnagreEntry> {
-        iced::Subscription::from_recipe(FileWalker {
-            path: "file_walker_subscription".to_string(),
+impl ToSubScription<OnagreEntry> for DesktopEntryWalker {
+    fn subscription() -> Subscription<OnagreEntry> {
+        iced::Subscription::from_recipe(DesktopEntryWalker {
+            id: "file_walker_subscription".to_string(),
         })
     }
 }
 
-impl<H, I> iced_native::subscription::Recipe<H, I> for FileWalker
+impl<H, I> iced_native::subscription::Recipe<H, I> for DesktopEntryWalker
 where
     H: std::hash::Hasher,
 {
@@ -26,7 +28,7 @@ where
 
     fn hash(&self, state: &mut H) {
         std::any::TypeId::of::<Self>().hash(state);
-        self.path.hash(state)
+        self.id.hash(state)
     }
 
     fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
@@ -72,12 +74,13 @@ fn walk_dir(
                 let desktop_entry = fs::read_to_string(entry.path()).await.unwrap();
                 if let Ok(desktop_entry) = serde_ini::from_str::<DesktopEntry>(&desktop_entry) {
                     if let Some(content) = desktop_entry.content {
-                        println!("Sending entry {:?}", content);
+                        println!("Found {:?}", content); // FIXME : add a logger
                         sender.start_send(OnagreEntry::from(&content)).unwrap();
                     }
                 }
             }
         }
     }
-    .boxed()
+        .boxed()
 }
+

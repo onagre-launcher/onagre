@@ -3,7 +3,6 @@ use iced::{
 };
 
 use iced_native::Background;
-use std::f32::RADIX;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Theme;

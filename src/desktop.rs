@@ -18,6 +18,10 @@ pub struct OnagreEntry {
     pub exec: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct FileEntry {
+    pub path: String,
+}
 impl From<&DesktopEntryContent> for OnagreEntry {
     fn from(desktop_entry: &DesktopEntryContent) -> Self {
         OnagreEntry {
