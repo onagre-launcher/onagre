@@ -23,7 +23,8 @@ use std::process::exit;
 use futures::future::{BoxFuture, FutureExt};
 use iced_native::futures::stream::BoxStream;
 use std::hash::Hash;
-use futures::executor::block_on;
+use std::rc::{Rc, Weak};
+use std::borrow::Borrow;
 
 fn main() -> iced::Result {
     Onagre::run(Settings::default())
@@ -32,19 +33,20 @@ fn main() -> iced::Result {
 #[derive(Debug)]
 struct Onagre {
     modes: Vec<String>,
-    entries: Vec<OnagreEntry>,
+    entries: Vec<Rc<OnagreEntry>>,
     theme: style::Theme,
     state: State,
 }
 
 #[derive(Debug, Default)]
 struct State {
+    loading: bool,
     current_mode: usize,
     selected: usize,
+    matches: Vec<Weak<OnagreEntry>>,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
-    matches: Vec<OnagreEntry>,
 }
 
 #[derive(Debug, Clone)]
@@ -85,18 +87,13 @@ impl Application for Onagre {
             .output()
             .expect("not on sway");
 
-        // Get xdg desktop entries and map them to our internal representation
-        let desktop_entries: Vec<OnagreEntry> = vec![];
-
-        // All entries are displayed on startup
-        let matches: Vec<OnagreEntry> = desktop_entries.clone();
-
         // By default the first entry is selected
         let selected = 0;
         let state = State {
+            loading: true,
             current_mode: 0,
             selected,
-            matches,
+            matches: vec![],
             scroll: Default::default(),
             input: text_input::State::default(),
             input_value: "".to_string(),
@@ -107,7 +104,7 @@ impl Application for Onagre {
         (
             Onagre {
                 modes: mode,
-                entries: desktop_entries,
+                entries: vec![],
                 theme: Theme,
                 state,
             },
@@ -120,7 +117,6 @@ impl Application for Onagre {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        println!("we have {} entries ", self.entries.len());
         self.state.input.focus(true);
 
         match message {
@@ -134,7 +130,8 @@ impl Application for Onagre {
                 Command::none()
             }
             Message::FileWalkEvent(entry) => {
-                self.entries.push(entry);
+                self.entries.push(Rc::new(entry));
+                self.state.matches = self.entries_as_refs();
                 Command::none()
             }
         }
@@ -196,13 +193,13 @@ impl Application for Onagre {
 
             scrollable = scrollable.push(
                 Row::new().push(
-                    Text::new(&entry.name)
+                    Text::new(&entry.upgrade().unwrap().as_ref().name)
                         .color(color)
                         .width(Length::Fill)
                         .horizontal_alignment(HorizontalAlignment::Left),
                 ),
             );
-        }
+        };
 
         Container::new(
             Column::new()
@@ -220,11 +217,11 @@ impl Application for Onagre {
     }
 }
 
-impl Onagre {
+impl  Onagre {
     fn run_command(&self) {
         let selected = self.state.selected;
         let entry = self.state.matches.get(selected).unwrap();
-        let argv = shell_words::split(&entry.exec);
+        let argv = shell_words::split(&entry.upgrade().unwrap().exec);
 
         // For now we ignore % in desktop entry spec
         let argv = argv.as_ref().unwrap()
@@ -240,14 +237,21 @@ impl Onagre {
         exit(0);
     }
 
-    fn search(&self, input: &str) -> Vec<OnagreEntry> {
+    fn entries_as_refs(&mut self) -> Vec<Weak<OnagreEntry>> {
+        self.entries
+            .iter()
+            .map(|entry| Rc::downgrade(&entry))
+            .collect()
+    }
+
+    fn update_matches(&self, input: &str) -> Vec<Weak<OnagreEntry>> {
         let matcher = SkimMatcherV2::default().ignore_case();
 
-        self.entries
+         self.entries
             .iter()
             .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
             .filter(|(_, score)| *score > 10i64)
-            .map(|(entry, _)| entry.clone())
+            .map(|(entry, _) | Rc::downgrade(entry))
             .collect()
     }
 
@@ -287,9 +291,9 @@ impl Onagre {
         self.state.selected = 0;
 
         if self.state.input_value == "" {
-            self.state.matches = self.entries.clone();
+            self.state.matches = self.entries_as_refs()
         } else {
-            self.state.matches = self.search(&self.state.input_value);
+            self.state.matches = self.update_matches(&self.state.input_value)
         }
     }
 
@@ -324,8 +328,8 @@ impl<H, I> iced_native::subscription::Recipe<H, I> for FileWalker where
         self.path.hash(state)
     }
 
-    fn stream(self: Box<Self>, input: BoxStream<I>) -> BoxStream<Self::Output> {
-        let (mut sender, mut receiver) = futures::channel::mpsc::channel(100000);
+    fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
+        let (mut sender, receiver) = futures::channel::mpsc::channel(100000);
 
         // Spawn the file reader
         async_std::task::spawn(async {
