@@ -1,6 +1,5 @@
 use iced_native::Subscription;
 pub mod desktop_entries;
-pub mod home_entries;
 
 use async_std::fs;
 use async_std::path::PathBuf as AsyncPathBuf;

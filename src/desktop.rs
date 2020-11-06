@@ -1,32 +1,13 @@
 #[derive(Debug, Deserialize)]
-pub struct DesktopEntry {
+pub struct DesktopEntryIni {
     #[serde(rename = "Desktop Entry")]
-    pub content: Option<DesktopEntryContent>,
+    pub content: Option<DesktopEntryInContent>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DesktopEntryContent {
+pub struct DesktopEntryInContent {
     #[serde(rename = "Name")]
-    name: String,
-    #[serde(rename = "Exec")]
-    exec: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct OnagreEntry {
     pub name: String,
+    #[serde(rename = "Exec")]
     pub exec: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct FileEntry {
-    pub path: String,
-}
-impl From<&DesktopEntryContent> for OnagreEntry {
-    fn from(desktop_entry: &DesktopEntryContent) -> Self {
-        OnagreEntry {
-            name: desktop_entry.name.clone(),
-            exec: desktop_entry.exec.clone(),
-        }
-    }
 }

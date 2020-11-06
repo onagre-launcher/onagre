@@ -5,21 +5,22 @@ mod config;
 mod desktop;
 mod style;
 mod subscriptions;
+mod entries;
+mod fs_search;
 
-use crate::desktop::{OnagreEntry, FileEntry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 
 use iced::{Color, scrollable, text_input, Align, Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, window};
-
-use crate::style::{ContainerSelected, Theme};
+use iced_native::renderer::Renderer;
+use crate::style::{ContainerSelected, Theme, RowContainer};
 
 use subscriptions::desktop_entries::DesktopEntryWalker;
-use subscriptions::home_entries::HomeWalker;
 use fuzzy_matcher::FuzzyMatcher;
 use iced_native::Event;
 use std::process::exit;
 use std::rc::{Rc, Weak};
 use crate::subscriptions::ToSubScription;
+use crate::entries::{DesktopEntry, MatchedEntries, Entries, FileEntry};
 
 fn main() -> iced::Result {
     Onagre::run(Settings {
@@ -36,8 +37,7 @@ fn main() -> iced::Result {
 #[derive(Debug)]
 struct Onagre {
     modes: Vec<Mode>,
-    desktop_entries: Vec<Rc<OnagreEntry>>,
-    home_files: Vec<Rc<FileEntry>>,
+    entries: Entries,
     theme: style::Theme,
     state: State,
 }
@@ -45,10 +45,9 @@ struct Onagre {
 #[derive(Debug, Default)]
 struct State {
     loading: bool,
-    current_mode: usize,
+    mode_button_idx: usize,
     selected: usize,
-    desktop_entry_matches: Vec<Weak<OnagreEntry>>,
-    home_mathces: Vec<Weak<FileEntry>>,
+    matches: MatchedEntries,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
@@ -57,15 +56,15 @@ struct State {
 #[derive(Debug, Clone)]
 enum Message {
     InputChanged(String),
-    DesktopEntryEvent(OnagreEntry),
-    FileEntryEnvent(FileEntry),
+    DesktopEntryEvent(DesktopEntry),
+    FsSearchResult(Vec<String>),
     EventOccurred(iced_native::Event),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 enum Mode {
     Drun,
-    XdgOpen
+    XdgOpen,
 }
 
 impl Application for Onagre {
@@ -108,21 +107,21 @@ impl Application for Onagre {
         let selected = 0;
         let state = State {
             loading: true,
-            current_mode: 0,
+            mode_button_idx: 0,
             selected,
-            desktop_entry_matches: vec![],
-            home_mathces: vec![],
+            matches: Default::default(),
             scroll: Default::default(),
-            input: text_input::State::default(),
+            input: Default::default(),
             input_value: "".to_string(),
+
         };
+
 
         (
             Onagre {
-                modes: vec![Mode::Drun, Mode::XdgOpen],
-                desktop_entries: vec![],
-                home_files: vec![],
+                entries: Default::default(),
                 theme: Theme,
+                modes: vec![Mode::Drun, Mode::XdgOpen],
                 state,
             },
             Command::none(),
@@ -140,24 +139,39 @@ impl Application for Onagre {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
 
+        let mode = if let Some(new_mode) = Mode::from_shorcut(&self.state.input_value) {
+            println!("Shortcut {} typed, moving to mode {}", self.state.input_value, new_mode.as_str());
+            self.set_current_mode(new_mode)
+        } else {
+            self.get_current_mode()
+        };
+
         match message {
             Message::InputChanged(input) => {
-                self.state.input_value = input;
+                self.state.input_value = input.clone();
                 self.reset_matches();
-                Command::none()
+                match mode {
+                    Mode::Drun => Command::none(),
+                    Mode::XdgOpen => Command::perform(fs_search::search(input), Message::FsSearchResult)
+                }
             }
             Message::EventOccurred(event) => {
                 self.handle_input(event);
                 Command::none()
             }
             Message::DesktopEntryEvent(entry) => {
-                self.desktop_entries.push(Rc::new(entry));
-                self.state.desktop_entry_matches = downgrade_all(&self.desktop_entries);
+                self.entries.desktop_entries.push(Rc::new(entry));
+                self.state.matches.desktop_entries = downgrade_all(&self.entries.desktop_entries);
                 Command::none()
             }
-            Message::FileEntryEnvent(entry) => {
-                self.home_files.push(Rc::new(entry));
-                self.state.home_mathces = downgrade_all(&self.home_files);
+            Message::FsSearchResult(entries) => {
+                let entries = entries.iter()
+                    .cloned()
+                    .map(|path| Rc::new(FileEntry { path }))
+                    .collect();
+
+                self.state.matches.xdg_entries = downgrade_all(&entries);
+                self.entries.xdg_entries = entries;
                 Command::none()
             }
         }
@@ -167,94 +181,124 @@ impl Application for Onagre {
         let event = iced_native::subscription::events().map(Message::EventOccurred);
         let desktop_entries = DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent);
         // let home_entries = HomeWalker::subscription().map(Message::FileEntryEnvent);
-        Subscription::batch(vec![event, desktop_entries ])
+        Subscription::batch(vec![event, desktop_entries])
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
+        let mut buttons: Row<Message> =
+            Self::build_mode_menu(self.state.mode_button_idx, &self.modes).into();
+
+        let mut entry_column = match self.get_current_mode() {
+            Mode::Drun => {
+                let rows: Vec<Element<Message>> = self.state.matches.desktop_entries.iter().enumerate().map(|(idx, entry)| {
+                    let content = entry.upgrade().unwrap().name.clone();
+                    if idx == self.state.selected {
+                        Self::build_row_selected(content).into()
+                    } else {
+                        Self::build_row(content).into()
+                    }
+                }).collect();
+
+                Column::with_children(rows)
+            }
+            Mode::XdgOpen => {
+                let rows: Vec<Element<Message>> = self.state.matches.xdg_entries.iter().enumerate().map(|(idx, entry)| {
+                    let content = entry.upgrade().unwrap().path.clone();
+                    if idx == self.state.selected {
+                        Self::build_row_selected(content).into()
+                    } else {
+                        Self::build_row(content).into()
+                    }
+                }).collect();
+
+                Column::with_children(rows)
+            }
+        };
+
+        let scrollable = Scrollable::new(&mut self.state.scroll)
+            .style(Theme)
+            .with_content(entry_column)
+            .padding(40)
+            .width(Length::FillPortion(1));
+
+        let mode_menu = Row::new()
+            .push(buttons);
+
         let input = TextInput::new(
             &mut self.state.input,
             "Search",
             &self.state.input_value,
             Message::InputChanged,
+        ).style(self.theme);
+
+        let search_bar = Row::new()
+            .max_width(800)
+            .spacing(20)
+            .width(Length::Shrink)
+            .align_items(Align::Center)
+            .width(Length::FillPortion(1))
+            .padding(2)
+            .push(input);
+
+        let app_container = Container::new(
+            Column::new()
+                .push(mode_menu)
+                .push(search_bar)
+                .push(scrollable)
+                .align_items(Align::Start)
         )
-            .style(self.theme);
+            .padding(20)
+            .style(style::MainContainer);
 
-        let search_bar = Row::new().max_width(800).spacing(20).push(input);
-
-        let mut buttons = Row::new();
-
-        for (idx, mode) in self.modes.iter().enumerate() {
-            if idx == self.state.current_mode {
-                buttons = buttons
-                    .push(
-                        Container::new(
-                            Text::new(mode.as_str()).horizontal_alignment(HorizontalAlignment::Left),
-                        )
-                        .style(ContainerSelected),
-                    )
-                    .spacing(10)
-                    .padding(10)
-            } else {
-                buttons = buttons
-                    .push(
-                        Container::new(
-                            Text::new(mode.as_str()).horizontal_alignment(HorizontalAlignment::Left),
-                        )
-                        .style(style::RowContainer),
-                    )
-                    .spacing(10)
-                    .padding(10);
-            };
-        }
-
-        let mut scrollable = Scrollable::new(&mut self.state.scroll)
-            .style(Theme)
-            .padding(40);
-
-        for (idx, entry) in self.state.desktop_entry_matches.iter().enumerate() {
-            let container = if idx == self.state.selected {
-                Container::new(Row::new().push(
-                    Text::new(&entry.upgrade().unwrap().as_ref().name)
-                        .width(Length::Fill)
-                        .horizontal_alignment(HorizontalAlignment::Left),
-                )).style(ContainerSelected)
-            } else {
-                Container::new(Row::new().push(
-                    Text::new(&entry.upgrade().unwrap().as_ref().name)
-                        .width(Length::Fill)
-                        .horizontal_alignment(HorizontalAlignment::Left),
-                )).style(style::RowContainer)
-            };
-
-            scrollable = scrollable.push(container);
-        }
-
-        Container::new(
-            Container::new(
-                Column::new()
-                    .push(buttons)
-                    .push(search_bar.width(Length::Shrink)
-                        .align_items(Align::Center)
-                        .width(Length::FillPortion(1))
-                        .padding(2)
-                    )
-                    .push(scrollable
-                        .width(Length::FillPortion(1))
-                    )
-                    .align_items(Align::Start))
-                .padding(20)
-                .style(style::MainContainer)
-        )
-        .style(style::TransparentContainer)
+        Container::new(app_container)
+            .style(style::TransparentContainer)
             .padding(40)
             .into()
     }
 }
 
+use std::marker::PhantomData;
+use std::borrow::Borrow;
+
+
 impl Onagre {
+    fn build_mode_menu(mode_idx: usize, modes: &Vec<Mode>) -> Row<'_, Message> {
+        let rows: Vec<Element<Message>> = modes.iter().enumerate().map(|(idx, mode)| {
+            if idx == mode_idx {
+                Container::new(Text::new(mode.as_str()))
+                    .style(ContainerSelected)
+                    .into()
+            } else {
+                Container::new(Text::new(mode.as_str()))
+                    .style(style::RowContainer)
+                    .into()
+            }
+        }).collect();
+
+        Row::with_children(rows)
+    }
+
+    fn build_row<'a>(content: String) -> Container<'a, Message>
+    {
+        Container::new(Row::new()
+            .push(Text::new(content)
+                .width(Length::Fill)
+                .horizontal_alignment(HorizontalAlignment::Left)))
+            .style(ContainerSelected)
+    }
+
+    fn build_row_selected<'a>(content: String) -> Container<'a, Message>
+    {
+        Container::new(Row::new()
+            .push(Text::new(content)
+                .width(Length::Fill)
+                .horizontal_alignment(HorizontalAlignment::Left)))
+            .style(RowContainer)
+    }
+
     fn run_command(&self) {
         let selected = self.state.selected;
-        let entry = self.state.desktop_entry_matches.get(selected).unwrap();
+        let entry = self.state.matches.desktop_entries.get(selected).unwrap();
         let argv = shell_words::split(&entry.upgrade().unwrap().exec);
 
         let argv = argv
@@ -272,10 +316,10 @@ impl Onagre {
         exit(0);
     }
 
-    fn update_matches(&self, input: &str) -> Vec<Weak<OnagreEntry>> {
+    fn update_desktop_entries_match(&self, input: &str) -> Vec<Weak<DesktopEntry>> {
         let matcher = SkimMatcherV2::default().ignore_case();
 
-        self.desktop_entries
+        self.entries.desktop_entries
             .iter()
             .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
             .filter(|(_, score)| *score > 10i64)
@@ -295,7 +339,7 @@ impl Onagre {
                         }
                     }
                     KeyCode::Down => {
-                        if self.state.selected != self.state.desktop_entry_matches.len() - 1 {
+                        if self.state.selected != self.state.matches.desktop_entries.len() - 1 {
                             self.state.selected += 1
                         }
                     }
@@ -319,24 +363,43 @@ impl Onagre {
         self.state.selected = 0;
 
         if self.state.input_value == "" {
-            self.state.desktop_entry_matches = downgrade_all(&self.desktop_entries)
+            self.state.matches.desktop_entries = downgrade_all(&self.entries.desktop_entries)
         } else {
-            self.state.desktop_entry_matches = self.update_matches(&self.state.input_value)
+            self.state.matches.desktop_entries = self.update_desktop_entries_match(&self.state.input_value)
         }
     }
 
     fn cycle_mode(&mut self) {
-        if self.state.current_mode == self.modes.len() - 1 {
-            self.state.current_mode = 0
+        println!("{}/{}", self.state.mode_button_idx, self.modes.len());
+        if self.state.mode_button_idx == self.modes.len() - 1 {
+            println!("Changing mode {} -> 0", self.state.mode_button_idx);
+            self.state.mode_button_idx = 0
         } else {
-            self.state.current_mode += 1
+            println!("Changing mode {} -> {}", self.state.mode_button_idx, self.state.mode_button_idx + 1);
+            self.state.mode_button_idx += 1
         }
+    }
+
+    fn get_current_mode(&self) -> Mode {
+        // Safe unwrap, we control the idx here
+        let mode = self.modes.get(self.state.mode_button_idx).unwrap();
+        *mode
+    }
+
+    fn set_current_mode(&mut self, mode: Mode) -> Mode {
+        let new_mod_idx = match mode {
+            Mode::Drun => 0 as usize,
+            Mode::XdgOpen => 1 as usize
+        };
+
+        self.state.mode_button_idx = new_mod_idx;
+        mode
     }
 }
 
 fn downgrade_all<T>(vec_rc: &Vec<Rc<T>>) -> Vec<Weak<T>> {
     vec_rc
-    .iter()
+        .iter()
         .map(|entry| Rc::downgrade(&entry))
         .collect()
 }
@@ -346,6 +409,14 @@ impl Mode {
         match &self {
             Mode::Drun => "Drun",
             Mode::XdgOpen => "XdgOpen"
+        }
+    }
+
+    fn from_shorcut(input: &str) -> Option<Mode> {
+        if input.starts_with("fs") {
+            Some(Mode::XdgOpen)
+        } else {
+            None
         }
     }
 }
