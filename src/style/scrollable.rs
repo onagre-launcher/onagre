@@ -1,6 +1,6 @@
 use crate::style::theme_settings::{ScrollableStyles, Scroller};
-use iced_style::{scrollable, Background};
 use crate::style::OnagreColor;
+use iced_style::{scrollable, Background};
 
 impl Default for ScrollableStyles {
     fn default() -> Self {
@@ -13,7 +13,7 @@ impl Default for ScrollableStyles {
                 color: OnagreColor::BLACK,
                 border_radius: 2,
                 border_width: 2,
-                border_color: OnagreColor::WHITE
+                border_color: OnagreColor::WHITE,
             },
         }
     }
@@ -38,16 +38,12 @@ impl scrollable::StyleSheet for &ScrollableStyles {
     fn hovered(&self) -> scrollable::Scrollbar {
         let active = self.active();
 
-        scrollable::Scrollbar {
-            ..active
-        }
+        scrollable::Scrollbar { ..active }
     }
 
     fn dragging(&self) -> scrollable::Scrollbar {
         let hovered = self.hovered();
 
-        scrollable::Scrollbar {
-            ..hovered
-        }
+        scrollable::Scrollbar { ..hovered }
     }
 }

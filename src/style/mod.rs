@@ -1,30 +1,31 @@
-pub mod theme;
-pub mod theme_settings;
 pub mod color_de;
-pub mod text_input;
 pub mod rows;
 pub mod scrollable;
+pub mod text_input;
+pub mod theme;
+pub mod theme_settings;
 
+use anyhow::Result;
 use iced::Color;
 use palette::Srgba;
-use anyhow::Result;
 
 #[derive(Debug, Clone, PartialEq, Copy)]
-pub struct OnagreColor { color: Color }
+pub struct OnagreColor {
+    color: Color,
+}
 
 impl Eq for OnagreColor {}
 
 impl OnagreColor {
     const BLACK: OnagreColor = OnagreColor {
-        color: Color::BLACK
+        color: Color::BLACK,
     };
 
     const WHITE: OnagreColor = OnagreColor {
-        color: Color::WHITE
+        color: Color::WHITE,
     };
 
     fn from(hex_color: &str) -> Result<Self> {
-        println!("{}", hex_color.len());
         if hex_color.len() != 7 {
             return Err(anyhow!("expected valid hex color, got `{}`", hex_color));
         }
@@ -34,12 +35,7 @@ impl OnagreColor {
         let b = u32::from_str_radix(&hex_color[5..7], 16)? as f32 / 255.0;
 
         Ok(OnagreColor {
-            color: Color {
-                r,
-                g,
-                b,
-                a: 1.0,
-            }
+            color: Color { r, g, b, a: 1.0 },
         })
     }
 }
@@ -59,7 +55,11 @@ impl ToString for OnagreColor {
 
 fn to_lower_gex_with_leading_zero(value: u32) -> String {
     let val = format!("{:x}", value);
-    if val.len() == 1 { format!("0{}", val) } else { val }
+    if val.len() == 1 {
+        format!("0{}", val)
+    } else {
+        val
+    }
 }
 
 impl Into<Color> for OnagreColor {
@@ -71,7 +71,7 @@ impl Into<Color> for OnagreColor {
 impl Default for OnagreColor {
     fn default() -> Self {
         Self {
-            color: Default::default()
+            color: Default::default(),
         }
     }
 }
@@ -87,14 +87,17 @@ mod test {
 
         let color = OnagreColor::from(hex_color);
 
-        assert_eq!(OnagreColor {
-            color: Color {
-                r: 1.0,
-                g: 0.0,
-                b: 1.0,
-                a: 1.0,
-            }
-        }, color.unwrap());
+        assert_eq!(
+            OnagreColor {
+                color: Color {
+                    r: 1.0,
+                    g: 0.0,
+                    b: 1.0,
+                    a: 1.0,
+                }
+            },
+            color.unwrap()
+        );
     }
 
     #[test]
@@ -103,16 +106,16 @@ mod test {
 
         let color = OnagreColor::from(hex_color);
 
-        assert_eq!(OnagreColor {
-            color: Color {
-                r: 0.8,
-                g: 1.0,
-                b: 0.0,
-                a: 1.0,
-            }
-        }, color.unwrap());
+        assert_eq!(
+            OnagreColor {
+                color: Color {
+                    r: 0.8,
+                    g: 1.0,
+                    b: 0.0,
+                    a: 1.0,
+                }
+            },
+            color.unwrap()
+        );
     }
 }
-
-
-

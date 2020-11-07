@@ -1,6 +1,6 @@
-use iced_style::{container, Background};
 use crate::style::theme_settings::{RowStyles, RowStylesSelected};
 use crate::style::OnagreColor;
+use iced_style::{container, Background};
 
 impl container::StyleSheet for &RowStyles {
     fn style(&self) -> container::Style {
@@ -34,13 +34,13 @@ impl Default for RowStyles {
                 border_radius: 0,
                 border_width: 0,
                 text_color: OnagreColor::BLACK,
-                border_color: OnagreColor::BLACK
+                border_color: OnagreColor::BLACK,
             },
             background: OnagreColor::BLACK,
             border_radius: 0,
             border_width: 0,
             text_color: OnagreColor::WHITE,
-            border_color: OnagreColor::BLACK
+            border_color: OnagreColor::BLACK,
         }
     }
 }

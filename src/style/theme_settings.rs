@@ -1,7 +1,7 @@
-use config::{Config, File};
-use anyhow::Result;
-use std::path::PathBuf;
 use crate::style::OnagreColor;
+use anyhow::Result;
+use config::{Config, File};
+use std::path::PathBuf;
 
 #[derive(Deserialize, Serialize)]
 #[serde(default)]
@@ -55,15 +55,15 @@ pub struct ScrollableStyles {
     pub border_radius: u16,
     pub border_width: u16,
     pub border_color: OnagreColor,
-    pub scroller: Scroller
+    pub scroller: Scroller,
 }
 
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Scroller {
-   pub color: OnagreColor,
-   pub border_radius: u16,
-   pub border_width: u16,
-   pub border_color: OnagreColor,
+    pub color: OnagreColor,
+    pub border_radius: u16,
+    pub border_width: u16,
+    pub border_color: OnagreColor,
 }
 
 impl Theme {
@@ -91,9 +91,7 @@ impl Theme {
     fn path() -> Result<PathBuf> {
         dirs::config_dir()
             .ok_or_else(|| anyhow!("Theme config not found"))
-            .map(|path| path
-                .join("onagre")
-                .join("theme.toml"))
+            .map(|path| path.join("onagre").join("theme.toml"))
     }
 }
 
@@ -101,9 +99,12 @@ impl Theme {
 fn generate_default_conf() -> Result<()> {
     let settings = Theme::default();
     let settings = toml::to_string(&settings)?;
-    std::fs::write(dirs::config_dir().unwrap()
-        .join("onagre")
-        .join("theme.toml"), settings)?;
+    std::fs::write(
+        dirs::config_dir()
+            .unwrap()
+            .join("onagre")
+            .join("theme.toml"),
+        settings,
+    )?;
     Ok(())
 }
-

@@ -1,6 +1,5 @@
 use crate::desktop::DesktopEntryIni;
 use crate::entries::DesktopEntry;
-use crate::subscriptions::ToSubScription;
 use async_std::fs;
 use async_std::path::PathBuf as AsyncPathBuf;
 use futures::future::{BoxFuture, FutureExt};
@@ -13,8 +12,8 @@ pub struct DesktopEntryWalker {
     id: String,
 }
 
-impl ToSubScription<DesktopEntry> for DesktopEntryWalker {
-    fn subscription() -> Subscription<DesktopEntry> {
+impl DesktopEntryWalker {
+    pub fn subscription() -> Subscription<DesktopEntry> {
         iced::Subscription::from_recipe(DesktopEntryWalker {
             id: "file_walker_subscription".to_string(),
         })
@@ -50,7 +49,6 @@ where
 
 async fn get_root_desktop_entries(sender: futures::channel::mpsc::Sender<DesktopEntry>) {
     let desktop_dir = AsyncPathBuf::from("/usr/share");
-    println!("{:?}", desktop_dir);
     walk_dir(sender, desktop_dir.join("applications")).await;
 }
 
@@ -75,7 +73,6 @@ fn walk_dir(
                 let desktop_entry = fs::read_to_string(entry.path()).await.unwrap();
                 if let Ok(desktop_entry) = serde_ini::from_str::<DesktopEntryIni>(&desktop_entry) {
                     if let Some(content) = desktop_entry.content {
-                        println!("Found {:?}", content); // FIXME : add a logger
                         sender.start_send(DesktopEntry::from(&content)).unwrap();
                     }
                 }

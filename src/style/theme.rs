@@ -1,8 +1,8 @@
 use iced::{container, rule, Color};
 
-use iced_native::Background;
-use crate::style::theme_settings::{Theme, RowStyles, TextInputStyles, ScrollableStyles};
+use crate::style::theme_settings::Theme;
 use crate::style::OnagreColor;
+use iced_native::Background;
 
 impl Theme {
     pub fn load() -> Self {
@@ -24,7 +24,7 @@ impl Default for Theme {
             border_width: 0,
             rows: Default::default(),
             scrollable: Default::default(),
-            search: Default::default()
+            search: Default::default(),
         }
     }
 }

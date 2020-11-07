@@ -1,4 +1,4 @@
-use crate::style::theme_settings::{TextInputStyles};
+use crate::style::theme_settings::TextInputStyles;
 use crate::style::OnagreColor;
 use iced_style::{text_input, Background, Color};
 
@@ -11,7 +11,7 @@ impl Default for TextInputStyles {
             background: OnagreColor::BLACK,
             placeholder_color: OnagreColor::WHITE,
             value_color: OnagreColor::WHITE,
-            selection_color: OnagreColor::BLACK
+            selection_color: OnagreColor::BLACK,
         }
     }
 }
