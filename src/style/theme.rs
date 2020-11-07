@@ -1,6 +1,4 @@
-use iced::{
-    container, rule, scrollable, text_input, Color,
-};
+use iced::{container, rule, scrollable, text_input, Color};
 
 use iced_native::Background;
 
@@ -70,7 +68,7 @@ impl container::StyleSheet for TransparentContainer {
             border_radius: 0,
             border_width: 2,
             text_color: Color::TRANSPARENT.into(),
-            border_color: Color::from_rgb(1.0, 0.0, 0.0).into(),
+            border_color: Color::from_rgb(1.0, 0.0, 0.0),
         }
     }
 }
@@ -98,7 +96,7 @@ impl container::StyleSheet for RowContainer {
             border_radius: ROW_BORDER_RADIUS,
             border_width: ROW_BORDER_WIDTH,
             text_color: ROW_FG.into(),
-            border_color: ROW_BORDER_COLOR.into(),
+            border_color: ROW_BORDER_COLOR,
         }
     }
 }
@@ -112,7 +110,7 @@ impl container::StyleSheet for ContainerSelected {
             border_radius: ROW_SELECTED_BORDER_RADIUS,
             border_width: ROW_SELECTED_BORDER_WIDTH,
             text_color: ROW_SELECTED_FG.into(),
-            border_color: ROW_SELECTED_BORDER_COLOR.into(),
+            border_color: ROW_SELECTED_BORDER_COLOR,
         }
     }
 }

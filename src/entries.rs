@@ -15,13 +15,11 @@ pub struct FileEntry {
 #[derive(Debug, Default, Clone)]
 pub struct Entries {
     pub desktop_entries: Vec<Rc<DesktopEntry>>,
-    pub xdg_entries: Vec<Rc<FileEntry>>,
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct MatchedEntries {
     pub desktop_entries: Vec<Weak<DesktopEntry>>,
-    pub xdg_entries: Vec<Weak<FileEntry>>,
 }
 
 impl From<&DesktopEntryInContent> for DesktopEntry {
@@ -32,4 +30,3 @@ impl From<&DesktopEntryInContent> for DesktopEntry {
         }
     }
 }
-
