@@ -1,5 +1,9 @@
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate anyhow;
+#[macro_use]
+extern crate lazy_static;
 
 mod config;
 mod desktop;
@@ -9,9 +13,8 @@ mod subscriptions;
 
 use fuzzy_matcher::skim::SkimMatcherV2;
 
-use crate::style::theme::{
-    ContainerSelected, MainContainer, RowContainer, Theme, TransparentContainer,
-};
+use crate::style::theme::{TransparentContainer};
+use crate::style::theme_settings::{Theme};
 use iced::{
     scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
     HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
@@ -24,6 +27,10 @@ use iced_native::Event;
 use std::process::exit;
 use std::rc::{Rc, Weak};
 use subscriptions::desktop_entries::DesktopEntryWalker;
+
+lazy_static! {
+    static ref THEME: Theme = Theme::load();
+}
 
 fn main() -> iced::Result {
     Onagre::run(Settings {
@@ -41,7 +48,6 @@ fn main() -> iced::Result {
 struct Onagre {
     modes: Vec<Mode>,
     entries: Entries,
-    theme: Theme,
     state: State,
 }
 
@@ -75,35 +81,7 @@ impl Application for Onagre {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] opacity 12")
-            .output()
-            .expect("not on sway");
-
-        // Tell sway to enable floating mode for Onagre
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] floating enable")
-            .output()
-            .expect("not on sway");
-
-        // [set|plus|minus] <value>
-        // Tells sway to focus on startup
-        std::process::Command::new("swaymsg")
-            .arg("[app_id=\"Onagre\"] focus")
-            .output()
-            .expect("not on sway");
-
-        // Tells sway to remove borders on startup
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] border none ")
-            .output()
-            .expect("not on sway");
-
-        // Tells sway to remove borders on startup
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] resize set width 45 ppt height  35 ppt")
-            .output()
-            .expect("not on sway");
+        Onagre::sway_preloads();
 
         // By default the first entry is selected
         let selected = 0;
@@ -120,7 +98,6 @@ impl Application for Onagre {
         (
             Onagre {
                 entries: Default::default(),
-                theme: Theme,
                 modes: vec![Mode::Drun, Mode::XdgOpen],
                 state,
             },
@@ -139,7 +116,8 @@ impl Application for Onagre {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
 
-        let mode = if let Some(new_mode) = Mode::from_shorcut(&self.state.input_value) {
+        // FIXME
+        let _mode = if let Some(new_mode) = Mode::from_shorcut(&self.state.input_value) {
             println!(
                 "Shortcut {} typed, moving to mode {}",
                 self.state.input_value,
@@ -176,7 +154,7 @@ impl Application for Onagre {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let mut buttons: Row<Message> =
+        let buttons: Row<Message> =
             Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
 
         let entry_column = match self.get_current_mode() {
@@ -203,10 +181,11 @@ impl Application for Onagre {
         };
 
         let scrollable = Scrollable::new(&mut self.state.scroll)
-            .style(Theme)
             .with_content(entry_column)
             .padding(40)
-            .width(Length::FillPortion(1));
+            .height(Length::Fill) // Wait for transparency in wgpu to remove
+            .width(Length::FillPortion(1))
+            .style(&THEME.scrollable);
 
         let mode_menu = Row::new().push(buttons);
 
@@ -214,9 +193,8 @@ impl Application for Onagre {
             &mut self.state.input,
             "Search",
             &self.state.input_value,
-            Message::InputChanged,
-        )
-        .style(self.theme);
+            Message::InputChanged)
+            .style(&THEME.search);
 
         let search_bar = Row::new()
             .max_width(800)
@@ -234,15 +212,17 @@ impl Application for Onagre {
                 .push(scrollable)
                 .align_items(Align::Start),
         )
-        .padding(20)
-        .style(MainContainer);
+            .padding(20)
+            .style(THEME.as_ref());
 
-        Container::new(app_container)
-            .style(TransparentContainer)
-            .padding(40)
-            .into()
+        // Container::new(app_container)
+        //     .style(TransparentContainer)
+        //     .padding(40)
+        //     .into()
+        app_container.into()
     }
 }
+
 
 impl Onagre {
     fn build_mode_menu(mode_idx: usize, modes: &[Mode]) -> Row<'_, Message> {
@@ -252,11 +232,11 @@ impl Onagre {
             .map(|(idx, mode)| {
                 if idx == mode_idx {
                     Container::new(Text::new(mode.as_str()))
-                        .style(ContainerSelected)
+                        .style(&THEME.rows.selected)
                         .into()
                 } else {
                     Container::new(Text::new(mode.as_str()))
-                        .style(RowContainer)
+                        .style(&THEME.rows)
                         .into()
                 }
             })
@@ -273,7 +253,7 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-        .style(ContainerSelected)
+            .style(&THEME.rows)
     }
 
     fn build_row_selected<'a>(content: String) -> Container<'a, Message> {
@@ -284,7 +264,7 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-        .style(RowContainer)
+            .style(&THEME.rows.selected)
     }
 
     fn run_command(&self) {
@@ -412,5 +392,39 @@ impl Mode {
         } else {
             None
         }
+    }
+}
+
+impl Onagre {
+    fn sway_preloads() {
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] opacity 12")
+            .output()
+            .expect("not on sway");
+
+        // Tell sway to enable floating mode for Onagre
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] floating enable")
+            .output()
+            .expect("not on sway");
+
+        // [set|plus|minus] <value>
+        // Tells sway to focus on startup
+        std::process::Command::new("swaymsg")
+            .arg("[app_id=\"Onagre\"] focus")
+            .output()
+            .expect("not on sway");
+
+        // Tells sway to remove borders on startup
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] border none ")
+            .output()
+            .expect("not on sway");
+
+        // Tells sway to remove borders on startup
+        std::process::Command::new("swaymsg")
+            .arg("for_window [app_id=\"Onagre\"] resize set width 45 ppt height  35 ppt")
+            .output()
+            .expect("not on sway");
     }
 }

@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "debug", "palette" ] }
+iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "debug", "palette"] }
 iced_native = { git = "https://github.com/oknozor/iced" }
 iced_style = { git = "https://github.com/oknozor/iced" }
 iced_futures = { git = "https://github.com/oknozor/iced" }
@@ -16,10 +16,13 @@ fuzzy-matcher = "0.3.7"
 async-std = "1.6.5"
 futures = "0.3.7"
 dirs = "3.0.1"
-anyhow="1.0.34"
+anyhow = "1.0.34"
 serde_ini = "0.2.0"
 serde = "1.0.117"
 serde_derive = "1.0.117"
+toml = "0.5.7"
 shell-words = "^1"
 config = "0.10.1"
 ignore = "0.4.16"
+lazy_static = "1.4.0"
+palette = { version = "0.5.0", features = ["serializing"] }

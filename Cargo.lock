@@ -1871,10 +1871,13 @@ dependencies = [
  "iced_native",
  "iced_style",
  "ignore",
+ "lazy_static",
+ "palette",
  "serde 1.0.117",
  "serde_derive",
  "serde_ini",
  "shell-words",
+ "toml",
 ]
 
 [[package]]
@@ -1921,6 +1924,7 @@ dependencies = [
  "palette_derive",
  "phf",
  "phf_codegen",
+ "serde 1.0.117",
 ]
 
 [[package]]
@@ -2353,6 +2357,9 @@ name = "serde"
 version = "1.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b88fa983de7720629c9387e9f517353ed404164b1e482c970a90c1a4aaf7dc1a"
+dependencies = [
+ "serde_derive",
+]
 
 [[package]]
 name = "serde-hjson"
