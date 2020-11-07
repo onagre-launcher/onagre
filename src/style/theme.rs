@@ -37,9 +37,9 @@ impl container::StyleSheet for TransparentContainer {
         container::Style {
             background: Color::TRANSPARENT.into(),
             border_radius: 0,
-            border_width: 2,
+            border_width: 0,
             text_color: Color::TRANSPARENT.into(),
-            border_color: Color::from_rgb(1.0, 0.0, 0.0),
+            border_color: Color::TRANSPARENT,
         }
     }
 }
@@ -49,7 +49,7 @@ impl container::StyleSheet for &Theme {
         container::Style {
             background: Some(Background::Color(self.background.into())),
             border_radius: self.border_radius,
-            border_width: self.border_width.into(),
+            border_width: self.border_width,
             text_color: Some(self.foreground.into()),
             border_color: self.border_color.into(),
         }

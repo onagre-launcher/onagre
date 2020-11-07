@@ -23,10 +23,14 @@ use iced::{
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
 use crate::subscriptions::ToSubScription;
 use fuzzy_matcher::FuzzyMatcher;
-use iced_native::Event;
+use iced_native::{Event, Hasher};
 use std::process::exit;
 use std::rc::{Rc, Weak};
 use subscriptions::desktop_entries::DesktopEntryWalker;
+use subscriptions::custom::ExternalCommandSubscription;
+use std::borrow::Borrow;
+use std::collections::HashMap;
+use toml::to_string;
 
 lazy_static! {
     static ref THEME: Theme = Theme::load();
@@ -51,8 +55,10 @@ struct Onagre {
     state: State,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct State {
+    // TODO
+    // https://github.com/hecrj/iced/blob/3aafd2c1f7539806449b116fa98d6bf0fff94de8/futures/src/subscription/tracker.rs
     loading: bool,
     mode_button_idx: usize,
     selected: usize,
@@ -62,10 +68,25 @@ struct State {
     input_value: String,
 }
 
+impl Default for State {
+    fn default() -> Self {
+        State {
+            loading: true,
+            mode_button_idx: 0,
+            selected: 0,
+            matches: Default::default(),
+            scroll: Default::default(),
+            input: Default::default(),
+            input_value: "".to_string()
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 enum Message {
     InputChanged(String),
     DesktopEntryEvent(DesktopEntry),
+    CustomModeEvent(Vec<String>),
     EventOccurred(iced_native::Event),
 }
 
@@ -82,24 +103,11 @@ impl Application for Onagre {
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         Onagre::sway_preloads();
-
-        // By default the first entry is selected
-        let selected = 0;
-        let state = State {
-            loading: true,
-            mode_button_idx: 0,
-            selected,
-            matches: Default::default(),
-            scroll: Default::default(),
-            input: Default::default(),
-            input_value: "".to_string(),
-        };
-
         (
             Onagre {
-                entries: Default::default(),
                 modes: vec![Mode::Drun, Mode::XdgOpen],
-                state,
+                entries: Entries::default(),
+                state: State::default(),
             },
             Command::none(),
         )
@@ -115,7 +123,6 @@ impl Application for Onagre {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
-
         // FIXME
         let _mode = if let Some(new_mode) = Mode::from_shorcut(&self.state.input_value) {
             println!(
@@ -139,8 +146,21 @@ impl Application for Onagre {
                 Command::none()
             }
             Message::DesktopEntryEvent(entry) => {
-                self.entries.desktop_entries.push(Rc::new(entry));
-                self.state.matches.desktop_entries = downgrade_all(&self.entries.desktop_entries);
+                self.entries.desktop_entries.push(entry);
+                self.state.matches.desktop_entries = self.entries.desktop_entries.iter()
+                    .take(50)
+                    .cloned()
+                    .collect();
+                Command::none()
+            }
+            Message::CustomModeEvent(entry) => {
+                let mode = self.get_current_mode();
+                if let Some(entries) = self.entries.custom_entries.get_mut("placeholder") {
+                    entries.extend(entry);
+                } else {
+                    self.entries.custom_entries.insert("placeholder".to_string(), entry);
+                }
+
                 Command::none()
             }
         }
@@ -149,8 +169,15 @@ impl Application for Onagre {
     fn subscription(&self) -> Subscription<Message> {
         let event = iced_native::subscription::events().map(Message::EventOccurred);
         let desktop_entries = DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent);
-        // let home_entries = HomeWalker::subscription().map(Message::FileEntryEnvent);
-        Subscription::batch(vec![event, desktop_entries])
+        let mut subscriptions = vec![event, desktop_entries];
+        match self.get_current_mode() {
+            Mode::Drun => {}
+            Mode::XdgOpen => {
+                subscriptions.push(ExternalCommandSubscription::subscription().map(Message::CustomModeEvent));
+            }
+        }
+
+        Subscription::batch(subscriptions)
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
@@ -166,18 +193,42 @@ impl Application for Onagre {
                     .iter()
                     .enumerate()
                     .map(|(idx, entry)| {
-                        let content = entry.upgrade().unwrap().name.clone();
                         if idx == self.state.selected {
-                            Self::build_row_selected(content).into()
+                            Self::build_row_selected(&entry.name).into()
                         } else {
-                            Self::build_row(content).into()
+                            Self::build_row(&entry.name).into()
                         }
                     })
                     .collect();
 
                 Column::with_children(rows)
             }
-            Mode::XdgOpen => Column::new(),
+            Mode::XdgOpen => {
+                let matches = self
+                    .state
+                    .matches
+                    .custom_entries
+                    .get("placeholder");
+
+                if let Some(matches) = matches {
+                    let rows: Vec<Element<Message>> = matches
+                        .iter()
+                        .take(50)
+                        .enumerate()
+                        .map(|(idx, entry)| {
+                            if idx == self.state.selected {
+                                Self::build_row_selected(entry).into()
+                            } else {
+                                Self::build_row(entry).into()
+                            }
+                        })
+                        .collect();
+
+                    Column::with_children(rows)
+                } else {
+                    Column::new()
+                }
+            }
         };
 
         let scrollable = Scrollable::new(&mut self.state.scroll)
@@ -215,11 +266,10 @@ impl Application for Onagre {
             .padding(20)
             .style(THEME.as_ref());
 
-        // Container::new(app_container)
-        //     .style(TransparentContainer)
-        //     .padding(40)
-        //     .into()
-        app_container.into()
+        Container::new(app_container)
+            .style(TransparentContainer)
+            .padding(40)
+            .into()
     }
 }
 
@@ -245,7 +295,7 @@ impl Onagre {
         Row::with_children(rows)
     }
 
-    fn build_row<'a>(content: String) -> Container<'a, Message> {
+    fn build_row<'a>(content: &str) -> Container<'a, Message> {
         Container::new(
             Row::new().push(
                 Text::new(content)
@@ -256,7 +306,7 @@ impl Onagre {
             .style(&THEME.rows)
     }
 
-    fn build_row_selected<'a>(content: String) -> Container<'a, Message> {
+    fn build_row_selected<'a>(content: &str) -> Container<'a, Message> {
         Container::new(
             Row::new().push(
                 Text::new(content)
@@ -268,35 +318,39 @@ impl Onagre {
     }
 
     fn run_command(&self) {
-        let selected = self.state.selected;
-        let entry = self.state.matches.desktop_entries.get(selected).unwrap();
-        let argv = shell_words::split(&entry.upgrade().unwrap().exec);
+        match self.get_current_mode() {
+            Mode::Drun => {
+                let selected = self.state.selected;
+                let entry = self.state.matches.desktop_entries.get(selected).unwrap();
+                let argv = shell_words::split(&entry.exec);
 
-        let argv = argv
-            .as_ref()
-            .unwrap()
-            .iter()
-            .filter(|entry| !entry.starts_with('%')) // FIXME: freedesktop entry spec
-            .collect::<Vec<&String>>();
+                let argv = argv
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .filter(|entry| !entry.starts_with('%')) // FIXME: freedesktop entry spec
+                    .collect::<Vec<&String>>();
 
-        std::process::Command::new(&argv[0])
-            .args(&argv[1..])
-            .spawn()
-            .expect("Command failure");
+                std::process::Command::new(&argv[0])
+                    .args(&argv[1..])
+                    .spawn()
+                    .expect("Command failure");
+            }
+            Mode::XdgOpen => {
+                let selected = self.state.selected;
 
+                let entry = self.state.matches.custom_entries.get("placeholder")
+                    .unwrap()
+                    .get(selected)
+                    .unwrap();
+
+                std::process::Command::new("xdg-open")
+                    .arg(entry)
+                    .spawn()
+                    .expect("Command failure");
+            }
+        }
         exit(0);
-    }
-
-    fn update_desktop_entries_match(&self, input: &str) -> Vec<Weak<DesktopEntry>> {
-        let matcher = SkimMatcherV2::default().ignore_case();
-
-        self.entries
-            .desktop_entries
-            .iter()
-            .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
-            .filter(|(_, score)| *score > 10i64)
-            .map(|(entry, _)| Rc::downgrade(entry))
-            .collect()
     }
 
     fn handle_input(&mut self, event: iced_native::Event) -> Option<Message> {
@@ -334,11 +388,28 @@ impl Onagre {
     fn reset_matches(&mut self) {
         self.state.selected = 0;
 
-        if self.state.input_value == "" {
-            self.state.matches.desktop_entries = downgrade_all(&self.entries.desktop_entries)
-        } else {
-            self.state.matches.desktop_entries =
-                self.update_desktop_entries_match(&self.state.input_value)
+        match self.get_current_mode() {
+            Mode::Drun => {
+                if self.state.input_value == "" {
+                    self.state.matches.desktop_entries = self.entries.desktop_entries.iter().take(50)
+                        .cloned()
+                        .collect()
+                } else {
+                    self.state.matches.desktop_entries = self.entries.get_matches(&self.state.input_value)
+                }
+            }
+            Mode::XdgOpen => {
+                let entries = if self.state.input_value == "" {
+                    self.entries.custom_entries.get("placeholder").unwrap()
+                        .iter()
+                        .take(50)
+                        .cloned()
+                        .collect()
+                } else {
+                    self.entries.get_matches_custom_mode("placeholder", &self.state.input_value)
+                };
+                self.state.matches.custom_entries.insert("placeholder".to_string(), entries);
+            }
         }
     }
 
@@ -372,10 +443,6 @@ impl Onagre {
         self.state.mode_button_idx = new_mod_idx;
         mode
     }
-}
-
-fn downgrade_all<T>(vec_rc: &[Rc<T>]) -> Vec<Weak<T>> {
-    vec_rc.iter().map(|entry| Rc::downgrade(&entry)).collect()
 }
 
 impl Mode {

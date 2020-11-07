@@ -1,5 +1,7 @@
 use crate::desktop::DesktopEntryInContent;
-use std::rc::{Rc, Weak};
+use std::collections::HashMap;
+use fuzzy_matcher::skim::SkimMatcherV2;
+use fuzzy_matcher::FuzzyMatcher;
 
 #[derive(Debug, Clone)]
 pub struct DesktopEntry {
@@ -7,19 +9,44 @@ pub struct DesktopEntry {
     pub exec: String,
 }
 
-#[derive(Debug, Clone)]
-pub struct FileEntry {
-    pub path: String,
-}
-
 #[derive(Debug, Default, Clone)]
 pub struct Entries {
-    pub desktop_entries: Vec<Rc<DesktopEntry>>,
+    pub desktop_entries: Vec<DesktopEntry>,
+    pub custom_entries: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct MatchedEntries {
-    pub desktop_entries: Vec<Weak<DesktopEntry>>,
+    pub desktop_entries: Vec<DesktopEntry>,
+    pub custom_entries: HashMap<String, Vec<String>>,
+}
+
+impl Entries {
+    pub fn get_matches(&self, input: &str) -> Vec<DesktopEntry> {
+        let matcher = SkimMatcherV2::default().ignore_case();
+
+        self.desktop_entries
+            .iter()
+            .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
+            .filter(|(_, score)| *score > 10i64)
+            .map(|(entry, _)| entry)
+            .take(50)
+            .cloned()
+            .collect()
+    }
+
+    pub fn get_matches_custom_mode(&self, mode_key: &str, input: &str) -> Vec<String> {
+        let matcher = SkimMatcherV2::default().ignore_case();
+
+        self.custom_entries.get(mode_key).unwrap()
+            .iter()
+            .map(|entry| (entry, matcher.fuzzy_match(&entry, input).unwrap_or(0)))
+            .filter(|(_, score)| *score > 10i64)
+            .map(|(entry, _)| entry)
+            .take(50)
+            .cloned()
+            .collect()
+    }
 }
 
 impl From<&DesktopEntryInContent> for DesktopEntry {

@@ -90,7 +90,7 @@ impl Theme {
 
     fn path() -> Result<PathBuf> {
         dirs::config_dir()
-            .ok_or(anyhow!("Theme config not found"))
+            .ok_or_else(|| anyhow!("Theme config not found"))
             .map(|path| path
                 .join("onagre")
                 .join("theme.toml"))
