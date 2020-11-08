@@ -1,8 +1,5 @@
-use anyhow::Result;
 use async_process::{Command, Stdio};
-use async_std::fs;
 use async_std::{io::BufReader, prelude::*};
-use futures::future::{BoxFuture, FutureExt};
 use iced_native::futures::stream::BoxStream;
 use iced_native::futures::StreamExt;
 use iced_native::Subscription;

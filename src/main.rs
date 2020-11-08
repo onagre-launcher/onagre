@@ -5,13 +5,11 @@ extern crate anyhow;
 #[macro_use]
 extern crate lazy_static;
 
-mod config;
 mod desktop;
 mod entries;
 mod style;
 mod subscriptions;
 
-use fuzzy_matcher::skim::SkimMatcherV2;
 
 use crate::style::theme::TransparentContainer;
 use crate::style::theme_settings::Theme;
@@ -21,15 +19,11 @@ use iced::{
 };
 
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
-use fuzzy_matcher::FuzzyMatcher;
-use iced_native::{Event, Hasher};
-use std::borrow::Borrow;
+use iced_native::{Event};
 use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
-use toml::to_string;
-use std::sync::Arc;
 
 lazy_static! {
     static ref THEME: Theme = Theme::load();
@@ -121,9 +115,7 @@ impl Application for Onagre {
         "Onagre".to_string()
     }
 
-    fn background_color(&self) -> Color {
-        Color::TRANSPARENT
-    }
+    fn background_color(&self) -> Color { Color::TRANSPARENT }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
@@ -424,7 +416,7 @@ impl Onagre {
     fn set_current_mode(&mut self, mode: Mode) -> Mode {
         let new_mod_idx = match mode {
             Mode::Drun => 0 as usize,
-            Mode::Custom(name) => 1 as usize,
+            Mode::Custom(mode_name) => self.modes.iter().position(|mode| mode_name == mode.as_str()).unwrap(),
         };
 
         self.state.mode_button_idx = new_mod_idx;

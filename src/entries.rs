@@ -4,7 +4,6 @@ use fuzzy_matcher::FuzzyMatcher;
 use std::collections::HashMap;
 use crate::Mode;
 use rayon::prelude::*;
-use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct DesktopEntry {

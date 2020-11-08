@@ -7,7 +7,6 @@ pub mod theme_settings;
 
 use anyhow::Result;
 use iced::Color;
-use palette::Srgba;
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct OnagreColor {

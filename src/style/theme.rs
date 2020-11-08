@@ -1,7 +1,6 @@
 use iced::{container, rule, Color};
 
 use crate::style::theme_settings::Theme;
-use crate::style::OnagreColor;
 use iced_native::Background;
 
 impl Theme {
