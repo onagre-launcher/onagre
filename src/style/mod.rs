@@ -25,17 +25,39 @@ impl OnagreColor {
     };
 
     fn from(hex_color: &str) -> Result<Self> {
-        if hex_color.len() != 7 {
-            return Err(anyhow!("expected valid hex color, got `{}`", hex_color));
-        }
+        let r = if let Some(red) = hex_color.get(1..3) {
+            OnagreColor::f32_from_str_hex(&red)?
+        } else {
+            0.0
+        };
 
-        let r = u32::from_str_radix(&hex_color[1..3], 16)? as f32 / 255.0;
-        let g = u32::from_str_radix(&hex_color[3..5], 16)? as f32 / 255.0;
-        let b = u32::from_str_radix(&hex_color[5..7], 16)? as f32 / 255.0;
+        let g = if let Some(green) = hex_color.get(3..5) {
+            OnagreColor::f32_from_str_hex(green)?
+        } else {
+            0.0
+        };
+
+        let b = if let Some(blue) = hex_color.get(5..7) {
+            OnagreColor::f32_from_str_hex(blue)?
+        } else {
+            0.0
+        };
+
+        let a = if let Some(opacity) = hex_color.get(7..9) {
+            OnagreColor::f32_from_str_hex(opacity)?
+        } else {
+            1.0
+        };
 
         Ok(OnagreColor {
-            color: Color { r, g, b, a: 1.0 },
+            color: Color { r, g, b, a },
         })
+    }
+
+    fn f32_from_str_hex(hex_color: &str) -> Result<f32> {
+        u32::from_str_radix(hex_color, 16)
+            .map_err(|err| anyhow!("{} Is not a valid hex color : {}", hex_color, err))
+            .map(|value| value as f32 / 255.0)
     }
 }
 
@@ -100,8 +122,8 @@ mod test {
     }
 
     #[test]
-    fn should_get_color_from_str2() {
-        let hex_color = "#CCFF00";
+    fn should_get_color_from_with_opacity() {
+        let hex_color = "#CCFF00CC";
 
         let color = OnagreColor::from(hex_color);
 
@@ -111,10 +133,38 @@ mod test {
                     r: 0.8,
                     g: 1.0,
                     b: 0.0,
+                    a: 0.8,
+                }
+            },
+            color.unwrap()
+        );
+    }
+
+    #[test]
+    fn should_get_red_value_and_default() {
+        let hex_color = "#CC";
+
+        let color = OnagreColor::from(hex_color);
+
+        assert_eq!(
+            OnagreColor {
+                color: Color {
+                    r: 0.8,
+                    g: 0.0,
+                    b: 0.0,
                     a: 1.0,
                 }
             },
             color.unwrap()
         );
+    }
+
+    #[test]
+    fn parse_error() {
+        let hex_color = "#II";
+
+        let color = OnagreColor::from(hex_color);
+
+        assert!(color.is_err());
     }
 }

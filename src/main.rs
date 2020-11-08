@@ -10,7 +10,6 @@ mod entries;
 mod style;
 mod subscriptions;
 
-
 use crate::style::theme::TransparentContainer;
 use crate::style::theme_settings::Theme;
 use iced::{
@@ -19,7 +18,7 @@ use iced::{
 };
 
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
-use iced_native::{Event};
+use iced_native::Event;
 use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
@@ -115,7 +114,9 @@ impl Application for Onagre {
         "Onagre".to_string()
     }
 
-    fn background_color(&self) -> Color { Color::TRANSPARENT }
+    fn background_color(&self) -> Color {
+        Color::TRANSPARENT
+    }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
@@ -224,7 +225,7 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-            .style(&THEME.search);
+        .style(&THEME.search);
 
         let search_bar = Row::new()
             .max_width(800)
@@ -242,8 +243,8 @@ impl Application for Onagre {
                 .push(scrollable)
                 .align_items(Align::Start),
         )
-            .padding(20)
-            .style(THEME.as_ref());
+        .padding(20)
+        .style(THEME.as_ref());
 
         Container::new(app_container)
             .style(TransparentContainer)
@@ -281,7 +282,7 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-            .style(&THEME.rows)
+        .style(&THEME.rows)
     }
 
     fn build_row_selected<'a>(content: &str) -> Container<'a, Message> {
@@ -292,7 +293,7 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-            .style(&THEME.rows.selected)
+        .style(&THEME.rows.selected)
     }
 
     fn run_command(&self) {
@@ -335,7 +336,7 @@ impl Onagre {
         exit(0);
     }
 
-    fn handle_input(&mut self, event: iced_native::Event)  {
+    fn handle_input(&mut self, event: iced_native::Event) {
         use iced_native::keyboard::KeyCode;
 
         // TODO : refactor
@@ -358,9 +359,7 @@ impl Onagre {
                     KeyCode::Tab => {
                         self.cycle_mode();
                     }
-                    KeyCode::Backspace => {
-                        self.reset_matches()
-                    }
+                    KeyCode::Backspace => self.reset_matches(),
                     KeyCode::Escape => {
                         exit(1);
                     }
@@ -369,7 +368,6 @@ impl Onagre {
             }
         }
     }
-
 
     fn reset_matches(&mut self) {
         self.state.selected = 0;
@@ -384,9 +382,16 @@ impl Onagre {
             }
             Mode::Custom(mode_name) => {
                 if self.state.input_value == "" {
-                    self.set_custom_matches(mode_name, self.entries.take_50_custom_entries(mode_name));
+                    self.set_custom_matches(
+                        mode_name,
+                        self.entries.take_50_custom_entries(mode_name),
+                    );
                 } else {
-                    self.set_custom_matches(mode_name, self.entries.get_matches_custom_mode(mode_name, &self.state.input_value))
+                    self.set_custom_matches(
+                        mode_name,
+                        self.entries
+                            .get_matches_custom_mode(mode_name, &self.state.input_value),
+                    )
                 }
             }
         }
@@ -416,7 +421,11 @@ impl Onagre {
     fn set_current_mode(&mut self, mode: Mode) -> Mode {
         let new_mod_idx = match mode {
             Mode::Drun => 0 as usize,
-            Mode::Custom(mode_name) => self.modes.iter().position(|mode| mode_name == mode.as_str()).unwrap(),
+            Mode::Custom(mode_name) => self
+                .modes
+                .iter()
+                .position(|mode| mode_name == mode.as_str())
+                .unwrap(),
         };
 
         self.state.mode_button_idx = new_mod_idx;
@@ -428,7 +437,10 @@ impl Onagre {
     }
 
     fn set_custom_matches(&mut self, mode_key: &str, matches: Vec<String>) {
-        self.state.matches.custom_entries.insert(mode_key.to_string(), matches);
+        self.state
+            .matches
+            .custom_entries
+            .insert(mode_key.to_string(), matches);
     }
 }
 

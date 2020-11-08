@@ -18,8 +18,8 @@ impl ExternalCommandSubscription {
 }
 
 impl<H, I> iced_native::subscription::Recipe<H, I> for ExternalCommandSubscription
-    where
-        H: std::hash::Hasher,
+where
+    H: std::hash::Hasher,
 {
     type Output = Vec<String>;
 

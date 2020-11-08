@@ -1,9 +1,9 @@
 use crate::desktop::DesktopEntryInContent;
+use crate::Mode;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
-use std::collections::HashMap;
-use crate::Mode;
 use rayon::prelude::*;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct DesktopEntry {
@@ -27,7 +27,8 @@ impl Entries {
     pub fn new(modes: &[Mode]) -> Self {
         let mut custom_entries = HashMap::new();
 
-        modes.iter()
+        modes
+            .iter()
             .map(Mode::as_str)
             .map(str::to_string)
             .for_each(|mode_name| {
@@ -36,7 +37,7 @@ impl Entries {
 
         Self {
             desktop_entries: vec![],
-            custom_entries
+            custom_entries,
         }
     }
 
@@ -54,11 +55,7 @@ impl Entries {
     }
 
     pub fn take_50_desktop_entries(&self) -> Vec<DesktopEntry> {
-        self.desktop_entries
-            .iter()
-            .take(50)
-            .cloned()
-            .collect()
+        self.desktop_entries.iter().take(50).cloned().collect()
     }
 
     pub fn take_50_custom_entries(&self, mode_key: &str) -> Vec<String> {
@@ -82,11 +79,11 @@ impl Entries {
                 .map(|(entry, _)| entry)
                 .collect();
 
-            entries.iter()
+            entries
+                .iter()
                 .take(50)
                 .map(|entry| entry.to_owned().to_owned())
                 .collect()
-
         } else {
             // FIXME, we need to keep previous result somewhere
             vec![]
