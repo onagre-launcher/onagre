@@ -8,7 +8,6 @@ edition = "2018"
 
 [features]
 default = ["iced/wgpu", "iced/default_system_font", "iced/palette"]
-opacity = ["iced/glow", "iced/glow_default_system_font", "iced/palette"]
 debug = ["iced/debug"]
 
 [dependencies]
