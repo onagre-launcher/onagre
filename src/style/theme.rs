@@ -1,10 +1,10 @@
-use iced::{container, Color};
-use crate::style::theme_settings::{Theme};
-use crate::style::rows::RowContainerStyles;
-use iced_native::Background;
 use crate::style::color::OnagreColor;
+use crate::style::rows::RowContainerStyles;
 use crate::style::scrollable::ScrollableStyles;
-use crate::style::search::{SearchContainerStyles};
+use crate::style::search::SearchContainerStyles;
+use crate::style::theme_settings::Theme;
+use iced::{container, Color};
+use iced_native::Background;
 
 impl Theme {
     pub fn load() -> Self {

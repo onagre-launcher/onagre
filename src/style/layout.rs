@@ -64,7 +64,7 @@ impl ToString for Length {
             IcedLenght::Fill => "fill".into(),
             IcedLenght::Shrink => "shrink".into(),
             IcedLenght::Units(raw) => raw.to_string(),
-            IcedLenght::FillPortion(portion) => format!("flex {}", portion)
+            IcedLenght::FillPortion(portion) => format!("flex {}", portion),
         }
     }
 }

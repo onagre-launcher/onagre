@@ -17,7 +17,7 @@ use iced::{
 };
 
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
-use iced_native::{Event};
+use iced_native::Event;
 use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
@@ -164,7 +164,8 @@ impl Application for Onagre {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let mode_buttons: Row<Message> = Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
+        let mode_buttons: Row<Message> =
+            Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
 
         // Build rows from current mode search entries
         let entry_column = match self.get_current_mode() {
@@ -211,24 +212,26 @@ impl Application for Onagre {
         };
 
         // Scrollable element containing the rows
-        let scrollable = Container::new(Scrollable::new(&mut self.state.scroll)
-            .with_content(entry_column)
-            .height(THEME.scrollable.height.into())
-            .width(THEME.scrollable.width.into())
-            .scrollbar_width(THEME.scrollable.scroller_width)
-            .scroller_width(THEME.scrollable.scrollbar_width)
-            .style(&THEME.scrollable)
-            )
-            .style(&THEME.scrollable)
-            .padding(10);
+        let scrollable = Container::new(
+            Scrollable::new(&mut self.state.scroll)
+                .with_content(entry_column)
+                .height(THEME.scrollable.height.into())
+                .width(THEME.scrollable.width.into())
+                .scrollbar_width(THEME.scrollable.scroller_width)
+                .scroller_width(THEME.scrollable.scrollbar_width)
+                .style(&THEME.scrollable),
+        )
+        .style(&THEME.scrollable)
+        .padding(10);
 
         // Switch mode menu
-        let mode_menu = Container::new(Row::new()
-            .push(mode_buttons)
-            .height(THEME.menu.width.into())
-            .width(THEME.menu.height.into()))
-            .style(&THEME.menu);
-
+        let mode_menu = Container::new(
+            Row::new()
+                .push(mode_buttons)
+                .height(THEME.menu.width.into())
+                .width(THEME.menu.height.into()),
+        )
+        .style(&THEME.menu);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -236,17 +239,19 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-            .width(THEME.search.bar.text_width.into())
-            .style(&THEME.search.bar);
+        .width(THEME.search.bar.text_width.into())
+        .style(&THEME.search.bar);
 
-        let search_bar = Container::new(Row::new()
-            .spacing(20)
-            .align_items(Align::Center)
-            .padding(2)
-            .push(search_input)
-            .width(THEME.search.width.into())
-            .height(THEME.search.height.into()))
-            .style(&THEME.search);
+        let search_bar = Container::new(
+            Row::new()
+                .spacing(20)
+                .align_items(Align::Center)
+                .padding(2)
+                .push(search_input)
+                .width(THEME.search.width.into())
+                .height(THEME.search.height.into()),
+        )
+        .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
@@ -256,9 +261,9 @@ impl Application for Onagre {
                 .align_items(Align::Start)
                 .height(Length::Fill)
                 .width(Length::Fill)
-                .padding(20)
-        ).style(THEME.as_ref());
-
+                .padding(20),
+        )
+        .style(THEME.as_ref());
 
         app_container.into()
         // Container::new(app_container)
@@ -301,10 +306,10 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-            .width(THEME.rows.lines.default.width.into())
-            .height(THEME.rows.lines.default.height.into())
-            .style(&THEME.rows.lines.default)
-            .padding(5)
+        .width(THEME.rows.lines.default.width.into())
+        .height(THEME.rows.lines.default.height.into())
+        .style(&THEME.rows.lines.default)
+        .padding(5)
     }
 
     fn build_row_selected<'a>(content: &str) -> Container<'a, Message> {
@@ -315,10 +320,10 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-            .width(THEME.rows.lines.selected.width.into())
-            .height(THEME.rows.lines.selected.height.into())
-            .style(&THEME.rows.lines.selected)
-            .padding(5)
+        .width(THEME.rows.lines.selected.width.into())
+        .height(THEME.rows.lines.selected.height.into())
+        .style(&THEME.rows.lines.selected)
+        .padding(5)
     }
 
     fn run_command(&self) {

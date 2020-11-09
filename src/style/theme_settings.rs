@@ -1,10 +1,10 @@
 use crate::style::color::OnagreColor;
+use crate::style::rows::RowContainerStyles;
+use crate::style::scrollable::ScrollableStyles;
+use crate::style::search::SearchContainerStyles;
 use anyhow::Result;
 use config::{Config, File};
 use std::path::PathBuf;
-use crate::style::scrollable::ScrollableStyles;
-use crate::style::search::SearchContainerStyles;
-use crate::style::rows::RowContainerStyles;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
@@ -19,8 +19,6 @@ pub struct Theme {
     pub search: SearchContainerStyles,
     pub menu: RowContainerStyles,
 }
-
-
 
 impl Theme {
     /// Resolve onagre theme settings against its standard xdg path :

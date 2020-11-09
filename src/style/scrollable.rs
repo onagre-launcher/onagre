@@ -1,6 +1,6 @@
 use crate::style::color::OnagreColor;
 use crate::style::layout::Length;
-use iced_style::{scrollable, container, Background};
+use iced_style::{container, scrollable, Background};
 
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(default)]
@@ -56,7 +56,6 @@ impl container::StyleSheet for &ScrollableStyles {
         }
     }
 }
-
 
 impl scrollable::StyleSheet for &ScrollableStyles {
     fn active(&self) -> scrollable::Scrollbar {

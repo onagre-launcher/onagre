@@ -1,7 +1,6 @@
-use crate::style::layout::{Length};
 use crate::style::color::OnagreColor;
+use crate::style::layout::Length;
 use iced_style::{container, Background};
-
 
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(default)]
@@ -90,7 +89,6 @@ impl Default for RowContainerStyles {
         }
     }
 }
-
 
 impl RowContainerStyles {
     pub fn mode_entries() -> Self {
