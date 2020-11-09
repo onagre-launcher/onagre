@@ -10,7 +10,6 @@ mod entries;
 mod style;
 mod subscriptions;
 
-use crate::style::theme::TransparentContainer;
 use crate::style::theme_settings::Theme;
 use iced::{
     scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
@@ -18,7 +17,7 @@ use iced::{
 };
 
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
-use iced_native::Event;
+use iced_native::{Event};
 use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
@@ -165,8 +164,9 @@ impl Application for Onagre {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let buttons: Row<Message> = Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
+        let mode_buttons: Row<Message> = Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
 
+        // Build rows from current mode search entries
         let entry_column = match self.get_current_mode() {
             Mode::Drun => {
                 let rows: Vec<Element<Message>> = self
@@ -210,46 +210,62 @@ impl Application for Onagre {
             }
         };
 
-        let scrollable = Scrollable::new(&mut self.state.scroll)
+        // Scrollable element containing the rows
+        let scrollable = Container::new(Scrollable::new(&mut self.state.scroll)
             .with_content(entry_column)
-            .padding(40)
-            .height(Length::Fill) // Wait for transparency in wgpu to remove
-            .width(Length::FillPortion(1))
-            .style(&THEME.scrollable);
+            .height(THEME.scrollable.height.into())
+            .width(THEME.scrollable.width.into())
+            .scrollbar_width(THEME.scrollable.scroller_width)
+            .scroller_width(THEME.scrollable.scrollbar_width)
+            .style(&THEME.scrollable)
+            )
+            .style(&THEME.scrollable)
+            .padding(10);
 
-        let mode_menu = Row::new().push(buttons);
+        // Switch mode menu
+        let mode_menu = Container::new(Row::new()
+            .push(mode_buttons)
+            .height(THEME.menu.width.into())
+            .width(THEME.menu.height.into()))
+            .style(&THEME.menu);
 
-        let input = TextInput::new(
+
+        let search_input = TextInput::new(
             &mut self.state.input,
             "Search",
             &self.state.input_value,
             Message::InputChanged,
         )
-        .style(&THEME.search);
+            .width(THEME.search.bar.text_width.into())
+            .style(&THEME.search.bar);
 
-        let search_bar = Row::new()
-            .max_width(800)
+        let search_bar = Container::new(Row::new()
             .spacing(20)
-            .width(Length::Shrink)
             .align_items(Align::Center)
-            .width(Length::FillPortion(1))
             .padding(2)
-            .push(input);
+            .push(search_input)
+            .width(THEME.search.width.into())
+            .height(THEME.search.height.into()))
+            .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
                 .push(mode_menu)
                 .push(search_bar)
                 .push(scrollable)
-                .align_items(Align::Start),
-        )
-        .padding(20)
-        .style(THEME.as_ref());
+                .align_items(Align::Start)
+                .height(Length::Fill)
+                .width(Length::Fill)
+                .padding(20)
+        ).style(THEME.as_ref());
 
-        Container::new(app_container)
-            .style(TransparentContainer)
-            .padding(40)
-            .into()
+
+
+        app_container.into()
+        // Container::new(app_container)
+        //     .style(TransparentContainer)
+        //     .padding(40)
+        //     .into()e
     }
 }
 
@@ -261,11 +277,15 @@ impl Onagre {
             .map(|(idx, mode)| {
                 if idx == mode_idx {
                     Container::new(Text::new(mode.as_str()))
-                        .style(&THEME.rows.selected)
+                        .style(&THEME.menu.lines.selected)
+                        .width(THEME.menu.lines.default.width.into())
+                        .height(THEME.menu.lines.default.height.into())
                         .into()
                 } else {
                     Container::new(Text::new(mode.as_str()))
-                        .style(&THEME.rows)
+                        .style(&THEME.menu.lines.default)
+                        .width(THEME.menu.lines.default.width.into())
+                        .height(THEME.menu.lines.default.height.into())
                         .into()
                 }
             })
@@ -282,7 +302,10 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-        .style(&THEME.rows)
+            .width(THEME.rows.lines.default.width.into())
+            .height(THEME.rows.lines.default.height.into())
+            .style(&THEME.rows.lines.default)
+            .padding(5)
     }
 
     fn build_row_selected<'a>(content: &str) -> Container<'a, Message> {
@@ -293,7 +316,10 @@ impl Onagre {
                     .horizontal_alignment(HorizontalAlignment::Left),
             ),
         )
-        .style(&THEME.rows.selected)
+            .width(THEME.rows.lines.selected.width.into())
+            .height(THEME.rows.lines.selected.height.into())
+            .style(&THEME.rows.lines.selected)
+            .padding(5)
     }
 
     fn run_command(&self) {

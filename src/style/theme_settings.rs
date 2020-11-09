@@ -1,9 +1,12 @@
-use crate::style::OnagreColor;
+use crate::style::color::OnagreColor;
 use anyhow::Result;
 use config::{Config, File};
 use std::path::PathBuf;
+use crate::style::scrollable::ScrollableStyles;
+use crate::style::search::SearchContainerStyles;
+use crate::style::rows::RowContainerStyles;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
 pub struct Theme {
     pub background: OnagreColor,
@@ -11,60 +14,13 @@ pub struct Theme {
     pub border_color: OnagreColor,
     pub border_radius: u16,
     pub border_width: u16,
-    pub rows: RowStyles,
+    pub rows: RowContainerStyles,
     pub scrollable: ScrollableStyles,
-    pub search: TextInputStyles,
+    pub search: SearchContainerStyles,
+    pub menu: RowContainerStyles,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(default)]
-pub struct RowStyles {
-    pub background: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
-    pub text_color: OnagreColor,
-    pub border_color: OnagreColor,
-    pub selected: RowStylesSelected,
-}
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-pub struct RowStylesSelected {
-    pub background: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
-    pub text_color: OnagreColor,
-    pub border_color: OnagreColor,
-}
-
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(default)]
-pub struct TextInputStyles {
-    pub border_radius: u16,
-    pub border_width: u16,
-    pub border_color: OnagreColor,
-    pub background: OnagreColor,
-    pub placeholder_color: OnagreColor,
-    pub value_color: OnagreColor,
-    pub selection_color: OnagreColor,
-}
-
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(default)]
-pub struct ScrollableStyles {
-    pub background: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
-    pub border_color: OnagreColor,
-    pub scroller: Scroller,
-}
-
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-pub struct Scroller {
-    pub color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
-    pub border_color: OnagreColor,
-}
 
 impl Theme {
     /// Resolve onagre theme settings against its standard xdg path :

@@ -1,14 +1,17 @@
-use iced::{container, rule, Color};
-
-use crate::style::theme_settings::Theme;
+use iced::{container, Color};
+use crate::style::theme_settings::{Theme};
+use crate::style::rows::RowContainerStyles;
 use iced_native::Background;
+use crate::style::color::OnagreColor;
+use crate::style::scrollable::ScrollableStyles;
+use crate::style::search::{SearchContainerStyles};
 
 impl Theme {
     pub fn load() -> Self {
         if let Ok(theme) = Theme::get() {
             theme
         } else {
-            Default::default()
+            Theme::default()
         }
     }
 }
@@ -16,14 +19,15 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
-            background: Default::default(),
-            foreground: Default::default(),
-            border_color: Default::default(),
+            background: OnagreColor::GREEN,
+            foreground: OnagreColor::BLUE,
+            border_color: OnagreColor::RED,
             border_radius: 0,
-            border_width: 0,
-            rows: Default::default(),
-            scrollable: Default::default(),
-            search: Default::default(),
+            border_width: 2,
+            rows: RowContainerStyles::default(),
+            scrollable: ScrollableStyles::default(),
+            search: SearchContainerStyles::default(),
+            menu: RowContainerStyles::mode_entries(),
         }
     }
 }
@@ -58,19 +62,5 @@ impl container::StyleSheet for &Theme {
 impl AsRef<Theme> for Theme {
     fn as_ref(&self) -> &Theme {
         &self
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Rule;
-
-impl rule::StyleSheet for Rule {
-    fn style(&self) -> rule::Style {
-        rule::Style {
-            color: Color::BLACK,
-            width: 2,
-            radius: 1,
-            fill_mode: rule::FillMode::Padded(15),
-        }
     }
 }

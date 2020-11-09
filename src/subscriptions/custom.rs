@@ -12,7 +12,7 @@ pub struct ExternalCommandSubscription {
 impl ExternalCommandSubscription {
     pub fn subscription() -> Subscription<Vec<String>> {
         iced::Subscription::from_recipe(ExternalCommandSubscription {
-            command: format!("fd . /home/okno"),
+            command: "fd . /home/okno".to_string(),
         })
     }
 }
