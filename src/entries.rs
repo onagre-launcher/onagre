@@ -44,12 +44,19 @@ impl Entries {
     pub fn get_matches(&self, input: &str) -> Vec<DesktopEntry> {
         let matcher = SkimMatcherV2::default().ignore_case();
 
-        self.desktop_entries
+        let mut entries: Vec<(&DesktopEntry, i64)> = self
+            .desktop_entries
             .iter()
             .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
             .filter(|(_, score)| *score > 10i64)
-            .map(|(entry, _)| entry)
+            .collect();
+
+        entries.par_sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
+
+        entries
+            .iter()
             .take(50)
+            .map(|(entry, _)| entry.to_owned())
             .cloned()
             .collect()
     }
@@ -72,17 +79,20 @@ impl Entries {
         let matcher = SkimMatcherV2::default().ignore_case();
 
         if let Some(entries) = self.custom_entries.get(mode_key) {
-            let entries: Vec<&String> = entries
+            let mut entries: Vec<(&String, i64)> = entries
                 .par_iter()
-                .map(|entry| (entry, matcher.fuzzy_match(&entry, input).unwrap_or(0)))
+                .map(|entry| (entry, matcher.fuzzy_match(&entry, &input).unwrap_or(0)))
                 .filter(|(_, score)| *score > 10i64)
-                .map(|(entry, _)| entry)
                 .collect();
 
+            // sort by match score
+            entries.par_sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
+
+            // Take only the first results oredered
             entries
                 .iter()
+                .map(|(entry, _)| entry.to_owned().to_owned())
                 .take(50)
-                .map(|entry| entry.to_owned().to_owned())
                 .collect()
         } else {
             // FIXME, we need to keep previous result somewhere

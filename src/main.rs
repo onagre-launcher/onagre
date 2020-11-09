@@ -383,7 +383,14 @@ impl Onagre {
                         }
                     }
                     KeyCode::Down => {
-                        if self.state.selected != self.state.matches.desktop_entries.len() - 1 {
+                        let max_idx = match self.get_current_mode() {
+                            Mode::Drun => self.state.matches.desktop_entries.len(),
+                            Mode::Custom(name) => {
+                                self.state.matches.custom_entries.get(name).unwrap().len()
+                            }
+                        };
+
+                        if max_idx != 0 && self.state.selected < max_idx - 1 {
                             self.state.selected += 1
                         }
                     }
