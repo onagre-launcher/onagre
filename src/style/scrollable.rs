@@ -6,22 +6,23 @@ use iced_style::{container, scrollable, Background};
 #[serde(default)]
 pub struct ScrollableStyles {
     pub background: OnagreColor,
+    pub border_color: OnagreColor,
     pub border_radius: u16,
     pub border_width: u16,
-    pub border_color: OnagreColor,
-    pub scroller: Scroller,
     pub height: Length,
     pub width: Length,
+    pub padding: u16,
     pub scrollbar_width: u16,
     pub scroller_width: u16,
+    pub scroller: Scroller,
 }
 
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Scroller {
     pub color: OnagreColor,
+    pub border_color: OnagreColor,
     pub border_radius: u16,
     pub border_width: u16,
-    pub border_color: OnagreColor,
 }
 
 impl Default for ScrollableStyles {
@@ -39,6 +40,7 @@ impl Default for ScrollableStyles {
             },
             height: Length::fill(),
             width: Length::fill(),
+            padding: 4,
             scrollbar_width: 10,
             scroller_width: 10,
         }

@@ -222,7 +222,7 @@ impl Application for Onagre {
                 .style(&THEME.scrollable),
         )
         .style(&THEME.scrollable)
-        .padding(10);
+        .padding(THEME.scrollable.padding);
 
         // Switch mode menu
         let mode_menu = Container::new(
@@ -231,6 +231,7 @@ impl Application for Onagre {
                 .height(THEME.menu.width.into())
                 .width(THEME.menu.height.into()),
         )
+        .padding(THEME.menu.padding)
         .style(&THEME.menu);
 
         let search_input = TextInput::new(
@@ -251,6 +252,7 @@ impl Application for Onagre {
                 .width(THEME.search.width.into())
                 .height(THEME.search.height.into()),
         )
+        .padding(THEME.search.padding)
         .style(&THEME.search);
 
         let app_container = Container::new(
@@ -282,14 +284,16 @@ impl Onagre {
                 if idx == mode_idx {
                     Container::new(Text::new(mode.as_str()))
                         .style(&THEME.menu.lines.selected)
-                        .width(THEME.menu.lines.default.width.into())
-                        .height(THEME.menu.lines.default.height.into())
+                        .width(THEME.menu.lines.selected.width.into())
+                        .height(THEME.menu.lines.selected.height.into())
+                        .padding(THEME.menu.lines.selected.padding)
                         .into()
                 } else {
                     Container::new(Text::new(mode.as_str()))
                         .style(&THEME.menu.lines.default)
                         .width(THEME.menu.lines.default.width.into())
                         .height(THEME.menu.lines.default.height.into())
+                        .padding(THEME.menu.lines.default.padding)
                         .into()
                 }
             })
@@ -309,7 +313,7 @@ impl Onagre {
         .width(THEME.rows.lines.default.width.into())
         .height(THEME.rows.lines.default.height.into())
         .style(&THEME.rows.lines.default)
-        .padding(5)
+        .padding(THEME.rows.lines.default.padding)
     }
 
     fn build_row_selected<'a>(content: &str) -> Container<'a, Message> {
@@ -323,7 +327,7 @@ impl Onagre {
         .width(THEME.rows.lines.selected.width.into())
         .height(THEME.rows.lines.selected.height.into())
         .style(&THEME.rows.lines.selected)
-        .padding(5)
+        .padding(THEME.rows.lines.selected.padding)
     }
 
     fn run_command(&self) {
@@ -493,11 +497,6 @@ impl Mode {
 
 impl Onagre {
     fn sway_preloads() {
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] opacity 12")
-            .output()
-            .expect("not on sway");
-
         // Tell sway to enable floating mode for Onagre
         std::process::Command::new("swaymsg")
             .arg("for_window [app_id=\"Onagre\"] floating enable")

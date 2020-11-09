@@ -6,12 +6,13 @@ use iced_style::{container, Background};
 #[serde(default)]
 pub struct RowContainerStyles {
     pub background: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
     pub text_color: OnagreColor,
     pub border_color: OnagreColor,
+    pub border_radius: u16,
+    pub border_width: u16,
     pub width: Length,
     pub height: Length,
+    pub padding: u16,
     pub lines: RowEntries,
 }
 
@@ -30,6 +31,7 @@ pub struct RowStyles {
     pub border_width: u16,
     pub width: Length,
     pub height: Length,
+    pub padding: u16,
 }
 
 impl container::StyleSheet for &RowContainerStyles {
@@ -37,7 +39,7 @@ impl container::StyleSheet for &RowContainerStyles {
         container::Style {
             background: Some(Background::Color(self.background.into())),
             border_radius: self.border_radius,
-            border_width: self.border_radius,
+            border_width: self.border_width,
             text_color: Some(self.text_color.into()),
             border_color: self.border_color.into(),
         }
@@ -49,7 +51,7 @@ impl container::StyleSheet for &RowStyles {
         container::Style {
             background: Some(Background::Color(self.background.into())),
             border_radius: self.border_radius,
-            border_width: self.border_radius,
+            border_width: self.border_width,
             text_color: Some(self.text_color.into()),
             border_color: self.border_color.into(),
         }
@@ -75,6 +77,7 @@ impl Default for RowContainerStyles {
                     border_color: OnagreColor::RED,
                     height: Length::shrink(),
                     width: Length::fill(),
+                    padding: 2,
                 },
                 selected: RowStyles {
                     background: OnagreColor::WHITE,
@@ -84,8 +87,10 @@ impl Default for RowContainerStyles {
                     border_color: OnagreColor::RED,
                     height: Length::shrink(),
                     width: Length::fill(),
+                    padding: 8,
                 },
             },
+            padding: 0,
         }
     }
 }
@@ -109,6 +114,7 @@ impl RowContainerStyles {
                     border_color: OnagreColor::RED,
                     height: Length::shrink(),
                     width: Length::fill(),
+                    padding: 0,
                 },
                 selected: RowStyles {
                     background: OnagreColor::WHITE,
@@ -118,8 +124,10 @@ impl RowContainerStyles {
                     border_color: OnagreColor::RED,
                     height: Length::shrink(),
                     width: Length::fill(),
+                    padding: 8,
                 },
             },
+            padding: 2,
         }
     }
 }

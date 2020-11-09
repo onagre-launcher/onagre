@@ -6,24 +6,25 @@ use iced_style::{container, text_input, Background, Color};
 #[serde(default)]
 pub struct SearchContainerStyles {
     pub background: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
     pub text_color: OnagreColor,
-    pub border_color: OnagreColor,
     pub width: Length,
     pub height: Length,
+    pub padding: u16,
+    pub border_color: OnagreColor,
+    pub border_radius: u16,
+    pub border_width: u16,
     pub bar: SearchBarStyles,
 }
 
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct SearchBarStyles {
+    pub background: OnagreColor,
+    pub value_color: OnagreColor,
+    pub placeholder_color: OnagreColor,
+    pub border_color: OnagreColor,
+    pub selection_color: OnagreColor,
     pub border_radius: u16,
     pub border_width: u16,
-    pub border_color: OnagreColor,
-    pub background: OnagreColor,
-    pub placeholder_color: OnagreColor,
-    pub value_color: OnagreColor,
-    pub selection_color: OnagreColor,
     pub text_width: Length,
 }
 
@@ -47,6 +48,7 @@ impl Default for SearchContainerStyles {
                 text_width: Length::fill(),
             },
             width: Length::fill(),
+            padding: 4,
         }
     }
 }
