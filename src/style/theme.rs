@@ -2,9 +2,22 @@ use crate::style::color::OnagreColor;
 use crate::style::rows::RowContainerStyles;
 use crate::style::scrollable::ScrollableStyles;
 use crate::style::search::SearchContainerStyles;
-use crate::style::theme_settings::Theme;
 use iced::{container, Color};
 use iced_native::Background;
+
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(default)]
+pub struct Theme {
+    pub background: OnagreColor,
+    pub foreground: OnagreColor,
+    pub border_color: OnagreColor,
+    pub border_radius: u16,
+    pub border_width: u16,
+    pub rows: RowContainerStyles,
+    pub scrollable: ScrollableStyles,
+    pub search: SearchContainerStyles,
+    pub menu: RowContainerStyles,
+}
 
 impl Theme {
     pub fn load() -> Self {

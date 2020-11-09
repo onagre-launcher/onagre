@@ -5,17 +5,19 @@ extern crate anyhow;
 #[macro_use]
 extern crate lazy_static;
 
+mod config;
 mod desktop;
 mod entries;
 mod style;
 mod subscriptions;
 
-use crate::style::theme_settings::Theme;
 use iced::{
     scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
     HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
 };
+use style::theme::Theme;
 
+use crate::config::OnagreSettings;
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
 use iced_native::Event;
 use std::collections::HashMap;
@@ -25,6 +27,7 @@ use subscriptions::desktop_entries::DesktopEntryWalker;
 
 lazy_static! {
     static ref THEME: Theme = Theme::load();
+    static ref SETTINGS: OnagreSettings = OnagreSettings::get().unwrap_or_default();
 }
 
 fn main() -> iced::Result {
@@ -85,10 +88,10 @@ enum Message {
     EventOccurred(iced_native::Event),
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Mode {
     Drun,
-    Custom(&'static str),
+    Custom(String),
 }
 
 impl Application for Onagre {
@@ -98,7 +101,17 @@ impl Application for Onagre {
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         Onagre::sway_preloads();
-        let modes = vec![Mode::Drun, Mode::Custom("placeholder")];
+
+        let mut modes = vec![Mode::Drun];
+
+        let custom_modes: Vec<Mode> = SETTINGS
+            .modes
+            .keys()
+            .map(|mode| mode.to_owned())
+            .map(Mode::Custom)
+            .collect();
+
+        modes.extend(custom_modes);
         (
             Onagre {
                 modes: modes.clone(),
@@ -119,21 +132,11 @@ impl Application for Onagre {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus(true);
-        // FIXME
-        let _mode = if let Some(new_mode) = Mode::from_shorcut(&self.state.input_value) {
-            println!(
-                "Shortcut {} typed, moving to mode {}",
-                self.state.input_value,
-                new_mode.as_str()
-            );
-            self.set_current_mode(new_mode)
-        } else {
-            self.get_current_mode()
-        };
 
         match message {
             Message::CustomModeEvent(entry) => {
-                if let Some(entries) = self.entries.custom_entries.get_mut("placeholder") {
+                let current_mode = self.get_current_mode().to_string();
+                if let Some(entries) = self.entries.custom_entries.get_mut(&current_mode) {
                     entries.extend(entry);
                 }
                 Command::none()
@@ -157,8 +160,14 @@ impl Application for Onagre {
     fn subscription(&self) -> Subscription<Message> {
         let event = iced_native::subscription::events().map(Message::EventOccurred);
         let desktop_entries = DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent);
-        let files = ExternalCommandSubscription::subscription().map(Message::CustomModeEvent);
-        let subscriptions = vec![event, desktop_entries, files];
+
+        let mut subscriptions = vec![event, desktop_entries];
+        if let Mode::Custom(name) = self.get_current_mode() {
+            let command = &SETTINGS.modes.get(name).unwrap().source;
+            subscriptions.push(
+                ExternalCommandSubscription::subscription(command).map(Message::CustomModeEvent),
+            );
+        }
 
         Subscription::batch(subscriptions)
     }
@@ -282,14 +291,14 @@ impl Onagre {
             .enumerate()
             .map(|(idx, mode)| {
                 if idx == mode_idx {
-                    Container::new(Text::new(mode.as_str()))
+                    Container::new(Text::new(mode.to_string()))
                         .style(&THEME.menu.lines.selected)
                         .width(THEME.menu.lines.selected.width.into())
                         .height(THEME.menu.lines.selected.height.into())
                         .padding(THEME.menu.lines.selected.padding)
                         .into()
                 } else {
-                    Container::new(Text::new(mode.as_str()))
+                    Container::new(Text::new(mode.to_string()))
                         .style(&THEME.menu.lines.default)
                         .width(THEME.menu.lines.default.width.into())
                         .height(THEME.menu.lines.default.height.into())
@@ -351,7 +360,6 @@ impl Onagre {
             }
             Mode::Custom(mode_name) => {
                 let selected = self.state.selected;
-
                 let entry = self
                     .state
                     .matches
@@ -361,8 +369,12 @@ impl Onagre {
                     .get(selected)
                     .unwrap();
 
-                std::process::Command::new("xdg-open")
-                    .arg(entry)
+                let command = &SETTINGS.modes.get(mode_name).unwrap().target;
+                let command = command.replace("{}", entry);
+                let argv = shell_words::split(&command).unwrap();
+
+                std::process::Command::new(&argv[0])
+                    .args(&argv[1..])
                     .spawn()
                     .expect("Command failure");
             }
@@ -422,16 +434,17 @@ impl Onagre {
                 }
             }
             Mode::Custom(mode_name) => {
+                let mode_name = mode_name.clone();
                 if self.state.input_value == "" {
                     self.set_custom_matches(
-                        mode_name,
-                        self.entries.take_50_custom_entries(mode_name),
+                        &mode_name,
+                        self.entries.take_50_custom_entries(&mode_name),
                     );
                 } else {
                     self.set_custom_matches(
-                        mode_name,
+                        &mode_name,
                         self.entries
-                            .get_matches_custom_mode(mode_name, &self.state.input_value),
+                            .get_matches_custom_mode(&mode_name, &self.state.input_value),
                     )
                 }
             }
@@ -453,23 +466,9 @@ impl Onagre {
         }
     }
 
-    fn get_current_mode(&self) -> Mode {
+    fn get_current_mode(&self) -> &Mode {
         // Safe unwrap, we control the idx here
         let mode = self.modes.get(self.state.mode_button_idx).unwrap();
-        *mode
-    }
-
-    fn set_current_mode(&mut self, mode: Mode) -> Mode {
-        let new_mod_idx = match mode {
-            Mode::Drun => 0 as usize,
-            Mode::Custom(mode_name) => self
-                .modes
-                .iter()
-                .position(|mode| mode_name == mode.as_str())
-                .unwrap(),
-        };
-
-        self.state.mode_button_idx = new_mod_idx;
         mode
     }
 
@@ -485,19 +484,11 @@ impl Onagre {
     }
 }
 
-impl Mode {
-    fn as_str(&self) -> &'static str {
+impl ToString for Mode {
+    fn to_string(&self) -> String {
         match &self {
-            Mode::Drun => "Drun",
-            Mode::Custom(name) => &name,
-        }
-    }
-
-    fn from_shorcut(input: &str) -> Option<Mode> {
-        if input.starts_with("fs") {
-            Some(Mode::Custom("placeholder")) // TODO
-        } else {
-            None
+            Mode::Drun => "Drun".to_string(),
+            Mode::Custom(name) => name.clone(),
         }
     }
 }

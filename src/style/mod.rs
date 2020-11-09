@@ -5,4 +5,3 @@ pub mod scrollable;
 pub mod search;
 pub mod serde;
 pub mod theme;
-pub mod theme_settings;

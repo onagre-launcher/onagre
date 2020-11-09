@@ -27,13 +27,9 @@ impl Entries {
     pub fn new(modes: &[Mode]) -> Self {
         let mut custom_entries = HashMap::new();
 
-        modes
-            .iter()
-            .map(Mode::as_str)
-            .map(str::to_string)
-            .for_each(|mode_name| {
-                custom_entries.insert(mode_name, Vec::<String>::new());
-            });
+        modes.iter().map(Mode::to_string).for_each(|mode_name| {
+            custom_entries.insert(mode_name, Vec::<String>::new());
+        });
 
         Self {
             desktop_entries: vec![],

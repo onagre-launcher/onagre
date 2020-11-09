@@ -10,9 +10,9 @@ pub struct ExternalCommandSubscription {
 }
 
 impl ExternalCommandSubscription {
-    pub fn subscription() -> Subscription<Vec<String>> {
+    pub fn subscription(command: &str) -> Subscription<Vec<String>> {
         iced::Subscription::from_recipe(ExternalCommandSubscription {
-            command: "fd . /home/okno/Pictures".to_string(),
+            command: command.to_string(),
         })
     }
 }
