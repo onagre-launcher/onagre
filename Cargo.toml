@@ -14,8 +14,7 @@ debug = ["iced/debug"]
 iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "palette"] }
 iced_native = { git = "https://github.com/oknozor/iced" }
 iced_style = { git = "https://github.com/oknozor/iced" }
-iced_futures = { git = "https://github.com/oknozor/iced" }
-iced_graphics = { git = "https://github.com/oknozor/iced" }
+
 fuzzy-matcher = "0.3.7"
 async-std = "1.6.5"
 async-process = "1.0.1"

@@ -260,7 +260,6 @@ impl Application for Onagre {
         ).style(THEME.as_ref());
 
 
-
         app_container.into()
         // Container::new(app_container)
         //     .style(TransparentContainer)
