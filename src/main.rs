@@ -370,7 +370,7 @@ impl Onagre {
                     .unwrap();
 
                 let command = &SETTINGS.modes.get(mode_name).unwrap().target;
-                let command = command.replace("{}", entry);
+                let command = command.replace("%", entry);
                 let argv = shell_words::split(&command).unwrap();
 
                 std::process::Command::new(&argv[0])
