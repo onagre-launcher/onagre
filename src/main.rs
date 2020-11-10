@@ -339,7 +339,7 @@ impl Onagre {
         .padding(THEME.rows.lines.selected.padding)
     }
 
-    fn run_command(&self) {
+    fn run_command(&self) -> Command<Message> {
         match self.get_current_mode() {
             Mode::Drun => {
                 let selected = self.state.selected;
@@ -412,7 +412,6 @@ impl Onagre {
                     KeyCode::Tab => {
                         self.cycle_mode();
                     }
-                    KeyCode::Backspace => self.reset_matches(),
                     KeyCode::Escape => {
                         exit(1);
                     }
