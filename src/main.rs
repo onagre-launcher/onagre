@@ -28,7 +28,7 @@ use subscriptions::desktop_entries::DesktopEntryWalker;
 
 lazy_static! {
     static ref THEME: Theme = Theme::load();
-    static ref SETTINGS: OnagreSettings = OnagreSettings::get().unwrap_or_default();
+    pub static ref SETTINGS: OnagreSettings = OnagreSettings::get().unwrap_or_default();
 }
 
 fn main() -> iced::Result {

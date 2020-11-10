@@ -1,5 +1,5 @@
 use crate::freedesktop::desktop::DesktopEntryInContent;
-use crate::freedesktop::icons::IconPath;
+use crate::freedesktop::icons::{IconPath, IconFinder};
 use crate::Mode;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
@@ -104,7 +104,16 @@ impl From<&DesktopEntryInContent> for DesktopEntry {
         DesktopEntry {
             name: desktop_entry.name.clone(),
             exec: desktop_entry.exec.clone(),
-            icon: desktop_entry.get_icon(32, "Adwaita").ok(),
+            icon: None
         }
+    }
+}
+
+impl DesktopEntry {
+    pub fn with_icon(desktop_entry: &DesktopEntryInContent, finder: &IconFinder) -> Self {
+        let mut entry = Self::from(desktop_entry);
+        let icon = desktop_entry.get_icon(32, finder).ok();
+        entry.icon = icon;
+        entry
     }
 }

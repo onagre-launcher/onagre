@@ -29,7 +29,16 @@ pub struct IconTheme {
 #[derive(Debug, Deserialize)]
 pub struct DirEntry {
     #[serde(rename = "Size")]
-    size: String,
+    pub size: String,
+    #[serde(rename = "Type")]
+    pub scale: Scale,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub enum Scale {
+    Fixed,
+    Scalable,
+    Threshold,
 }
 
 impl IconPath {
@@ -49,144 +58,137 @@ impl IconPath {
     }
 }
 
-// see : https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-pub struct IconRequest {
-    pub theme_name: String,
-    pub icon_name: String,
-    pub size: u32,
-    // lazily set from request
-    theme: Option<IconTheme>,
-    theme_path: Vec<PathBuf>,
+#[derive(Debug)]
+pub struct IconFinder {
+    theme_paths: Vec<(PathBuf, IconTheme)>,
+    fallbacks: Vec<(PathBuf, IconTheme)>,
 }
 
-impl IconRequest {
-    pub fn new(theme_name: String, icon_name: String, size: u32) -> Self {
-        let mut default_paths = vec![];
+impl IconFinder {
+    // see : https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+    pub fn build(theme_name: &str) -> Result<Self> {
+        let mut theme_paths = vec![];
+        let mut fallbacks = vec![];
+
+        // Theme /usr/share/icons/hicolor
+        let hicolor_usr_share_path = PathBuf::from(BASE_DIRS[0]).join("hicolor");
+
+        let hicolor_usr_share_index = fs::read_to_string(&hicolor_usr_share_path.join("index.theme"));
+        if let Ok(index) = hicolor_usr_share_index {
+            if let Ok(theme) = serde_ini::from_str::<IconTheme>(&index) {
+                fallbacks.push((hicolor_usr_share_path, theme));
+            }
+        }
+
+        // Named theme in /usr/share/icons
+        let path = IconFinder::theme_path(theme_name);
+
+        if let Some(theme_path) = path {
+            let index_path = theme_path.join("index.theme");
+            let theme = fs::read_to_string(&index_path)?;
+            let theme = serde_ini::from_str::<IconTheme>(&theme)?;
+
+            // Push all parent path to the request
+            if let Some(parents) = theme.data.get("Inherits") {
+                let parents = parents
+                    .trim()
+                    .split(',')
+                    .filter_map(|parent_name| IconFinder::theme_path(parent_name))
+                    .map(|path| fs::read_to_string(path.join("index.theme")).map(|content| (path, content)))
+                    .filter_map(Result::ok)
+                    .map(|(path, content)| serde_ini::from_str::<IconTheme>(content.as_str()).map(|result| (path, result)))
+                    .filter_map(Result::ok)
+                    .collect::<Vec<(PathBuf, IconTheme)>>();
+
+                // last we push the current theme path
+                theme_paths.push((theme_path, theme));
+
+                fallbacks.extend(parents);
+            }
+        }
+
+        Ok(IconFinder {
+            theme_paths,
+            fallbacks,
+        })
+    }
+
+    fn theme_path(theme_name: &str) -> Option<PathBuf> {
+        let usr_share_theme = Path::new(BASE_DIRS[0]).join(&theme_name);
+        let usr_local_theme = dirs::data_dir().map(|path| path.join(&theme_name));
+
+        if usr_share_theme.exists() {
+            Some(usr_share_theme)
+        } else {
+            match usr_local_theme {
+                Some(path) if path.exists() => Some(path),
+                _ => None
+            }
+        }
+    }
+}
+
+impl IconFinder {
+
+    //TODO: this
+    pub fn lookup(&self, icon_name: &str, size: u32) -> Result<IconPath> {
+        // Search icon in user theme
+        for (theme_path, theme) in &self.theme_paths {
+            for glob in IconFinder::get_globs(size, theme_path, theme, icon_name) {
+                if let Some(path) = self.search_icon(&glob) {
+                    return Ok(path);
+                }
+            }
+        }
+
+        // No luck going to fallback/default themes
+        for (theme_path, theme) in &self.fallbacks {
+            for glob in IconFinder::get_globs(size, theme_path, theme, icon_name) {
+                if let Some(path) = self.search_icon(&glob) {
+                    return Ok(path);
+                }
+            }
+        }
 
         if let Some(data_dir) = dirs::data_dir() {
-            default_paths.push(data_dir.join("icons").join("hicolor"));
-        };
-
-        let hicolor_usr_share = PathBuf::from(BASE_DIRS[0]).join("hicolor");
-
-        if hicolor_usr_share.exists() {
-            default_paths.push(hicolor_usr_share);
-        };
-
-        IconRequest {
-            theme_name,
-            icon_name,
-            size,
-            theme: None,
-            theme_path: default_paths,
-        }
-    }
-}
-
-impl IconRequest {
-    // Must be called after `load`
-    pub fn lookup(&mut self) -> Result<Vec<IconPath>> {
-        self.load_theme()?;
-
-        // Get entry from index.theme
-        let subdirs = &self.theme.as_ref();
-
-        let mut paths = vec![];
-        // Collect entries absolute paths
-        for path in self.theme_path.iter().rev() {
-            let subdirs: Vec<PathBuf> = subdirs
-                .unwrap()
-                .entries
-                .iter()
-                .filter(|(_, entry)| entry.size == self.size.to_string())
-                .map(|(dir, _)| path.join(dir))
-                .collect();
-            paths.extend(self.search_icon(subdirs));
+            let path = data_dir.join("icons").join("hicolor");
+            let path = path.to_str().unwrap();
+            let glob = format!("{}/{}x{}/**/{}.*", path, size, size, icon_name);
+            println!("{}", glob);
+            if let Some(path) = self.search_icon(&glob) {
+                return Ok(path);
+            }
         }
 
+        // This is our last chance
         let pixmap = PathBuf::from(BASE_DIRS[1]);
-
-        if pixmap.exists() {
-            paths.extend(self.search_icon(vec![pixmap]));
-        };
-
-        Ok(paths)
+        let glob = format!("{}/{}.*", pixmap.to_str().unwrap(), icon_name);
+        self.search_icon(&glob).ok_or_else(|| anyhow!("Icon not found"))
     }
 
-    fn search_icon(&self, entries: Vec<PathBuf>) -> Vec<IconPath> {
+    fn get_globs(size: u32, theme_path: &PathBuf, theme: &IconTheme, icon_name: &str) -> Vec<String> {
+        theme.entries.iter()
+            .filter(|(_, entry)| entry.size == size.to_string() || entry.scale == Scale::Scalable)
+            .map(|(dir, _)| dir)
+            .map(|dir| theme_path.join(dir))
+            .map(|path| format!("{}/{}.*", path.to_str().unwrap(), icon_name))
+            .collect()
+    }
+
+    fn search_icon(&self, pattern: &str) -> Option<IconPath> {
         use glob::glob;
-        let mut matches = vec![];
-        for subdir in entries.iter() {
-            let path = subdir.to_str().unwrap();
-            let glob_pattern = format!("{}/{}.*", path, &self.icon_name);
-            for entry in glob(&glob_pattern).expect("Failed to read glob pattern") {
-                match entry {
-                    Ok(path) => {
-                        if let Some(icon_path) = IconPath::try_from(path) {
-                            matches.push(icon_path);
-                        }
+
+        for entry in glob(pattern).expect("Failed to read glob pattern") {
+            match entry {
+                Ok(path) => {
+                    if let Some(icon_path) = IconPath::try_from(path) {
+                        return Some(icon_path);
                     }
-                    Err(e) => eprintln!("No match {:?}", e),
                 }
+                Err(e) => eprintln!("No match {:?}", e),
             }
         }
 
-        matches
-    }
-
-    fn load_theme(&mut self) -> Result<()> {
-        // Fallbacks to paths defineds in the specs
-        let theme_name = &self.theme_name;
-        let fallback = || {
-            if Path::new(BASE_DIRS[0]).join(theme_name).exists() {
-                Ok(PathBuf::from(BASE_DIRS[0]).join(theme_name))
-            } else if Path::new(BASE_DIRS[1]).join(theme_name).exists() {
-                Ok(PathBuf::from(BASE_DIRS[1]).join(theme_name))
-            } else {
-                match dirs::data_dir() {
-                    Some(data_dir) if data_dir.join("icons").join("hicolor").exists() => {
-                        Ok(data_dir.join("icons").join("hicolor"))
-                    }
-                    _ => Err(anyhow!("Theme not found")),
-                }
-            }
-        };
-
-        // First we try user dir then fallback to the standard paths
-        let path = if let Some(path) = dirs::data_dir().map(|path| path.join(theme_name)) {
-            if path.exists() {
-                Ok(path)
-            } else {
-                fallback()
-            }
-        } else {
-            fallback()
-        }?;
-
-        // Try to deserialize theme from path
-        let theme = fs::read_to_string(&path.join("index.theme"))?;
-        let theme = serde_ini::from_str::<IconTheme>(&theme)?;
-        self.theme = Some(theme);
-        self.theme_path.push(path);
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::freedesktop::icons::IconRequest;
-    use crate::freedesktop::IconRequest;
-
-    #[test]
-    fn get_adawaita_icons() {
-        let mut request = IconRequest {
-            theme_name: "Adwaita".to_string(),
-            icon_name: "multimedia-volume-control-symbolic".to_string(),
-            size: 24,
-            theme: None,
-            theme_path: None,
-        };
-
-        assert!(!request.lookup().unwrap().is_empty());
+        None
     }
 }

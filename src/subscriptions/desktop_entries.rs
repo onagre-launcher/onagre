@@ -7,6 +7,11 @@ use iced_native::futures::stream::BoxStream;
 use iced_native::futures::StreamExt;
 use iced_native::Subscription;
 use std::hash::Hash;
+use crate::freedesktop::icons::IconFinder;
+use crate::SETTINGS;
+use futures::channel::mpsc::Sender;
+use std::sync::Arc;
+use std::borrow::Borrow;
 
 pub struct DesktopEntryWalker {
     id: String,
@@ -21,8 +26,8 @@ impl DesktopEntryWalker {
 }
 
 impl<H, I> iced_native::subscription::Recipe<H, I> for DesktopEntryWalker
-where
-    H: std::hash::Hasher,
+    where
+        H: std::hash::Hasher,
 {
     type Output = DesktopEntry;
 
@@ -36,30 +41,35 @@ where
 
         // Spawn the file reader
         async_std::task::spawn(async {
+            let finder = Arc::new(SETTINGS.icons.as_ref().map(|theme_name| {
+                IconFinder::build(theme_name).ok()
+            }).flatten());
+
             futures::future::join(
-                get_root_desktop_entries(sender.clone()),
-                get_user_desktop_entries(sender),
+                get_root_desktop_entries(sender.clone(), Arc::clone(&finder)),
+                get_user_desktop_entries(sender, finder),
             )
-            .await
+                .await
         });
 
         Box::pin(receiver)
     }
 }
 
-async fn get_root_desktop_entries(sender: futures::channel::mpsc::Sender<DesktopEntry>) {
+async fn get_root_desktop_entries(sender: Sender<DesktopEntry>, finder: Arc<Option<IconFinder>>) {
     let desktop_dir = AsyncPathBuf::from("/usr/share");
-    walk_dir(sender, desktop_dir.join("applications")).await;
+    walk_dir(sender, desktop_dir.join("applications"), finder).await;
 }
 
-async fn get_user_desktop_entries(sender: futures::channel::mpsc::Sender<DesktopEntry>) {
+async fn get_user_desktop_entries(sender: Sender<DesktopEntry>, finder: Arc<Option<IconFinder>>) {
     let desktop_dir: AsyncPathBuf = dirs::data_local_dir().unwrap().into();
-    walk_dir(sender, desktop_dir.join("applications")).await;
+    walk_dir(sender, desktop_dir.join("applications"), finder).await;
 }
 
 fn walk_dir(
     mut sender: futures::channel::mpsc::Sender<DesktopEntry>,
     desktop_dir: AsyncPathBuf,
+    finder: Arc<Option<IconFinder>>
 ) -> BoxFuture<'static, ()> {
     async move {
         let mut entries = fs::read_dir(desktop_dir).await.unwrap();
@@ -68,16 +78,20 @@ fn walk_dir(
             let entry = res.unwrap();
 
             if entry.path().is_dir().await {
-                walk_dir(sender.clone(), entry.path().to_path_buf()).await;
+                walk_dir(sender.clone(), entry.path().to_path_buf(), Arc::clone(&finder)).await;
             } else {
                 let desktop_entry = fs::read_to_string(entry.path()).await.unwrap();
                 if let Ok(desktop_entry) = serde_ini::from_str::<DesktopEntryIni>(&desktop_entry) {
                     if let Some(content) = desktop_entry.content {
-                        sender.start_send(DesktopEntry::from(&content)).unwrap();
+                        if let Some(finder) = finder.borrow() {
+                            sender.start_send(DesktopEntry::with_icon(&content, finder)).unwrap();
+                        } else {
+                            sender.start_send(DesktopEntry::from(&content)).unwrap();
+                        }
                     }
                 }
             }
         }
     }
-    .boxed()
+        .boxed()
 }
