@@ -11,7 +11,7 @@ default = ["iced/wgpu", "iced/default_system_font", "iced/palette"]
 debug = ["iced/debug"]
 
 [dependencies]
-iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "palette"] }
+iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "palette", "svg", "image"] }
 iced_native = { git = "https://github.com/oknozor/iced" }
 iced_style = { git = "https://github.com/oknozor/iced" }
 

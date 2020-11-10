@@ -6,21 +6,21 @@ extern crate anyhow;
 extern crate lazy_static;
 
 mod config;
-mod desktop;
 mod entries;
+mod freedesktop;
 mod style;
 mod subscriptions;
-mod freedesktop;
 
 use iced::{
     scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
-    HorizontalAlignment, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
+    HorizontalAlignment, Image, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
 };
 use style::theme::Theme;
 
 use crate::config::OnagreSettings;
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
-use iced_native::Event;
+use crate::freedesktop::icons::{Extension, IconPath};
+use iced_native::{Event, Svg};
 use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
@@ -188,9 +188,9 @@ impl Application for Onagre {
                     .enumerate()
                     .map(|(idx, entry)| {
                         if idx == self.state.selected {
-                            Self::build_row_selected(&entry.name).into()
+                            Self::build_row_selected(&entry.name, entry.icon.as_ref()).into()
                         } else {
-                            Self::build_row(&entry.name).into()
+                            Self::build_row(&entry.name, entry.icon.as_ref()).into()
                         }
                     })
                     .collect();
@@ -207,9 +207,9 @@ impl Application for Onagre {
                         .enumerate()
                         .map(|(idx, entry)| {
                             if idx == self.state.selected {
-                                Self::build_row_selected(entry).into()
+                                Self::build_row_selected(entry, None).into()
                             } else {
-                                Self::build_row(entry).into()
+                                Self::build_row(entry, None).into()
                             }
                         })
                         .collect();
@@ -312,32 +312,68 @@ impl Onagre {
         Row::with_children(rows)
     }
 
-    fn build_row<'a>(content: &str) -> Container<'a, Message> {
-        Container::new(
-            Row::new().push(
-                Text::new(content)
-                    .width(Length::Fill)
-                    .horizontal_alignment(HorizontalAlignment::Left),
-            ),
-        )
-        .width(THEME.rows.lines.default.width.into())
-        .height(THEME.rows.lines.default.height.into())
-        .style(&THEME.rows.lines.default)
-        .padding(THEME.rows.lines.default.padding)
+    fn build_row<'a>(content: &str, icon: Option<&IconPath>) -> Container<'a, Message> {
+        let mut row = Row::new();
+        row = if let Some(icon) = icon {
+            match &icon.extension {
+                Extension::SVG => row.push(
+                    Svg::from_path(&icon.path)
+                        .height(Length::Units(32))
+                        .width(Length::Units(32)),
+                ),
+                Extension::PNG => row.push(
+                    Image::new(&icon.path)
+                        .height(Length::Units(32))
+                        .width(Length::Units(32)),
+                ),
+            }
+        } else {
+            row
+        };
+
+        row = row.push(
+            Text::new(content)
+                .width(Length::Fill)
+                .horizontal_alignment(HorizontalAlignment::Left),
+        );
+
+        Container::new(row)
+            .width(THEME.rows.lines.default.width.into())
+            .height(THEME.rows.lines.default.height.into())
+            .style(&THEME.rows.lines.default)
+            .padding(THEME.rows.lines.default.padding)
     }
 
-    fn build_row_selected<'a>(content: &str) -> Container<'a, Message> {
-        Container::new(
-            Row::new().push(
-                Text::new(content)
-                    .width(Length::Fill)
-                    .horizontal_alignment(HorizontalAlignment::Left),
-            ),
-        )
-        .width(THEME.rows.lines.selected.width.into())
-        .height(THEME.rows.lines.selected.height.into())
-        .style(&THEME.rows.lines.selected)
-        .padding(THEME.rows.lines.selected.padding)
+    fn build_row_selected<'a>(content: &str, icon: Option<&IconPath>) -> Container<'a, Message> {
+        let mut row = Row::new();
+        row = if let Some(icon) = icon {
+            match &icon.extension {
+                Extension::SVG => row.push(
+                    Svg::from_path(&icon.path)
+                        .height(Length::Units(32))
+                        .width(Length::Units(32)),
+                ),
+                Extension::PNG => row.push(
+                    Image::new(&icon.path)
+                        .height(Length::Units(32))
+                        .width(Length::Units(32)),
+                ),
+            }
+        } else {
+            row
+        };
+
+        row = row.push(
+            Text::new(content)
+                .width(Length::Fill)
+                .horizontal_alignment(HorizontalAlignment::Left),
+        );
+
+        Container::new(row)
+            .width(THEME.rows.lines.selected.width.into())
+            .height(THEME.rows.lines.selected.height.into())
+            .style(&THEME.rows.lines.selected)
+            .padding(THEME.rows.lines.selected.padding)
     }
 
     fn run_command(&self) -> Command<Message> {

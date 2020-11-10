@@ -1,4 +1,5 @@
-use crate::desktop::DesktopEntryInContent;
+use crate::freedesktop::desktop::DesktopEntryInContent;
+use crate::freedesktop::icons::IconPath;
 use crate::Mode;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
@@ -9,6 +10,7 @@ use std::collections::HashMap;
 pub struct DesktopEntry {
     pub name: String,
     pub exec: String,
+    pub icon: Option<IconPath>,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -102,6 +104,7 @@ impl From<&DesktopEntryInContent> for DesktopEntry {
         DesktopEntry {
             name: desktop_entry.name.clone(),
             exec: desktop_entry.exec.clone(),
+            icon: desktop_entry.get_icon(32, "Adwaita").ok(),
         }
     }
 }

@@ -1,5 +1,5 @@
-use crate::desktop::DesktopEntryIni;
 use crate::entries::DesktopEntry;
+use crate::freedesktop::desktop::DesktopEntryIni;
 use async_std::fs;
 use async_std::path::PathBuf as AsyncPathBuf;
 use futures::future::{BoxFuture, FutureExt};
