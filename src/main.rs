@@ -10,6 +10,7 @@ mod desktop;
 mod entries;
 mod style;
 mod subscriptions;
+mod freedesktop;
 
 use iced::{
     scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
