@@ -1,5 +1,5 @@
 use crate::freedesktop::desktop::DesktopEntryInContent;
-use crate::freedesktop::icons::{IconPath, IconFinder};
+use crate::freedesktop::icons::{IconFinder, IconPath};
 use crate::Mode;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
@@ -104,7 +104,7 @@ impl From<&DesktopEntryInContent> for DesktopEntry {
         DesktopEntry {
             name: desktop_entry.name.clone(),
             exec: desktop_entry.exec.clone(),
-            icon: None
+            icon: None,
         }
     }
 }

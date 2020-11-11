@@ -1,4 +1,4 @@
-use crate::freedesktop::icons::{Extension, IconPath, IconFinder};
+use crate::freedesktop::icons::{Extension, IconFinder, IconPath};
 use anyhow::Result;
 use std::path::PathBuf;
 

@@ -54,7 +54,10 @@ impl IconPath {
             None
         };
 
-        extension.map(|extention| IconPath { path, extension: extention })
+        extension.map(|extention| IconPath {
+            path,
+            extension: extention,
+        })
     }
 }
 
@@ -73,7 +76,8 @@ impl IconFinder {
         // Theme /usr/share/icons/hicolor
         let hicolor_usr_share_path = PathBuf::from(BASE_DIRS[0]).join("hicolor");
 
-        let hicolor_usr_share_index = fs::read_to_string(&hicolor_usr_share_path.join("index.theme"));
+        let hicolor_usr_share_index =
+            fs::read_to_string(&hicolor_usr_share_path.join("index.theme"));
         if let Ok(index) = hicolor_usr_share_index {
             if let Ok(theme) = serde_ini::from_str::<IconTheme>(&index) {
                 fallbacks.push((hicolor_usr_share_path, theme));
@@ -94,9 +98,14 @@ impl IconFinder {
                     .trim()
                     .split(',')
                     .filter_map(|parent_name| IconFinder::theme_path(parent_name))
-                    .map(|path| fs::read_to_string(path.join("index.theme")).map(|content| (path, content)))
+                    .map(|path| {
+                        fs::read_to_string(path.join("index.theme")).map(|content| (path, content))
+                    })
                     .filter_map(Result::ok)
-                    .map(|(path, content)| serde_ini::from_str::<IconTheme>(content.as_str()).map(|result| (path, result)))
+                    .map(|(path, content)| {
+                        serde_ini::from_str::<IconTheme>(content.as_str())
+                            .map(|result| (path, result))
+                    })
                     .filter_map(Result::ok)
                     .collect::<Vec<(PathBuf, IconTheme)>>();
 
@@ -122,14 +131,13 @@ impl IconFinder {
         } else {
             match usr_local_theme {
                 Some(path) if path.exists() => Some(path),
-                _ => None
+                _ => None,
             }
         }
     }
 }
 
 impl IconFinder {
-
     //TODO: this
     pub fn lookup(&self, icon_name: &str, size: u32) -> Result<IconPath> {
         // Search icon in user theme
@@ -163,11 +171,19 @@ impl IconFinder {
         // This is our last chance
         let pixmap = PathBuf::from(BASE_DIRS[1]);
         let glob = format!("{}/{}.*", pixmap.to_str().unwrap(), icon_name);
-        self.search_icon(&glob).ok_or_else(|| anyhow!("Icon not found"))
+        self.search_icon(&glob)
+            .ok_or_else(|| anyhow!("Icon not found"))
     }
 
-    fn get_globs(size: u32, theme_path: &PathBuf, theme: &IconTheme, icon_name: &str) -> Vec<String> {
-        theme.entries.iter()
+    fn get_globs(
+        size: u32,
+        theme_path: &PathBuf,
+        theme: &IconTheme,
+        icon_name: &str,
+    ) -> Vec<String> {
+        theme
+            .entries
+            .iter()
             .filter(|(_, entry)| entry.size == size.to_string() || entry.scale == Scale::Scalable)
             .map(|(dir, _)| dir)
             .map(|dir| theme_path.join(dir))
