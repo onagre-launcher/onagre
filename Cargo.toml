@@ -27,7 +27,6 @@ serde_derive = "1.0.117"
 toml = "0.5.7"
 shell-words = "^1"
 config = "0.10.1"
-ignore = "0.4.16"
 lazy_static = "1.4.0"
 glob = "0.3.0"
 palette = { version = "0.5.0", features = ["serializing"] }
