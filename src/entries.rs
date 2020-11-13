@@ -8,8 +8,9 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct DesktopEntry {
-    pub name: String,
+    pub display_name: String,
     pub exec: String,
+    pub search_terms: String,
     pub icon: Option<IconPath>,
 }
 
@@ -39,13 +40,16 @@ impl Entries {
         }
     }
 
-    pub fn get_matches(&self, input: &str) -> Vec<DesktopEntry> {
-        let matcher = SkimMatcherV2::default().ignore_case();
-
+    pub fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<DesktopEntry> {
         let mut entries: Vec<(&DesktopEntry, i64)> = self
             .desktop_entries
             .iter()
-            .map(|entry| (entry, matcher.fuzzy_match(&entry.name, input).unwrap_or(0)))
+            .map(|entry| {
+                (
+                    entry,
+                    matcher.fuzzy_match(&entry.search_terms, input).unwrap_or(0),
+                )
+            })
             .filter(|(_, score)| *score > 10i64)
             .collect();
 
@@ -73,9 +77,12 @@ impl Entries {
             .collect()
     }
 
-    pub fn get_matches_custom_mode(&self, mode_key: &str, input: &str) -> Vec<String> {
-        let matcher = SkimMatcherV2::default().ignore_case();
-
+    pub fn get_matches_custom_mode(
+        &self,
+        mode_key: &str,
+        input: &str,
+        matcher: &SkimMatcherV2,
+    ) -> Vec<String> {
         if let Some(entries) = self.custom_entries.get(mode_key) {
             let mut entries: Vec<(&String, i64)> = entries
                 .par_iter()
@@ -101,8 +108,14 @@ impl Entries {
 
 impl From<&DesktopEntryInContent> for DesktopEntry {
     fn from(desktop_entry: &DesktopEntryInContent) -> Self {
+        let mut search_terms = desktop_entry.name.clone();
+        if let Some(keywords) = &desktop_entry.keywords {
+            search_terms.push_str(&keywords.replace(";", " "));
+        }
+
         DesktopEntry {
-            name: desktop_entry.name.clone(),
+            display_name: desktop_entry.name.clone(),
+            search_terms,
             exec: desktop_entry.exec.clone(),
             icon: None,
         }

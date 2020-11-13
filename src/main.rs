@@ -23,7 +23,9 @@ use style::theme::Theme;
 use crate::config::OnagreSettings;
 use crate::entries::{DesktopEntry, Entries, MatchedEntries};
 use crate::freedesktop::icons::{Extension, IconPath};
+use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::{Event, Svg};
+use serde::export::Formatter;
 use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
@@ -54,6 +56,7 @@ struct Onagre {
     modes: Vec<Mode>,
     entries: Entries,
     state: State,
+    matcher: OnagreMatcher,
 }
 
 #[derive(Debug)]
@@ -65,6 +68,16 @@ struct State {
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
+}
+
+struct OnagreMatcher {
+    matcher: SkimMatcherV2,
+}
+
+impl std::fmt::Debug for OnagreMatcher {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SkimMatcherV2")
+    }
 }
 
 impl Default for State {
@@ -124,6 +137,9 @@ impl Application for Onagre {
                 modes: modes.clone(),
                 entries: Entries::new(modes.as_slice()),
                 state: State::default(),
+                matcher: OnagreMatcher {
+                    matcher: SkimMatcherV2::default().ignore_case(),
+                },
             },
             Command::none(),
         )
@@ -194,9 +210,10 @@ impl Application for Onagre {
                     .enumerate()
                     .map(|(idx, entry)| {
                         if idx == self.state.selected {
-                            Self::build_row_selected(&entry.name, entry.icon.as_ref()).into()
+                            Self::build_row_selected(&entry.display_name, entry.icon.as_ref())
+                                .into()
                         } else {
-                            Self::build_row(&entry.name, entry.icon.as_ref()).into()
+                            Self::build_row(&entry.display_name, entry.icon.as_ref()).into()
                         }
                     })
                     .collect();
@@ -472,7 +489,10 @@ impl Onagre {
                 if self.state.input_value == "" {
                     self.set_desktop_matches(self.entries.take_50_desktop_entries());
                 } else {
-                    self.set_desktop_matches(self.entries.get_matches(&self.state.input_value));
+                    self.set_desktop_matches(
+                        self.entries
+                            .get_matches(&self.state.input_value, &self.matcher.matcher),
+                    );
                 }
             }
             Mode::Custom(mode_name) => {
@@ -485,8 +505,11 @@ impl Onagre {
                 } else {
                     self.set_custom_matches(
                         &mode_name,
-                        self.entries
-                            .get_matches_custom_mode(&mode_name, &self.state.input_value),
+                        self.entries.get_matches_custom_mode(
+                            &mode_name,
+                            &self.state.input_value,
+                            &self.matcher.matcher,
+                        ),
                     )
                 }
             }

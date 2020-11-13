@@ -16,6 +16,8 @@ pub struct DesktopEntryInContent {
     pub exec: String,
     #[serde(rename = "Icon")]
     pub icon: String,
+    #[serde(rename = "Keywords")]
+    pub keywords: Option<String>,
 }
 
 impl DesktopEntryInContent {
