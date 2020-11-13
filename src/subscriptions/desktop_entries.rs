@@ -1,4 +1,4 @@
-use crate::entries::DesktopEntry;
+use crate::entries::desktop::DesktopEntry;
 use crate::freedesktop::desktop::DesktopEntryIni;
 use crate::freedesktop::icons::IconFinder;
 use crate::SETTINGS;

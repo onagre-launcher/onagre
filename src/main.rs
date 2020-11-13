@@ -9,22 +9,21 @@ extern crate lazy_static;
 extern crate log;
 
 mod config;
-mod entries;
+pub mod entries;
 mod freedesktop;
 mod style;
 mod subscriptions;
 
 use iced::{
     scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
-    HorizontalAlignment, Image, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
+    Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
 };
 use style::theme::Theme;
 
 use crate::config::OnagreSettings;
-use crate::entries::{DesktopEntry, Entries, MatchedEntries};
-use crate::freedesktop::icons::{Extension, IconPath};
+use crate::entries::{desktop::DesktopEntry, Entries, EntriesState, MatchedEntries, ToRow};
 use fuzzy_matcher::skim::SkimMatcherV2;
-use iced_native::{Event, Svg};
+use iced_native::Event;
 use serde::export::Formatter;
 use std::collections::HashMap;
 use std::process::exit;
@@ -54,7 +53,7 @@ fn main() -> iced::Result {
 #[derive(Debug)]
 struct Onagre {
     modes: Vec<Mode>,
-    entries: Entries,
+    entries: EntriesState,
     state: State,
     matcher: OnagreMatcher,
 }
@@ -101,7 +100,7 @@ impl Default for State {
 }
 
 #[derive(Debug, Clone)]
-enum Message {
+pub enum Message {
     InputChanged(String),
     DesktopEntryEvent(DesktopEntry),
     CustomModeEvent(Vec<String>),
@@ -135,7 +134,7 @@ impl Application for Onagre {
         (
             Onagre {
                 modes: modes.clone(),
-                entries: Entries::new(modes.as_slice()),
+                entries: EntriesState::new(modes.as_slice()),
                 state: State::default(),
                 matcher: OnagreMatcher {
                     matcher: SkimMatcherV2::default().ignore_case(),
@@ -210,10 +209,9 @@ impl Application for Onagre {
                     .enumerate()
                     .map(|(idx, entry)| {
                         if idx == self.state.selected {
-                            Self::build_row_selected(&entry.display_name, entry.icon.as_ref())
-                                .into()
+                            entry.to_row_selected().into()
                         } else {
-                            Self::build_row(&entry.display_name, entry.icon.as_ref()).into()
+                            entry.to_row().into()
                         }
                     })
                     .collect();
@@ -230,9 +228,9 @@ impl Application for Onagre {
                         .enumerate()
                         .map(|(idx, entry)| {
                             if idx == self.state.selected {
-                                Self::build_row_selected(entry, None).into()
+                                entry.to_row_selected().into()
                             } else {
-                                Self::build_row(entry, None).into()
+                                entry.to_row().into()
                             }
                         })
                         .collect();
@@ -301,10 +299,6 @@ impl Application for Onagre {
         .style(THEME.as_ref());
 
         app_container.into()
-        // Container::new(app_container)
-        //     .style(TransparentContainer)
-        //     .padding(40)
-        //     .into()e
     }
 }
 
@@ -333,70 +327,6 @@ impl Onagre {
             .collect();
 
         Row::with_children(rows)
-    }
-
-    fn build_row<'a>(content: &str, icon: Option<&IconPath>) -> Container<'a, Message> {
-        let mut row = Row::new();
-        row = if let Some(icon) = icon {
-            match &icon.extension {
-                Extension::SVG => row.push(
-                    Svg::from_path(&icon.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
-                ),
-                Extension::PNG => row.push(
-                    Image::new(&icon.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
-                ),
-            }
-        } else {
-            row
-        };
-
-        row = row.push(
-            Text::new(content)
-                .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Left),
-        );
-
-        Container::new(row)
-            .width(THEME.rows.lines.default.width.into())
-            .height(THEME.rows.lines.default.height.into())
-            .style(&THEME.rows.lines.default)
-            .padding(THEME.rows.lines.default.padding)
-    }
-
-    fn build_row_selected<'a>(content: &str, icon: Option<&IconPath>) -> Container<'a, Message> {
-        let mut row = Row::new();
-        row = if let Some(icon) = icon {
-            match &icon.extension {
-                Extension::SVG => row.push(
-                    Svg::from_path(&icon.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
-                ),
-                Extension::PNG => row.push(
-                    Image::new(&icon.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
-                ),
-            }
-        } else {
-            row
-        };
-
-        row = row.push(
-            Text::new(content)
-                .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Left),
-        );
-
-        Container::new(row)
-            .width(THEME.rows.lines.selected.width.into())
-            .height(THEME.rows.lines.selected.height.into())
-            .style(&THEME.rows.lines.selected)
-            .padding(THEME.rows.lines.selected.padding)
     }
 
     fn run_command(&self) -> Command<Message> {
@@ -487,10 +417,11 @@ impl Onagre {
         match self.get_current_mode() {
             Mode::Drun => {
                 if self.state.input_value == "" {
-                    self.set_desktop_matches(self.entries.take_50_desktop_entries());
+                    self.set_desktop_matches(self.entries.desktop_entries.default_matches());
                 } else {
                     self.set_desktop_matches(
                         self.entries
+                            .desktop_entries
                             .get_matches(&self.state.input_value, &self.matcher.matcher),
                     );
                 }
@@ -519,10 +450,10 @@ impl Onagre {
     fn cycle_mode(&mut self) {
         println!("{}/{}", self.state.mode_button_idx, self.modes.len());
         if self.state.mode_button_idx == self.modes.len() - 1 {
-            println!("Changing mode {} -> 0", self.state.mode_button_idx);
+            debug!("Changing mode {} -> 0", self.state.mode_button_idx);
             self.state.mode_button_idx = 0
         } else {
-            println!(
+            debug!(
                 "Changing mode {} -> {}",
                 self.state.mode_button_idx,
                 self.state.mode_button_idx + 1

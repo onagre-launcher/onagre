@@ -1,21 +1,42 @@
-use crate::freedesktop::desktop::DesktopEntryInContent;
-use crate::freedesktop::icons::{IconFinder, IconPath};
-use crate::Mode;
+pub(crate) mod desktop;
+mod generic;
+
+use crate::THEME;
+use crate::{Message, Mode};
+use desktop::DesktopEntry;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
+use iced::Container;
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
-pub struct DesktopEntry {
-    pub display_name: String,
-    pub exec: String,
-    pub search_terms: String,
-    pub icon: Option<IconPath>,
+pub trait Entries<T> {
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<T>;
+    fn default_matches(&self) -> Vec<T>;
+}
+
+pub trait ToRow<'a> {
+    fn to_row(&self) -> Container<'a, Message> {
+        self.as_row()
+            .width(THEME.rows.lines.default.width.into())
+            .height(THEME.rows.lines.default.height.into())
+            .style(&THEME.rows.lines.default)
+            .padding(THEME.rows.lines.default.padding)
+    }
+
+    fn to_row_selected(&self) -> Container<'a, Message> {
+        self.as_row()
+            .width(THEME.rows.lines.selected.width.into())
+            .height(THEME.rows.lines.selected.height.into())
+            .style(&THEME.rows.lines.selected)
+            .padding(THEME.rows.lines.selected.padding)
+    }
+
+    fn as_row(&self) -> Container<'a, Message>;
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct Entries {
+pub struct EntriesState {
     pub desktop_entries: Vec<DesktopEntry>,
     pub custom_entries: HashMap<String, Vec<String>>,
 }
@@ -26,7 +47,7 @@ pub struct MatchedEntries {
     pub custom_entries: HashMap<String, Vec<String>>,
 }
 
-impl Entries {
+impl EntriesState {
     pub fn new(modes: &[Mode]) -> Self {
         let mut custom_entries = HashMap::new();
 
@@ -38,33 +59,6 @@ impl Entries {
             desktop_entries: vec![],
             custom_entries,
         }
-    }
-
-    pub fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<DesktopEntry> {
-        let mut entries: Vec<(&DesktopEntry, i64)> = self
-            .desktop_entries
-            .iter()
-            .map(|entry| {
-                (
-                    entry,
-                    matcher.fuzzy_match(&entry.search_terms, input).unwrap_or(0),
-                )
-            })
-            .filter(|(_, score)| *score > 10i64)
-            .collect();
-
-        entries.par_sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
-
-        entries
-            .iter()
-            .take(50)
-            .map(|(entry, _)| entry.to_owned())
-            .cloned()
-            .collect()
-    }
-
-    pub fn take_50_desktop_entries(&self) -> Vec<DesktopEntry> {
-        self.desktop_entries.iter().take(50).cloned().collect()
     }
 
     pub fn take_50_custom_entries(&self, mode_key: &str) -> Vec<String> {
@@ -103,30 +97,5 @@ impl Entries {
             // FIXME, we need to keep previous result somewhere
             vec![]
         }
-    }
-}
-
-impl From<&DesktopEntryInContent> for DesktopEntry {
-    fn from(desktop_entry: &DesktopEntryInContent) -> Self {
-        let mut search_terms = desktop_entry.name.clone();
-        if let Some(keywords) = &desktop_entry.keywords {
-            search_terms.push_str(&keywords.replace(";", " "));
-        }
-
-        DesktopEntry {
-            display_name: desktop_entry.name.clone(),
-            search_terms,
-            exec: desktop_entry.exec.clone(),
-            icon: None,
-        }
-    }
-}
-
-impl DesktopEntry {
-    pub fn with_icon(desktop_entry: &DesktopEntryInContent, finder: &IconFinder) -> Self {
-        let mut entry = Self::from(desktop_entry);
-        let icon = desktop_entry.get_icon(32, finder).ok();
-        entry.icon = icon;
-        entry
     }
 }
