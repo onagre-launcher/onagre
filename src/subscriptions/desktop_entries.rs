@@ -11,7 +11,7 @@ use iced_native::futures::StreamExt;
 use iced_native::Subscription;
 use std::borrow::Borrow;
 use std::hash::Hash;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 pub struct DesktopEntryWalker {
     id: String,
@@ -26,8 +26,8 @@ impl DesktopEntryWalker {
 }
 
 impl<H, I> iced_native::subscription::Recipe<H, I> for DesktopEntryWalker
-where
-    H: std::hash::Hasher,
+    where
+        H: std::hash::Hasher,
 {
     type Output = DesktopEntry;
 
@@ -49,49 +49,67 @@ where
                     .flatten(),
             );
 
+            let entry_map = Arc::new(RwLock::new(Vec::new()));
             futures::future::join(
-                get_root_desktop_entries(sender.clone(), Arc::clone(&finder)),
-                get_user_desktop_entries(sender, finder),
+                get_root_desktop_entries(sender.clone(), Arc::clone(&finder), Arc::clone(&entry_map)),
+                get_user_desktop_entries(sender, finder, entry_map),
             )
-            .await
+                .await
         });
 
         Box::pin(receiver)
     }
 }
 
-async fn get_root_desktop_entries(sender: Sender<DesktopEntry>, finder: Arc<Option<IconFinder>>) {
+// # From the freedesktop spec https://specifications.freedesktop.org/menu-spec/menu-spec-1.0.html :
+// This directory contains a .desktop file for each possible menu item.
+// Each directory in the $XDG_DATA_DIRS search path should be used
+// (i.e. desktop entries are collected from all of them, not just the first one that exists).
+// When two desktop entries have the same name, the one appearing earlier in the path is used.
+// The <DefaultAppDirs> element in a menu file indicates that this default list of desktop entry
+// locations should be scanned at that point. If a menu file does not contain <DefaultAppDirs>,
+// then these locations are not scanned.
+async fn get_root_desktop_entries(sender: Sender<DesktopEntry>, finder: Arc<Option<IconFinder>>, entry_map: Arc<RwLock<Vec<String>>>) {
     let desktop_dir = AsyncPathBuf::from("/usr/share");
-    walk_dir(sender, desktop_dir.join("applications"), finder).await;
+    get_desktop_entries(sender, desktop_dir.join("applications"), finder, entry_map).await;
 }
 
-async fn get_user_desktop_entries(sender: Sender<DesktopEntry>, finder: Arc<Option<IconFinder>>) {
+async fn get_user_desktop_entries(sender: Sender<DesktopEntry>, finder: Arc<Option<IconFinder>>, entry_map: Arc<RwLock<Vec<String>>>) {
     let desktop_dir: AsyncPathBuf = dirs::data_local_dir().unwrap().into();
-    walk_dir(sender, desktop_dir.join("applications"), finder).await;
+    get_desktop_entries(sender, desktop_dir.join("applications"), finder, entry_map).await;
 }
 
-fn walk_dir(
+fn get_desktop_entries(
     mut sender: futures::channel::mpsc::Sender<DesktopEntry>,
     desktop_dir: AsyncPathBuf,
     finder: Arc<Option<IconFinder>>,
+    entry_map: Arc<RwLock<Vec<String>>>,
 ) -> BoxFuture<'static, ()> {
+    // This is needed for async recursion
     async move {
         let mut entries = fs::read_dir(desktop_dir).await.unwrap();
 
-        while let Some(res) = entries.next().await {
+        while let Some(res) = entries.next() {
             let entry = res.unwrap();
 
             if entry.path().is_dir().await {
-                walk_dir(
+                get_desktop_entries(
                     sender.clone(),
                     entry.path().to_path_buf(),
                     Arc::clone(&finder),
-                )
-                .await;
+                    Arc::clone(&entry_map),
+                );
             } else {
                 let desktop_entry = fs::read_to_string(entry.path()).await.unwrap();
+                // deserialize the .desktop file ignoring failure
                 if let Ok(desktop_entry) = serde_ini::from_str::<DesktopEntryIni>(&desktop_entry) {
-                    if let Some(content) = desktop_entry.content {
+                    let content = desktop_entry.content;
+
+                    // We need to keep track of already sent entries
+                    // "When two desktop entries have the same name, the one appearing earlier in the path is used"
+                    let mut map_entry_write_lock = entry_map.write().unwrap();
+                    if !map_entry_write_lock.contains(&content.name) {
+                        debug!("Sending desktop entry : {:?} to main thread", &content);
                         if let Some(finder) = finder.borrow() {
                             sender
                                 .start_send(DesktopEntry::with_icon(&content, finder))
@@ -99,10 +117,13 @@ fn walk_dir(
                         } else {
                             sender.start_send(DesktopEntry::from(&content)).unwrap();
                         }
+                        map_entry_write_lock.push(content.name);
+                    } else {
+                        debug!("Desktop entry {} already present", &content.name);
                     }
                 }
             }
         }
-    }
-    .boxed()
+    }.boxed()
 }
+

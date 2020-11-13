@@ -5,7 +5,7 @@ use std::path::PathBuf;
 #[derive(Debug, Deserialize)]
 pub struct DesktopEntryIni {
     #[serde(rename = "Desktop Entry")]
-    pub content: Option<DesktopEntryInContent>,
+    pub content: DesktopEntryInContent,
 }
 
 #[derive(Debug, Deserialize)]

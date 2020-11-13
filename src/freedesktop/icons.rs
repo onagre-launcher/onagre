@@ -162,8 +162,8 @@ impl IconFinder {
             let path = data_dir.join("icons").join("hicolor");
             let path = path.to_str().unwrap();
             let glob = format!("{}/{}x{}/**/{}.*", path, size, size, icon_name);
-            println!("{}", glob);
             if let Some(path) = self.search_icon(&glob) {
+                debug!("Found icon for {} in {:?}", icon_name, path);
                 return Ok(path);
             }
         }

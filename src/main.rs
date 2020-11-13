@@ -5,6 +5,9 @@ extern crate anyhow;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate log;
+
 mod config;
 mod entries;
 mod freedesktop;
@@ -32,6 +35,9 @@ lazy_static! {
 }
 
 fn main() -> iced::Result {
+    env_logger::init();
+    debug!("Starting Onagre in debug mode");
+
     Onagre::run(Settings {
         window: window::Settings {
             transparent: true,
@@ -231,8 +237,8 @@ impl Application for Onagre {
                 .scroller_width(THEME.scrollable.scrollbar_width)
                 .style(&THEME.scrollable),
         )
-        .style(&THEME.scrollable)
-        .padding(THEME.scrollable.padding);
+            .style(&THEME.scrollable)
+            .padding(THEME.scrollable.padding);
 
         // Switch mode menu
         let mode_menu = Container::new(
@@ -241,8 +247,8 @@ impl Application for Onagre {
                 .height(THEME.menu.width.into())
                 .width(THEME.menu.height.into()),
         )
-        .padding(THEME.menu.padding)
-        .style(&THEME.menu);
+            .padding(THEME.menu.padding)
+            .style(&THEME.menu);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -250,8 +256,8 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-        .width(THEME.search.bar.text_width.into())
-        .style(&THEME.search.bar);
+            .width(THEME.search.bar.text_width.into())
+            .style(&THEME.search.bar);
 
         let search_bar = Container::new(
             Row::new()
@@ -262,8 +268,8 @@ impl Application for Onagre {
                 .width(THEME.search.width.into())
                 .height(THEME.search.height.into()),
         )
-        .padding(THEME.search.padding)
-        .style(&THEME.search);
+            .padding(THEME.search.padding)
+            .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
@@ -275,7 +281,7 @@ impl Application for Onagre {
                 .width(Length::Fill)
                 .padding(20),
         )
-        .style(THEME.as_ref());
+            .style(THEME.as_ref());
 
         app_container.into()
         // Container::new(app_container)
