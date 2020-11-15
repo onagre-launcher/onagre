@@ -53,7 +53,6 @@ fn main() -> iced::Result {
 #[derive(Debug)]
 struct Onagre {
     modes: Vec<Mode>,
-    entries: EntriesState,
     state: State,
     matcher: OnagreMatcher,
 }
@@ -63,6 +62,7 @@ struct State {
     loading: bool,
     mode_button_idx: usize,
     selected: usize,
+    entries: EntriesState,
     matches: MatchedEntries,
     scroll: scrollable::State,
     input: text_input::State,
@@ -79,8 +79,8 @@ impl std::fmt::Debug for OnagreMatcher {
     }
 }
 
-impl Default for State {
-    fn default() -> Self {
+impl State {
+    fn new(modes: &[Mode]) -> Self {
         let mut custom_entries = HashMap::new();
         custom_entries.insert("placeholder".to_string(), vec![]);
 
@@ -88,6 +88,7 @@ impl Default for State {
             loading: true,
             mode_button_idx: 0,
             selected: 0,
+            entries: EntriesState::new(modes),
             matches: MatchedEntries {
                 desktop_entries: vec![],
                 custom_entries,
@@ -134,8 +135,7 @@ impl Application for Onagre {
         (
             Onagre {
                 modes: modes.clone(),
-                entries: EntriesState::new(modes.as_slice()),
-                state: State::default(),
+                state: State::new(modes.as_slice()),
                 matcher: OnagreMatcher {
                     matcher: SkimMatcherV2::default().ignore_case(),
                 },
@@ -158,7 +158,7 @@ impl Application for Onagre {
         match message {
             Message::CustomModeEvent(entry) => {
                 let current_mode = self.get_current_mode().to_string();
-                if let Some(entries) = self.entries.custom_entries.get_mut(&current_mode) {
+                if let Some(entries) = self.state.entries.custom_entries.get_mut(&current_mode) {
                     entries.extend(entry);
                 }
                 Command::none()
@@ -173,7 +173,7 @@ impl Application for Onagre {
                 Command::none()
             }
             Message::DesktopEntryEvent(entry) => {
-                self.entries.desktop_entries.push(entry);
+                self.state.entries.desktop_entries.push(entry);
                 Command::none()
             }
         }
@@ -417,10 +417,11 @@ impl Onagre {
         match self.get_current_mode() {
             Mode::Drun => {
                 if self.state.input_value == "" {
-                    self.set_desktop_matches(self.entries.desktop_entries.default_matches());
+                    self.set_desktop_matches(self.state.entries.desktop_entries.default_matches());
                 } else {
                     self.set_desktop_matches(
-                        self.entries
+                        self.state
+                            .entries
                             .desktop_entries
                             .get_matches(&self.state.input_value, &self.matcher.matcher),
                     );
@@ -431,16 +432,18 @@ impl Onagre {
                 if self.state.input_value == "" {
                     self.set_custom_matches(
                         &mode_name,
-                        self.entries.take_50_custom_entries(&mode_name),
+                        self.state
+                            .entries
+                            .get_mode_entries(&mode_name)
+                            .default_matches(),
                     );
                 } else {
                     self.set_custom_matches(
                         &mode_name,
-                        self.entries.get_matches_custom_mode(
-                            &mode_name,
-                            &self.state.input_value,
-                            &self.matcher.matcher,
-                        ),
+                        self.state
+                            .entries
+                            .get_mode_entries(&mode_name)
+                            .get_matches(&self.state.input_value, &self.matcher.matcher),
                     )
                 }
             }
