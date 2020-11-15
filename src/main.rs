@@ -25,7 +25,6 @@ use crate::entries::{desktop::DesktopEntry, Entries, EntriesState, MatchedEntrie
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::Event;
 use serde::export::Formatter;
-use std::collections::HashMap;
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
@@ -81,18 +80,12 @@ impl std::fmt::Debug for OnagreMatcher {
 
 impl State {
     fn new(modes: &[Mode]) -> Self {
-        let mut custom_entries = HashMap::new();
-        custom_entries.insert("placeholder".to_string(), vec![]);
-
         State {
             loading: true,
             mode_button_idx: 0,
             selected: 0,
             entries: EntriesState::new(modes),
-            matches: MatchedEntries {
-                desktop_entries: vec![],
-                custom_entries,
-            },
+            matches: MatchedEntries::default(),
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
