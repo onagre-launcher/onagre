@@ -116,14 +116,14 @@ impl Application for Onagre {
 
         let mut modes = vec![Mode::Drun];
 
-        let custom_modes: Vec<Mode> = SETTINGS
+        let custom_modes = SETTINGS
             .modes
             .keys()
             .map(|mode| mode.to_owned())
-            .map(Mode::Custom)
-            .collect();
+            .map(Mode::Custom);
 
         modes.extend(custom_modes);
+
         (
             Onagre {
                 modes: modes.clone(),

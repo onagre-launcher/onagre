@@ -112,14 +112,15 @@ async fn get_desktop_entries(
             let mut map_entry_write_lock = entry_map.write().unwrap();
             if !map_entry_write_lock.contains(&content.name) {
                 debug!("Sending desktop entry : {:?} to main thread", &content);
+                let entry_name = content.name.clone();
                 if let Some(finder) = finder.borrow() {
                     sender
-                        .start_send(DesktopEntry::with_icon(&content, finder))
+                        .start_send(DesktopEntry::with_icon(content, finder))
                         .unwrap();
                 } else {
-                    sender.start_send(DesktopEntry::from(&content)).unwrap();
+                    sender.start_send(DesktopEntry::from(content)).unwrap();
                 }
-                map_entry_write_lock.push(content.name);
+                map_entry_write_lock.push(entry_name);
             } else {
                 debug!("Desktop entry {} already present", &content.name);
             }

@@ -36,7 +36,6 @@ impl Entries<DesktopEntry> for Vec<Rc<DesktopEntry>> {
         entries
             .iter()
             .take(50)
-            .cloned()
             .map(|(entry, _)| Rc::clone(entry))
             .collect()
     }
@@ -76,8 +75,8 @@ impl<'a> ToRow<'a> for Rc<DesktopEntry> {
     }
 }
 
-impl From<&DesktopEntryInContent> for DesktopEntry {
-    fn from(desktop_entry: &DesktopEntryInContent) -> Self {
+impl From<DesktopEntryInContent> for DesktopEntry {
+    fn from(desktop_entry: DesktopEntryInContent) -> Self {
         let mut search_terms = desktop_entry.name.clone();
         if let Some(keywords) = &desktop_entry.keywords {
             search_terms.push_str(&keywords.replace(";", " "));
@@ -85,18 +84,18 @@ impl From<&DesktopEntryInContent> for DesktopEntry {
 
         DesktopEntry {
             weight: 0,
-            display_name: desktop_entry.name.clone(),
+            display_name: desktop_entry.name,
             search_terms,
-            exec: desktop_entry.exec.clone(),
+            exec: desktop_entry.exec,
             icon: None,
         }
     }
 }
 
 impl DesktopEntry {
-    pub fn with_icon(desktop_entry: &DesktopEntryInContent, finder: &IconFinder) -> Self {
-        let mut entry = Self::from(desktop_entry);
+    pub fn with_icon(desktop_entry: DesktopEntryInContent, finder: &IconFinder) -> Self {
         let icon = desktop_entry.get_icon(32, finder).ok();
+        let mut entry = Self::from(desktop_entry);
         entry.icon = icon;
         entry
     }
