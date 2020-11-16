@@ -47,12 +47,12 @@ impl EntriesState {
         let mut custom_entries = HashMap::new();
 
         modes.iter().map(Mode::to_string).for_each(|mode_name| {
-            custom_entries.insert(mode_name, Vec::<Rc<String>>::new());
+            custom_entries.insert(mode_name, Vec::<Rc<String>>::with_capacity(256));
         });
 
         Self {
-            desktop_entries: vec![],
-            desktop_entries_matches: vec![],
+            desktop_entries: Vec::with_capacity(256),
+            desktop_entries_matches: Vec::with_capacity(256),
             custom_entries,
             custom_entries_matches: Default::default(),
         }

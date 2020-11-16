@@ -47,7 +47,7 @@ where
                     .flatten(),
             );
 
-            let entry_map = Arc::new(RwLock::new(Vec::new()));
+            let entry_map = Arc::new(RwLock::new(Vec::with_capacity(256)));
             futures::future::join(
                 get_root_desktop_entries(
                     sender.clone(),
