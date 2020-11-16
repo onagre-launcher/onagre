@@ -35,7 +35,7 @@ impl Entries<String> for GenericEntries {
             .iter()
             .map(|(entry, _)| entry)
             .take(50)
-            .map(|this| Rc::clone(this))
+            .map(|entry| Rc::clone(entry))
             .collect()
     }
 

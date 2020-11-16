@@ -341,7 +341,8 @@ impl Onagre {
                     .as_ref()
                     .unwrap()
                     .iter()
-                    .filter(|entry| !entry.starts_with('%')) // FIXME: freedesktop entry spec
+                    // Filtering out special freedesktop syntax
+                    .filter(|entry| !entry.starts_with('%'))
                     .collect::<Vec<&String>>();
 
                 std::process::Command::new(&argv[0])
@@ -376,7 +377,6 @@ impl Onagre {
     fn handle_input(&mut self, event: iced_native::Event) {
         use iced_native::keyboard::KeyCode;
 
-        // TODO : refactor
         if let Event::Keyboard(keyboard_event) = event {
             if let iced_native::keyboard::Event::KeyPressed { key_code, .. } = keyboard_event {
                 match key_code {

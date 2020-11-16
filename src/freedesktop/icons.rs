@@ -135,7 +135,6 @@ impl IconFinder {
 }
 
 impl IconFinder {
-    //TODO: this
     pub fn lookup(&self, icon_name: &str, size: u32) -> Result<IconPath> {
         // Search icon in user theme
         for (theme_path, theme) in &self.theme_paths {
