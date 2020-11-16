@@ -135,12 +135,12 @@ impl IconFinder {
 }
 
 impl IconFinder {
-    pub fn lookup(&self, icon_name: &str, size: u32) -> Result<IconPath> {
+    pub fn lookup(&self, icon_name: &str, size: u32) -> Option<IconPath> {
         // Search icon in user theme
         for (theme_path, theme) in &self.theme_paths {
             for glob in IconFinder::get_globs(size, theme_path, theme, icon_name) {
                 if let Some(path) = self.search_icon(&glob) {
-                    return Ok(path);
+                    return Some(path);
                 }
             }
         }
@@ -149,7 +149,7 @@ impl IconFinder {
         for (theme_path, theme) in &self.fallbacks {
             for glob in IconFinder::get_globs(size, theme_path, theme, icon_name) {
                 if let Some(path) = self.search_icon(&glob) {
-                    return Ok(path);
+                    return Some(path);
                 }
             }
         }
@@ -160,7 +160,7 @@ impl IconFinder {
             let glob = format!("{}/{}x{}/**/{}.*", path, size, size, icon_name);
             if let Some(path) = self.search_icon(&glob) {
                 debug!("Found icon for {} in {:?}", icon_name, path);
-                return Ok(path);
+                return Some(path);
             }
         }
 
@@ -168,7 +168,6 @@ impl IconFinder {
         let pixmap = PathBuf::from(BASE_DIRS[1]);
         let glob = format!("{}/{}.*", pixmap.to_str().unwrap(), icon_name);
         self.search_icon(&glob)
-            .ok_or_else(|| anyhow!("Icon not found"))
     }
 
     fn get_globs(

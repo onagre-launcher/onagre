@@ -1,5 +1,4 @@
 use crate::freedesktop::icons::{Extension, IconFinder, IconPath};
-use anyhow::Result;
 use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
@@ -21,7 +20,7 @@ pub struct DesktopEntryInContent {
 }
 
 impl DesktopEntryInContent {
-    pub fn get_icon(&self, size: u32, icon_finder: &IconFinder) -> Result<IconPath> {
+    pub fn get_icon(&self, size: u32, icon_finder: &IconFinder) -> Option<IconPath> {
         let path = PathBuf::from(&self.icon);
         if path.is_absolute() && path.exists() {
             let extension = path.extension().unwrap().to_str().unwrap();
@@ -31,9 +30,9 @@ impl DesktopEntryInContent {
                 _ => None,
             };
             if let Some(extension) = extension {
-                Ok(IconPath { path, extension })
+                Some(IconPath { path, extension })
             } else {
-                Err(anyhow!("No icon"))
+                None
             }
         } else {
             icon_finder.lookup(&self.icon, size)

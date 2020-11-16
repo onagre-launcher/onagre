@@ -94,7 +94,7 @@ impl From<DesktopEntryInContent> for DesktopEntry {
 
 impl DesktopEntry {
     pub fn with_icon(desktop_entry: DesktopEntryInContent, finder: &IconFinder) -> Self {
-        let icon = desktop_entry.get_icon(32, finder).ok();
+        let icon = desktop_entry.get_icon(32, finder);
         let mut entry = Self::from(desktop_entry);
         entry.icon = icon;
         entry
