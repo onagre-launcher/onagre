@@ -21,11 +21,12 @@ use iced::{
 use style::theme::Theme;
 
 use crate::config::OnagreSettings;
-use crate::entries::{desktop::DesktopEntry, Entries, EntriesState, MatchedEntries, ToRow};
+use crate::entries::{desktop::DesktopEntry, Entries, EntriesState, ToRow};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::Event;
 use serde::export::Formatter;
 use std::process::exit;
+use std::rc::Rc;
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
 
@@ -62,7 +63,6 @@ struct State {
     mode_button_idx: usize,
     selected: usize,
     entries: EntriesState,
-    matches: MatchedEntries,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
@@ -85,7 +85,6 @@ impl State {
             mode_button_idx: 0,
             selected: 0,
             entries: EntriesState::new(modes),
-            matches: MatchedEntries::default(),
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
@@ -149,11 +148,14 @@ impl Application for Onagre {
         self.state.input.focus(true);
 
         match message {
-            Message::CustomModeEvent(entry) => {
+            Message::CustomModeEvent(entries) => {
+                let new_entries: Vec<Rc<String>> = entries.into_iter().map(Rc::new).collect();
+
                 let current_mode = self.get_current_mode().to_string();
                 if let Some(entries) = self.state.entries.custom_entries.get_mut(&current_mode) {
-                    entries.extend(entry);
+                    entries.extend(new_entries);
                 }
+                self.reset_matches();
                 Command::none()
             }
             Message::InputChanged(input) => {
@@ -166,7 +168,8 @@ impl Application for Onagre {
                 Command::none()
             }
             Message::DesktopEntryEvent(entry) => {
-                self.state.entries.desktop_entries.push(entry);
+                self.state.entries.desktop_entries.push(Rc::new(entry));
+                self.reset_matches();
                 Command::none()
             }
         }
@@ -196,8 +199,8 @@ impl Application for Onagre {
             Mode::Drun => {
                 let rows: Vec<Element<Message>> = self
                     .state
-                    .matches
-                    .desktop_entries
+                    .entries
+                    .desktop_entries_matches
                     .iter()
                     .enumerate()
                     .map(|(idx, entry)| {
@@ -212,7 +215,7 @@ impl Application for Onagre {
                 Column::with_children(rows)
             }
             Mode::Custom(name) => {
-                let matches = self.state.matches.custom_entries.get(name);
+                let matches = self.state.entries.custom_entries_matches.get(name);
 
                 if let Some(matches) = matches {
                     let rows: Vec<Element<Message>> = matches
@@ -326,7 +329,12 @@ impl Onagre {
         match self.get_current_mode() {
             Mode::Drun => {
                 let selected = self.state.selected;
-                let entry = self.state.matches.desktop_entries.get(selected).unwrap();
+                let entry = self
+                    .state
+                    .entries
+                    .desktop_entries_matches
+                    .get(selected)
+                    .unwrap();
                 let argv = shell_words::split(&entry.exec);
 
                 let argv = argv
@@ -345,15 +353,15 @@ impl Onagre {
                 let selected = self.state.selected;
                 let entry = self
                     .state
-                    .matches
-                    .custom_entries
+                    .entries
+                    .custom_entries_matches
                     .get(mode_name)
                     .unwrap()
                     .get(selected)
                     .unwrap();
 
                 let command = &SETTINGS.modes.get(mode_name).unwrap().target;
-                let command = command.replace("%", entry);
+                let command = command.replace("%", &entry);
                 let argv = shell_words::split(&command).unwrap();
 
                 std::process::Command::new(&argv[0])
@@ -379,10 +387,14 @@ impl Onagre {
                     }
                     KeyCode::Down => {
                         let max_idx = match self.get_current_mode() {
-                            Mode::Drun => self.state.matches.desktop_entries.len(),
-                            Mode::Custom(name) => {
-                                self.state.matches.custom_entries.get(name).unwrap().len()
-                            }
+                            Mode::Drun => self.state.entries.desktop_entries_matches.len(),
+                            Mode::Custom(name) => self
+                                .state
+                                .entries
+                                .custom_entries_matches
+                                .get(name)
+                                .unwrap()
+                                .len(),
                         };
 
                         if max_idx != 0 && self.state.selected < max_idx - 1 {
@@ -396,7 +408,7 @@ impl Onagre {
                         self.cycle_mode();
                     }
                     KeyCode::Escape => {
-                        exit(1);
+                        exit(0);
                     }
                     _ => {}
                 }
@@ -464,14 +476,14 @@ impl Onagre {
         mode
     }
 
-    fn set_desktop_matches(&mut self, matches: Vec<DesktopEntry>) {
-        self.state.matches.desktop_entries = matches;
+    fn set_desktop_matches(&mut self, matches: Vec<Rc<DesktopEntry>>) {
+        self.state.entries.desktop_entries_matches = matches;
     }
 
-    fn set_custom_matches(&mut self, mode_key: &str, matches: Vec<String>) {
+    fn set_custom_matches(&mut self, mode_key: &str, matches: Vec<Rc<String>>) {
         self.state
-            .matches
-            .custom_entries
+            .entries
+            .custom_entries_matches
             .insert(mode_key.to_string(), matches);
     }
 }

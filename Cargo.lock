@@ -2163,7 +2163,6 @@ dependencies = [
  "lazy_static",
  "log",
  "palette",
- "rayon",
  "serde 1.0.117",
  "serde_derive",
  "serde_ini",

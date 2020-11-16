@@ -54,10 +54,7 @@ impl IconPath {
             None
         };
 
-        extension.map(|extention| IconPath {
-            path,
-            extension: extention,
-        })
+        extension.map(|extension| IconPath { path, extension })
     }
 }
 

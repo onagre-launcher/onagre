@@ -7,22 +7,19 @@ use desktop::DesktopEntry;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced::Container;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 #[derive(Debug, Default, Clone)]
 pub struct EntriesState {
-    pub desktop_entries: Vec<DesktopEntry>,
-    pub custom_entries: HashMap<String, Vec<String>>,
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct MatchedEntries {
-    pub desktop_entries: Vec<DesktopEntry>,
-    pub custom_entries: HashMap<String, Vec<String>>,
+    pub desktop_entries: Vec<Rc<DesktopEntry>>,
+    pub desktop_entries_matches: Vec<Rc<DesktopEntry>>,
+    pub custom_entries: HashMap<String, Vec<Rc<String>>>,
+    pub custom_entries_matches: HashMap<String, Vec<Rc<String>>>,
 }
 
 pub trait Entries<T> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<T>;
-    fn default_matches(&self) -> Vec<T>;
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Rc<T>>;
+    fn default_matches(&self) -> Vec<Rc<T>>;
 }
 
 pub trait ToRow<'a> {
@@ -50,16 +47,18 @@ impl EntriesState {
         let mut custom_entries = HashMap::new();
 
         modes.iter().map(Mode::to_string).for_each(|mode_name| {
-            custom_entries.insert(mode_name, Vec::<String>::new());
+            custom_entries.insert(mode_name, Vec::<Rc<String>>::new());
         });
 
         Self {
             desktop_entries: vec![],
+            desktop_entries_matches: vec![],
             custom_entries,
+            custom_entries_matches: Default::default(),
         }
     }
 
-    pub fn get_mode_entries(&self, mode_key: &str) -> &Vec<String> {
+    pub fn get_mode_entries(&self, mode_key: &str) -> &Vec<Rc<String>> {
         self.custom_entries.get(mode_key).unwrap()
     }
 }

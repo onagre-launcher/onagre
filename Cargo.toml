@@ -17,7 +17,6 @@ iced_style = { git = "https://github.com/oknozor/iced" }
 fuzzy-matcher = "0.3.7"
 async-std = "1.6.5"
 async-process = "1.0.1"
-rayon = "1.5.0"
 futures = "0.3.7"
 dirs = "3.0.1"
 anyhow = "1.0.34"

@@ -6,7 +6,7 @@ use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 use iced::{Container, HorizontalAlignment, Image, Length, Row, Text};
 use iced_native::Svg;
-use rayon::prelude::*;
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub struct DesktopEntry {
@@ -18,9 +18,9 @@ pub struct DesktopEntry {
     pub icon: Option<IconPath>,
 }
 
-impl Entries<DesktopEntry> for Vec<DesktopEntry> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<DesktopEntry> {
-        let mut entries: Vec<(&DesktopEntry, i64)> = self
+impl Entries<DesktopEntry> for Vec<Rc<DesktopEntry>> {
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Rc<DesktopEntry>> {
+        let mut entries: Vec<(&Rc<DesktopEntry>, i64)> = self
             .iter()
             .map(|entry| {
                 (
@@ -31,22 +31,22 @@ impl Entries<DesktopEntry> for Vec<DesktopEntry> {
             .filter(|(_, score)| *score > 10i64)
             .collect();
 
-        entries.par_sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
+        entries.sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
 
         entries
             .iter()
             .take(50)
             .cloned()
-            .map(|(entry, _)| entry.to_owned())
+            .map(|(entry, _)| Rc::clone(entry))
             .collect()
     }
 
-    fn default_matches(&self) -> Vec<DesktopEntry> {
-        self.iter().take(50).cloned().collect()
+    fn default_matches(&self) -> Vec<Rc<DesktopEntry>> {
+        self.iter().take(50).map(|rc| Rc::clone(rc)).collect()
     }
 }
 
-impl<'a> ToRow<'a> for DesktopEntry {
+impl<'a> ToRow<'a> for Rc<DesktopEntry> {
     fn as_row(&self) -> Container<'a, Message> {
         let mut row = Row::new();
         row = if let Some(icon) = &self.icon {
