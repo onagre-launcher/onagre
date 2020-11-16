@@ -10,7 +10,8 @@ use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub struct DesktopEntry {
-    /// The number of time this entry has been launched already
+    // TODO: need to implement a cache
+    // The number of time this entry has been launched already
     pub weight: u32,
     pub display_name: String,
     pub exec: String,
@@ -31,8 +32,10 @@ impl Entries<DesktopEntry> for Vec<Rc<DesktopEntry>> {
             .filter(|(_, score)| *score > 10i64)
             .collect();
 
+        // sort by match score
         entries.sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
 
+        // Take only the first results ordered
         entries
             .iter()
             .take(50)

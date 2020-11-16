@@ -1,4 +1,5 @@
 use anyhow::Result;
+use glob::glob;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -145,7 +146,7 @@ impl IconFinder {
             }
         }
 
-        // No luck going to fallback/default themes
+        // No luck, we fallback to parent themes
         for (theme_path, theme) in &self.fallbacks {
             for glob in IconFinder::get_globs(size, theme_path, theme, icon_name) {
                 if let Some(path) = self.search_icon(&glob) {
@@ -154,6 +155,7 @@ impl IconFinder {
             }
         }
 
+        // Still no luck, we now look in the default "hicolor" theme
         if let Some(data_dir) = dirs::data_dir() {
             let path = data_dir.join("icons").join("hicolor");
             let path = path.to_str().unwrap();
@@ -179,16 +181,18 @@ impl IconFinder {
         theme
             .entries
             .iter()
+            // look for files indirection with a size matching our current target or marked as 'Scalable'
             .filter(|(_, entry)| entry.size == size.to_string() || entry.scale == Scale::Scalable)
+            // Filter out the metadata, we only need the path to the icon files
             .map(|(dir, _)| dir)
+            // construct the absolute path to the icon subdir
             .map(|dir| theme_path.join(dir))
+            // this is our final glob
             .map(|path| format!("{}/{}.*", path.to_str().unwrap(), icon_name))
             .collect()
     }
 
     fn search_icon(&self, pattern: &str) -> Option<IconPath> {
-        use glob::glob;
-
         for entry in glob(pattern).expect("Failed to read glob pattern") {
             match entry {
                 Ok(path) => {

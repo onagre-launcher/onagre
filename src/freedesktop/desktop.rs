@@ -22,6 +22,7 @@ pub struct DesktopEntryInContent {
 impl DesktopEntryInContent {
     pub fn get_icon(&self, size: u32, icon_finder: &IconFinder) -> Option<IconPath> {
         let path = PathBuf::from(&self.icon);
+        // Sometimes desktop entries give the absolute path to the icon
         if path.is_absolute() && path.exists() {
             let extension = path.extension().unwrap().to_str().unwrap();
             let extension = match extension {
@@ -35,6 +36,7 @@ impl DesktopEntryInContent {
                 None
             }
         } else {
+            // otherwise we need to search for it
             icon_finder.lookup(&self.icon, size)
         }
     }

@@ -30,7 +30,7 @@ impl Entries<String> for GenericEntries {
         // sort by match score
         entries.sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
 
-        // Take only the first results oredered
+        // Take only the first results ordered
         entries
             .iter()
             .map(|(entry, _)| entry)
