@@ -1,25 +1,24 @@
 pub(crate) mod desktop;
-mod generic;
 
 use crate::THEME;
 use crate::{Message, Mode};
-use desktop::DesktopEntry;
+use desktop::Entry;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced::Container;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 
 #[derive(Debug, Default, Clone)]
 pub struct EntriesState {
-    pub desktop_entries: Vec<Rc<DesktopEntry>>,
-    pub desktop_entries_matches: Vec<Rc<DesktopEntry>>,
-    pub custom_entries: HashMap<String, Vec<Rc<String>>>,
-    pub custom_entries_matches: HashMap<String, Vec<Rc<String>>>,
+    pub desktop_entries: Vec<Rc<Entry>>,
+    pub desktop_entries_matches: Vec<Weak<Entry>>,
+    pub custom_entries: HashMap<String, Vec<Rc<Entry>>>,
+    pub custom_entries_matches: HashMap<String, Vec<Weak<Entry>>>,
 }
 
 pub trait Entries<T> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Rc<T>>;
-    fn default_matches(&self) -> Vec<Rc<T>>;
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<T>>;
+    fn default_matches(&self) -> Vec<Weak<T>>;
 }
 
 pub trait ToRow<'a> {
@@ -47,7 +46,7 @@ impl EntriesState {
         let mut custom_entries = HashMap::new();
 
         modes.iter().map(Mode::to_string).for_each(|mode_name| {
-            custom_entries.insert(mode_name, Vec::<Rc<String>>::with_capacity(256));
+            custom_entries.insert(mode_name, Vec::<Rc<Entry>>::with_capacity(256));
         });
 
         Self {
@@ -58,7 +57,7 @@ impl EntriesState {
         }
     }
 
-    pub fn get_mode_entries(&self, mode_key: &str) -> &Vec<Rc<String>> {
+    pub fn get_mode_entries(&self, mode_key: &str) -> &Vec<Rc<Entry>> {
         self.custom_entries.get(mode_key).unwrap()
     }
 }

@@ -1,4 +1,4 @@
-use crate::entries::desktop::DesktopEntry;
+use crate::entries::desktop::Entry;
 use crate::freedesktop::desktop::DesktopEntryIni;
 use crate::freedesktop::icons::IconFinder;
 use crate::SETTINGS;
@@ -6,7 +6,6 @@ use futures::channel::mpsc::Sender;
 use glob::glob;
 use iced_native::futures::stream::BoxStream;
 use iced_native::Subscription;
-use std::borrow::Borrow;
 use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
@@ -16,7 +15,7 @@ pub struct DesktopEntryWalker {
 }
 
 impl DesktopEntryWalker {
-    pub fn subscription() -> Subscription<DesktopEntry> {
+    pub fn subscription() -> Subscription<Entry> {
         iced::Subscription::from_recipe(DesktopEntryWalker {
             id: "file_walker_subscription".to_string(),
         })
@@ -27,7 +26,7 @@ impl<H, I> iced_native::subscription::Recipe<H, I> for DesktopEntryWalker
 where
     H: std::hash::Hasher,
 {
-    type Output = DesktopEntry;
+    type Output = Entry;
 
     fn hash(&self, state: &mut H) {
         std::any::TypeId::of::<Self>().hash(state);
@@ -72,7 +71,7 @@ where
 // locations should be scanned at that point. If a menu file does not contain <DefaultAppDirs>,
 // then these locations are not scanned.
 async fn get_root_desktop_entries(
-    sender: Sender<DesktopEntry>,
+    sender: Sender<Entry>,
     finder: Arc<Option<IconFinder>>,
     entry_map: Arc<RwLock<Vec<String>>>,
 ) {
@@ -81,7 +80,7 @@ async fn get_root_desktop_entries(
 }
 
 async fn get_user_desktop_entries(
-    sender: Sender<DesktopEntry>,
+    sender: Sender<Entry>,
     finder: Arc<Option<IconFinder>>,
     entry_map: Arc<RwLock<Vec<String>>>,
 ) {
@@ -90,7 +89,7 @@ async fn get_user_desktop_entries(
 }
 
 async fn get_desktop_entries(
-    mut sender: futures::channel::mpsc::Sender<DesktopEntry>,
+    mut sender: futures::channel::mpsc::Sender<Entry>,
     desktop_dir: PathBuf,
     finder: Arc<Option<IconFinder>>,
     entry_map: Arc<RwLock<Vec<String>>>,
@@ -106,20 +105,17 @@ async fn get_desktop_entries(
         // deserialize the .desktop file ignoring failure
         if let Ok(desktop_entry) = serde_ini::from_str::<DesktopEntryIni>(&desktop_entry) {
             let content = desktop_entry.content;
-
+            let finder = finder.as_ref().to_owned().as_ref();
             // We need to keep track of already sent entries
             // "When two desktop entries have the same name, the one appearing earlier in the path is used"
             let mut map_entry_write_lock = entry_map.write().unwrap();
             if !map_entry_write_lock.contains(&content.name) {
                 debug!("Sending desktop entry : {:?} to main thread", &content);
                 let entry_name = content.name.clone();
-                if let Some(finder) = finder.borrow() {
-                    sender
-                        .start_send(DesktopEntry::with_icon(content, finder))
-                        .unwrap();
-                } else {
-                    sender.start_send(DesktopEntry::from(content)).unwrap();
-                }
+                sender
+                    .start_send(Entry::from_desktop_entry(content, finder))
+                    .unwrap();
+
                 map_entry_write_lock.push(entry_name);
             } else {
                 debug!("Desktop entry {} already present", &content.name);

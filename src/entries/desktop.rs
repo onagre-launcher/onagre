@@ -6,27 +6,34 @@ use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 use iced::{Container, HorizontalAlignment, Image, Length, Row, Text};
 use iced_native::Svg;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 
 #[derive(Debug, Clone)]
-pub struct DesktopEntry {
+pub struct Entry {
     // TODO: need to implement a cache
     // The number of time this entry has been launched already
     pub weight: u32,
     pub display_name: String,
+    pub options: Option<EntryOptions>,
+}
+
+#[derive(Debug, Clone)]
+pub struct EntryOptions {
     pub exec: String,
-    pub search_terms: String,
+    pub search_terms: Option<String>,
     pub icon: Option<IconPath>,
 }
 
-impl Entries<DesktopEntry> for Vec<Rc<DesktopEntry>> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Rc<DesktopEntry>> {
-        let mut entries: Vec<(&Rc<DesktopEntry>, i64)> = self
+impl Entries<Entry> for Vec<Rc<Entry>> {
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<Entry>> {
+        let mut entries: Vec<(&Rc<Entry>, i64)> = self
             .iter()
             .map(|entry| {
                 (
                     entry,
-                    matcher.fuzzy_match(&entry.search_terms, input).unwrap_or(0),
+                    matcher
+                        .fuzzy_match(&entry.get_search_terms(), input)
+                        .unwrap_or(0),
                 )
             })
             .filter(|(_, score)| *score > 10i64)
@@ -39,25 +46,33 @@ impl Entries<DesktopEntry> for Vec<Rc<DesktopEntry>> {
         entries
             .iter()
             .take(50)
-            .map(|(entry, _)| Rc::clone(entry))
+            .map(|(entry, _)| Rc::downgrade(entry))
             .collect()
     }
 
-    fn default_matches(&self) -> Vec<Rc<DesktopEntry>> {
-        self.iter().take(50).map(|rc| Rc::clone(rc)).collect()
+    fn default_matches(&self) -> Vec<Weak<Entry>> {
+        self.iter().take(50).map(|rc| Rc::downgrade(rc)).collect()
     }
 }
 
-impl<'a> ToRow<'a> for Rc<DesktopEntry> {
+impl<'a> ToRow<'a> for Weak<Entry> {
     fn as_row(&self) -> Container<'a, Message> {
         let mut row = Row::new();
-        row = if let Some(icon) = &self.icon {
+        let entry_ref = self.upgrade().unwrap();
+        let maybe_icon = entry_ref
+            .options
+            .as_ref()
+            .map(|opt| opt.icon.as_ref())
+            .flatten();
+
+        row = if let Some(icon) = maybe_icon {
             match &icon.extension {
                 Extension::SVG => row.push(
                     Svg::from_path(&icon.path)
                         .height(Length::Units(32))
                         .width(Length::Units(32)),
                 ),
+
                 Extension::PNG => row.push(
                     Image::new(&icon.path)
                         .height(Length::Units(32))
@@ -69,7 +84,7 @@ impl<'a> ToRow<'a> for Rc<DesktopEntry> {
         };
 
         row = row.push(
-            Text::new(&self.display_name)
+            Text::new(&entry_ref.display_name)
                 .width(Length::Fill)
                 .horizontal_alignment(HorizontalAlignment::Left),
         );
@@ -78,28 +93,48 @@ impl<'a> ToRow<'a> for Rc<DesktopEntry> {
     }
 }
 
-impl From<DesktopEntryInContent> for DesktopEntry {
-    fn from(desktop_entry: DesktopEntryInContent) -> Self {
-        let mut search_terms = desktop_entry.name.clone();
-        if let Some(keywords) = &desktop_entry.keywords {
-            search_terms.push_str(&keywords.replace(";", " "));
-        }
-
-        DesktopEntry {
+impl Entry {
+    pub fn from_custom_entry(display_name: String) -> Self {
+        Self {
             weight: 0,
-            display_name: desktop_entry.name,
-            search_terms,
-            exec: desktop_entry.exec,
-            icon: None,
+            display_name,
+            options: None,
         }
     }
-}
 
-impl DesktopEntry {
-    pub fn with_icon(desktop_entry: DesktopEntryInContent, finder: &IconFinder) -> Self {
-        let icon = desktop_entry.get_icon(32, finder);
-        let mut entry = Self::from(desktop_entry);
-        entry.icon = icon;
-        entry
+    pub fn from_desktop_entry(
+        desktop_entry: DesktopEntryInContent,
+        finder: Option<&IconFinder>,
+    ) -> Self {
+        let search_terms = desktop_entry
+            .keywords
+            .as_ref()
+            .map(|keywords| format!("{} {}", &desktop_entry.name, keywords.replace(";", " ")));
+
+        let icon = match finder {
+            None => None,
+            Some(finder) => desktop_entry.get_icon(32, finder),
+        };
+        let exec = desktop_entry.exec;
+        let display_name = desktop_entry.name;
+        Entry {
+            weight: 0,
+            display_name,
+            options: Some(EntryOptions {
+                exec,
+                search_terms,
+                icon,
+            }),
+        }
+    }
+
+    fn get_search_terms(&self) -> &str {
+        if let Some(options) = &self.options {
+            if let Some(terms) = &options.search_terms {
+                return terms;
+            }
+        }
+
+        return &self.display_name;
     }
 }

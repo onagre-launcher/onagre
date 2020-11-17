@@ -1,3 +1,4 @@
+use crate::entries::desktop::Entry;
 use async_process::{Command, Stdio};
 use async_std::{io::BufReader, prelude::*};
 use iced_native::futures::stream::BoxStream;
@@ -10,7 +11,7 @@ pub struct ExternalCommandSubscription {
 }
 
 impl ExternalCommandSubscription {
-    pub fn subscription(command: &str) -> Subscription<Vec<String>> {
+    pub fn subscription(command: &str) -> Subscription<Vec<Entry>> {
         iced::Subscription::from_recipe(ExternalCommandSubscription {
             command: command.to_string(),
         })
@@ -21,7 +22,7 @@ impl<H, I> iced_native::subscription::Recipe<H, I> for ExternalCommandSubscripti
 where
     H: std::hash::Hasher,
 {
-    type Output = Vec<String>;
+    type Output = Vec<Entry>;
 
     fn hash(&self, state: &mut H) {
         std::any::TypeId::of::<Self>().hash(state);
@@ -36,7 +37,7 @@ where
     }
 }
 
-async fn run_process(mut sender: futures::channel::mpsc::Sender<Vec<String>>, args: String) {
+async fn run_process(mut sender: futures::channel::mpsc::Sender<Vec<Entry>>, args: String) {
     let args = shell_words::split(&args).unwrap();
 
     let mut child = Command::new(&args[0])
@@ -51,7 +52,7 @@ async fn run_process(mut sender: futures::channel::mpsc::Sender<Vec<String>>, ar
     while let Some(chunk) = chunks.next().await {
         let mut next_batch = Vec::with_capacity(100);
         for entry in chunk {
-            next_batch.push(entry.unwrap())
+            next_batch.push(Entry::from_custom_entry(entry.unwrap()))
         }
         sender.start_send(next_batch).unwrap();
     }

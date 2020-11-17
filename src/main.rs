@@ -21,12 +21,12 @@ use iced::{
 use style::theme::Theme;
 
 use crate::config::OnagreSettings;
-use crate::entries::{desktop::DesktopEntry, Entries, EntriesState, ToRow};
+use crate::entries::{desktop::Entry, Entries, EntriesState, ToRow};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::Event;
 use serde::export::Formatter;
 use std::process::exit;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
 
@@ -95,8 +95,8 @@ impl State {
 #[derive(Debug, Clone)]
 pub enum Message {
     InputChanged(String),
-    DesktopEntryEvent(DesktopEntry),
-    CustomModeEvent(Vec<String>),
+    DesktopEntryEvent(Entry),
+    CustomModeEvent(Vec<Entry>),
     EventOccurred(iced_native::Event),
 }
 
@@ -149,7 +149,7 @@ impl Application for Onagre {
 
         match message {
             Message::CustomModeEvent(entries) => {
-                let new_entries: Vec<Rc<String>> = entries.into_iter().map(Rc::new).collect();
+                let new_entries: Vec<Rc<Entry>> = entries.into_iter().map(Rc::new).collect();
 
                 let current_mode = self.get_current_mode().to_string();
                 if let Some(entries) = self.state.entries.custom_entries.get_mut(&current_mode) {
@@ -335,7 +335,10 @@ impl Onagre {
                     .desktop_entries_matches
                     .get(selected)
                     .unwrap();
-                let argv = shell_words::split(&entry.exec);
+
+                let entry_ref = entry.upgrade().unwrap();
+                let options = entry_ref.options.as_ref().unwrap();
+                let argv = shell_words::split(&options.exec);
 
                 let argv = argv
                     .as_ref()
@@ -362,7 +365,7 @@ impl Onagre {
                     .unwrap();
 
                 let command = &SETTINGS.modes.get(mode_name).unwrap().target;
-                let command = command.replace("%", &entry);
+                let command = command.replace("%", &entry.upgrade().unwrap().display_name);
                 let argv = shell_words::split(&command).unwrap();
 
                 std::process::Command::new(&argv[0])
@@ -476,11 +479,11 @@ impl Onagre {
         mode
     }
 
-    fn set_desktop_matches(&mut self, matches: Vec<Rc<DesktopEntry>>) {
+    fn set_desktop_matches(&mut self, matches: Vec<Weak<Entry>>) {
         self.state.entries.desktop_entries_matches = matches;
     }
 
-    fn set_custom_matches(&mut self, mode_key: &str, matches: Vec<Rc<String>>) {
+    fn set_custom_matches(&mut self, mode_key: &str, matches: Vec<Weak<Entry>>) {
         self.state
             .entries
             .custom_entries_matches
