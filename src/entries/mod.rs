@@ -1,3 +1,5 @@
+pub mod cache;
+
 use crate::freedesktop::desktop::DesktopEntryInContent;
 use crate::freedesktop::icons::{Extension, IconFinder, IconPath};
 use crate::THEME;
@@ -7,26 +9,24 @@ use fuzzy_matcher::FuzzyMatcher;
 use iced::{Container, HorizontalAlignment, Image, Length, Row, Text};
 use iced_native::Svg;
 use std::collections::HashMap;
-use std::rc::{Rc, Weak};
+use std::sync::{Arc, RwLock, Weak};
 
 // Calling Hashmap::get(key: &Mode).unwrap() should always be safe since we initialize all
 // known mode on startup.
 #[derive(Debug, Default, Clone)]
 pub struct EntriesState {
-    pub mode_entries: HashMap<Mode, Vec<Rc<Entry>>>,
-    pub mode_matches: HashMap<Mode, Vec<Weak<Entry>>>,
+    pub mode_entries: HashMap<Mode, Vec<Arc<RwLock<Entry>>>>,
+    pub mode_matches: HashMap<Mode, Vec<Weak<RwLock<Entry>>>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Entry {
-    // TODO: need to implement a cache
-    // The number of time this entry has been launched already
     pub weight: u32,
     pub display_name: String,
     pub options: Option<EntryOptions>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntryOptions {
     pub exec: String,
     pub search_terms: Option<String>,
@@ -129,19 +129,19 @@ impl<'a> Entry {
 }
 
 pub trait Entries<T> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<T>>;
-    fn default_matches(&self) -> Vec<Weak<T>>;
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<RwLock<T>>>;
+    fn default_matches(&self) -> Vec<Weak<RwLock<T>>>;
 }
 
-impl Entries<Entry> for Vec<Rc<Entry>> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<Entry>> {
-        let mut entries: Vec<(&Rc<Entry>, i64)> = self
+impl Entries<Entry> for Vec<Arc<RwLock<Entry>>> {
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<RwLock<Entry>>> {
+        let mut entries: Vec<(&Arc<RwLock<Entry>>, i64)> = self
             .iter()
             .map(|entry| {
                 (
                     entry,
                     matcher
-                        .fuzzy_match(&entry.get_search_terms(), input)
+                        .fuzzy_match(&entry.read().unwrap().get_search_terms(), input)
                         .unwrap_or(0),
                 )
             })
@@ -155,26 +155,11 @@ impl Entries<Entry> for Vec<Rc<Entry>> {
         entries
             .iter()
             .take(50)
-            .map(|(entry, _)| Rc::downgrade(entry))
+            .map(|(entry, _)| Arc::downgrade(entry))
             .collect()
     }
 
-    fn default_matches(&self) -> Vec<Weak<Entry>> {
-        self.iter().take(50).map(|rc| Rc::downgrade(rc)).collect()
-    }
-}
-
-impl EntriesState {
-    pub fn new(modes: &[Mode]) -> Self {
-        let mut custom_entries = HashMap::new();
-
-        modes.iter().for_each(|mode| {
-            custom_entries.insert(mode.clone(), Vec::<Rc<Entry>>::with_capacity(256));
-        });
-
-        Self {
-            mode_entries: custom_entries,
-            mode_matches: Default::default(),
-        }
+    fn default_matches(&self) -> Vec<Weak<RwLock<Entry>>> {
+        self.iter().take(50).map(Arc::downgrade).collect()
     }
 }

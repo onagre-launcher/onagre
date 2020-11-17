@@ -26,8 +26,9 @@ use crate::entries::{EntriesState, Entry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::Event;
 use serde::export::Formatter;
+use std::collections::HashMap;
 use std::process::exit;
-use std::rc::{Rc, Weak};
+use std::sync::{Arc, RwLock, Weak};
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
 
@@ -79,13 +80,13 @@ impl std::fmt::Debug for OnagreMatcher {
     }
 }
 
-impl State {
-    fn new(modes: &[Mode]) -> Self {
+impl Default for State {
+    fn default() -> Self {
         State {
             loading: true,
             mode_button_idx: 0,
             selected: 0,
-            entries: EntriesState::new(modes),
+            entries: EntriesState::default(),
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
@@ -99,6 +100,7 @@ pub enum Message {
     DesktopEntryEvent(Entry),
     CustomModeEvent(Vec<Entry>),
     EventOccurred(iced_native::Event),
+    Loaded(HashMap<Mode, Vec<Arc<RwLock<Entry>>>>),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -128,12 +130,12 @@ impl Application for Onagre {
         (
             Onagre {
                 modes: modes.clone(),
-                state: State::new(modes.as_slice()),
+                state: State::default(),
                 matcher: OnagreMatcher {
                     matcher: SkimMatcherV2::default().ignore_case(),
                 },
             },
-            Command::none(),
+            Command::perform(entries::cache::get_cached_entries(modes), Message::Loaded),
         )
     }
 
@@ -150,7 +152,8 @@ impl Application for Onagre {
 
         match message {
             Message::CustomModeEvent(entries) => {
-                let new_entries: Vec<Rc<Entry>> = entries.into_iter().map(Rc::new).collect();
+                let new_entries: Vec<Arc<RwLock<Entry>>> =
+                    entries.into_iter().map(RwLock::new).map(Arc::new).collect();
 
                 let current_mode = self.get_current_mode().clone();
                 self.state
@@ -159,8 +162,6 @@ impl Application for Onagre {
                     .get_mut(&current_mode)
                     .unwrap()
                     .extend(new_entries);
-
-                self.reset_matches();
                 Command::none()
             }
             Message::InputChanged(input) => {
@@ -173,13 +174,26 @@ impl Application for Onagre {
                 Command::none()
             }
             Message::DesktopEntryEvent(entry) => {
-                self.state
+                let entries = self
+                    .state
                     .entries
                     .mode_entries
                     .get_mut(&Mode::Drun)
-                    .unwrap()
-                    .push(Rc::new(entry));
+                    .unwrap();
 
+                if entries
+                    .iter()
+                    .find(|current_entry| {
+                        current_entry.read().unwrap().display_name == entry.display_name
+                    })
+                    .is_none()
+                {
+                    entries.push(Arc::new(RwLock::new(entry)))
+                }
+                Command::none()
+            }
+            Message::Loaded(entries) => {
+                self.state.entries.mode_entries = entries;
                 self.reset_matches();
                 Command::none()
             }
@@ -215,9 +229,15 @@ impl Application for Onagre {
                 .enumerate()
                 .map(|(idx, entry)| {
                     if idx == self.state.selected {
-                        entry.upgrade().unwrap().to_row_selected().into()
+                        entry
+                            .upgrade()
+                            .unwrap()
+                            .read()
+                            .unwrap()
+                            .to_row_selected()
+                            .into()
                     } else {
-                        entry.upgrade().unwrap().to_row().into()
+                        entry.upgrade().unwrap().read().unwrap().to_row().into()
                     }
                 })
                 .collect();
@@ -314,13 +334,16 @@ impl Onagre {
         Row::with_children(rows)
     }
 
-    fn run_command(&self) -> Command<Message> {
+    fn run_command(&mut self) -> Command<Message> {
         let mode = self.get_current_mode();
         let selected = self.state.selected;
 
         let mode_entries = self.state.entries.mode_matches.get(mode).unwrap();
 
+        // This is the single mutable operation we have to do for entry
         let current_entry = mode_entries.get(selected).unwrap().upgrade().unwrap();
+        let mut current_entry = current_entry.write().unwrap();
+        current_entry.weight += 1;
 
         match mode {
             Mode::Drun => {
@@ -351,6 +374,10 @@ impl Onagre {
                     .expect("Command failure");
             }
         };
+
+        // Need to release the lock manually otherwise flush would block
+        drop(current_entry);
+        self.flush_all();
 
         // Is this ok with iced or shall we exit with and internal command ?
         exit(0);
@@ -383,6 +410,7 @@ impl Onagre {
                         self.cycle_mode();
                     }
                     KeyCode::Escape => {
+                        self.flush_all();
                         exit(0);
                     }
                     _ => {}
@@ -439,8 +467,27 @@ impl Onagre {
         mode
     }
 
-    fn set_custom_matches(&mut self, mode: Mode, matches: Vec<Weak<Entry>>) {
+    fn set_custom_matches(&mut self, mode: Mode, matches: Vec<Weak<RwLock<Entry>>>) {
         self.state.entries.mode_matches.insert(mode, matches);
+    }
+
+    fn flush_all(&mut self) {
+        // This is really dirty but for now the only solution I see to not take the exclusive lock
+        self.state
+            .entries
+            .mode_entries
+            .iter()
+            .for_each(|(mode, entries)| {
+                let mut entries = entries.clone();
+                entries.sort_unstable_by(|entry, other| {
+                    other
+                        .read()
+                        .unwrap()
+                        .weight
+                        .cmp(&entry.read().unwrap().weight)
+                });
+                entries::cache::flush_mode_cache(mode, &entries);
+            });
     }
 }
 

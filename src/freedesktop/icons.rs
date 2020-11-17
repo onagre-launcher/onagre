@@ -6,13 +6,13 @@ use std::path::{Path, PathBuf};
 
 const BASE_DIRS: &[&str] = &["/usr/share/icons", "/usr/share/pixmaps"];
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IconPath {
     pub path: PathBuf,
     pub extension: Extension,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Extension {
     SVG,
     PNG,
@@ -43,7 +43,7 @@ pub enum Scale {
 }
 
 impl IconPath {
-    fn try_from(path: PathBuf) -> Option<IconPath> {
+    pub(crate) fn try_from(path: PathBuf) -> Option<IconPath> {
         let extension = if let Some(ext) = path.extension() {
             let extension = ext.to_str().unwrap();
             match extension {
@@ -56,6 +56,10 @@ impl IconPath {
         };
 
         extension.map(|extension| IconPath { path, extension })
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.path.to_str().unwrap()
     }
 }
 

@@ -2165,6 +2165,7 @@ dependencies = [
  "serde 1.0.117",
  "serde_derive",
  "serde_ini",
+ "serde_json",
  "shell-words",
  "toml",
 ]
