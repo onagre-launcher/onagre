@@ -370,13 +370,7 @@ impl Onagre {
                     KeyCode::Down => {
                         let mode = self.get_current_mode();
 
-                        let max_idx = self
-                            .state
-                            .entries
-                            .mode_matches
-                            .get(mode)
-                            .unwrap()
-                            .len();
+                        let max_idx = self.state.entries.mode_matches.get(mode).unwrap().len();
 
                         if max_idx != 0 && self.state.selected < max_idx - 1 {
                             self.state.selected += 1
@@ -446,10 +440,7 @@ impl Onagre {
     }
 
     fn set_custom_matches(&mut self, mode: Mode, matches: Vec<Weak<Entry>>) {
-        self.state
-            .entries
-            .mode_matches
-            .insert(mode, matches);
+        self.state.entries.mode_matches.insert(mode, matches);
     }
 }
 

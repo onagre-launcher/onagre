@@ -64,7 +64,7 @@ fn generate_default_conf() -> Result<()> {
         target: "xdg-open %".to_string(),
     };
     modes.insert("xdg".to_string(), mode_xdg);
-    let settings = OnagreSettings { modes };
+    let settings = OnagreSettings { icons: None, modes };
 
     let settings = toml::to_string(&settings)?;
     std::fs::write(

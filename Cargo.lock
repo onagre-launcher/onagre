@@ -2154,7 +2154,6 @@ dependencies = [
  "config",
  "dirs 3.0.1",
  "env_logger",
- "futures",
  "fuzzy-matcher",
  "glob",
  "iced",

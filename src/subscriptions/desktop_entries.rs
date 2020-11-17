@@ -2,13 +2,16 @@ use crate::entries::Entry;
 use crate::freedesktop::desktop::DesktopEntryIni;
 use crate::freedesktop::icons::IconFinder;
 use crate::SETTINGS;
-use futures::channel::mpsc::Sender;
 use glob::glob;
+use iced::futures;
+use iced::futures::channel::mpsc;
+use iced::futures::channel::mpsc::Sender;
 use iced_native::futures::stream::BoxStream;
 use iced_native::Subscription;
 use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
+
 pub struct DesktopEntryWalker {
     id: String,
 }
@@ -33,7 +36,7 @@ where
     }
 
     fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
-        let (sender, receiver) = futures::channel::mpsc::channel(100000);
+        let (sender, receiver) = mpsc::channel(100000);
 
         // Spawn the file reader
         async_std::task::spawn(async {

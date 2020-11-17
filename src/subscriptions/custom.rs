@@ -1,6 +1,8 @@
 use crate::entries::Entry;
 use async_process::{Command, Stdio};
-use async_std::{io::BufReader, prelude::*};
+use iced::futures;
+use iced::futures::channel::mpsc;
+use iced::futures::{io::BufReader, prelude::*};
 use iced_native::futures::stream::BoxStream;
 use iced_native::futures::StreamExt;
 use iced_native::Subscription;
@@ -30,9 +32,9 @@ where
     }
 
     fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
-        let (sender, receiver) = futures::channel::mpsc::channel(100000);
+        let (sender, receiver) = mpsc::channel(100000);
         let command = self.command.clone();
-        std::thread::spawn(|| async_std::task::spawn(run_process(sender, command)));
+        async_std::task::spawn(run_process(sender, command));
         Box::pin(receiver)
     }
 }
