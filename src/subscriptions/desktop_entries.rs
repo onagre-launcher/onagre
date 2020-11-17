@@ -1,4 +1,4 @@
-use crate::entries::desktop::Entry;
+use crate::entries::Entry;
 use crate::freedesktop::desktop::DesktopEntryIni;
 use crate::freedesktop::icons::IconFinder;
 use crate::SETTINGS;
@@ -9,7 +9,6 @@ use iced_native::Subscription;
 use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-
 pub struct DesktopEntryWalker {
     id: String,
 }

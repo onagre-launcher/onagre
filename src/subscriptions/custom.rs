@@ -1,4 +1,4 @@
-use crate::entries::desktop::Entry;
+use crate::entries::Entry;
 use async_process::{Command, Stdio};
 use async_std::{io::BufReader, prelude::*};
 use iced_native::futures::stream::BoxStream;

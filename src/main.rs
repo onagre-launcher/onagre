@@ -21,7 +21,8 @@ use iced::{
 use style::theme::Theme;
 
 use crate::config::OnagreSettings;
-use crate::entries::{desktop::Entry, Entries, EntriesState, ToRow};
+use crate::entries::Entries;
+use crate::entries::{EntriesState, Entry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::Event;
 use serde::export::Formatter;
@@ -205,9 +206,9 @@ impl Application for Onagre {
                     .enumerate()
                     .map(|(idx, entry)| {
                         if idx == self.state.selected {
-                            entry.to_row_selected().into()
+                            entry.upgrade().unwrap().to_row_selected().into()
                         } else {
-                            entry.to_row().into()
+                            entry.upgrade().unwrap().to_row().into()
                         }
                     })
                     .collect();
@@ -224,9 +225,9 @@ impl Application for Onagre {
                         .enumerate()
                         .map(|(idx, entry)| {
                             if idx == self.state.selected {
-                                entry.to_row_selected().into()
+                                entry.upgrade().unwrap().to_row_selected().into()
                             } else {
-                                entry.to_row().into()
+                                entry.upgrade().unwrap().to_row().into()
                             }
                         })
                         .collect();
