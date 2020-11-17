@@ -9,12 +9,12 @@ use iced_native::Svg;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 
+// Calling Hashmap::get(key: &Mode).unwrap() should always be safe since we initialize all
+// known mode on startup.
 #[derive(Debug, Default, Clone)]
 pub struct EntriesState {
-    pub desktop_entries: Vec<Rc<Entry>>,
-    pub desktop_entries_matches: Vec<Weak<Entry>>,
-    pub custom_entries: HashMap<String, Vec<Rc<Entry>>>,
-    pub custom_entries_matches: HashMap<String, Vec<Weak<Entry>>>,
+    pub mode_entries: HashMap<Mode, Vec<Rc<Entry>>>,
+    pub mode_matches: HashMap<Mode, Vec<Weak<Entry>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -168,19 +168,13 @@ impl EntriesState {
     pub fn new(modes: &[Mode]) -> Self {
         let mut custom_entries = HashMap::new();
 
-        modes.iter().map(Mode::to_string).for_each(|mode_name| {
-            custom_entries.insert(mode_name, Vec::<Rc<Entry>>::with_capacity(256));
+        modes.iter().for_each(|mode| {
+            custom_entries.insert(mode.clone(), Vec::<Rc<Entry>>::with_capacity(256));
         });
 
         Self {
-            desktop_entries: Vec::with_capacity(256),
-            desktop_entries_matches: Vec::with_capacity(256),
-            custom_entries,
-            custom_entries_matches: Default::default(),
+            mode_entries: custom_entries,
+            mode_matches: Default::default(),
         }
-    }
-
-    pub fn get_mode_entries(&self, mode_key: &str) -> &Vec<Rc<Entry>> {
-        self.custom_entries.get(mode_key).unwrap()
     }
 }

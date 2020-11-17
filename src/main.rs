@@ -101,7 +101,7 @@ pub enum Message {
     EventOccurred(iced_native::Event),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Mode {
     Drun,
     Custom(String),
@@ -152,10 +152,14 @@ impl Application for Onagre {
             Message::CustomModeEvent(entries) => {
                 let new_entries: Vec<Rc<Entry>> = entries.into_iter().map(Rc::new).collect();
 
-                let current_mode = self.get_current_mode().to_string();
-                if let Some(entries) = self.state.entries.custom_entries.get_mut(&current_mode) {
-                    entries.extend(new_entries);
-                }
+                let current_mode = self.get_current_mode().clone();
+                self.state
+                    .entries
+                    .mode_entries
+                    .get_mut(&current_mode)
+                    .unwrap()
+                    .extend(new_entries);
+
                 self.reset_matches();
                 Command::none()
             }
@@ -169,7 +173,13 @@ impl Application for Onagre {
                 Command::none()
             }
             Message::DesktopEntryEvent(entry) => {
-                self.state.entries.desktop_entries.push(Rc::new(entry));
+                self.state
+                    .entries
+                    .mode_entries
+                    .get_mut(&Mode::Drun)
+                    .unwrap()
+                    .push(Rc::new(entry));
+
                 self.reset_matches();
                 Command::none()
             }
@@ -195,54 +205,32 @@ impl Application for Onagre {
         let mode_buttons: Row<Message> =
             Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
 
+        let current_mode = self.get_current_mode();
+        let matches = self.state.entries.mode_matches.get(current_mode);
+
         // Build rows from current mode search entries
-        let entry_column = match self.get_current_mode() {
-            Mode::Drun => {
-                let rows: Vec<Element<Message>> = self
-                    .state
-                    .entries
-                    .desktop_entries_matches
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, entry)| {
-                        if idx == self.state.selected {
-                            entry.upgrade().unwrap().to_row_selected().into()
-                        } else {
-                            entry.upgrade().unwrap().to_row().into()
-                        }
-                    })
-                    .collect();
+        let entries_column = if let Some(matches) = matches {
+            let rows: Vec<Element<Message>> = matches
+                .iter()
+                .enumerate()
+                .map(|(idx, entry)| {
+                    if idx == self.state.selected {
+                        entry.upgrade().unwrap().to_row_selected().into()
+                    } else {
+                        entry.upgrade().unwrap().to_row().into()
+                    }
+                })
+                .collect();
 
-                Column::with_children(rows)
-            }
-            Mode::Custom(name) => {
-                let matches = self.state.entries.custom_entries_matches.get(name);
-
-                if let Some(matches) = matches {
-                    let rows: Vec<Element<Message>> = matches
-                        .iter()
-                        .take(50)
-                        .enumerate()
-                        .map(|(idx, entry)| {
-                            if idx == self.state.selected {
-                                entry.upgrade().unwrap().to_row_selected().into()
-                            } else {
-                                entry.upgrade().unwrap().to_row().into()
-                            }
-                        })
-                        .collect();
-
-                    Column::with_children(rows)
-                } else {
-                    Column::new()
-                }
-            }
+            Column::with_children(rows)
+        } else {
+            Column::new()
         };
 
         // Scrollable element containing the rows
         let scrollable = Container::new(
             Scrollable::new(&mut self.state.scroll)
-                .with_content(entry_column)
+                .with_content(entries_column)
                 .height(THEME.scrollable.height.into())
                 .width(THEME.scrollable.width.into())
                 .scrollbar_width(THEME.scrollable.scroller_width)
@@ -327,54 +315,44 @@ impl Onagre {
     }
 
     fn run_command(&self) -> Command<Message> {
-        match self.get_current_mode() {
-            Mode::Drun => {
-                let selected = self.state.selected;
-                let entry = self
-                    .state
-                    .entries
-                    .desktop_entries_matches
-                    .get(selected)
-                    .unwrap();
+        let mode = self.get_current_mode();
+        let selected = self.state.selected;
 
-                let entry_ref = entry.upgrade().unwrap();
-                let options = entry_ref.options.as_ref().unwrap();
+        let mode_entries = self.state.entries.mode_matches.get(mode).unwrap();
+
+        let current_entry = mode_entries.get(selected).unwrap().upgrade().unwrap();
+
+        match mode {
+            Mode::Drun => {
+                let options = current_entry.options.as_ref().unwrap();
                 let argv = shell_words::split(&options.exec);
 
-                let argv = argv
-                    .as_ref()
-                    .unwrap()
+                let args = argv.unwrap();
+                let args = args
                     .iter()
                     // Filtering out special freedesktop syntax
                     .filter(|entry| !entry.starts_with('%'))
                     .collect::<Vec<&String>>();
 
-                std::process::Command::new(&argv[0])
-                    .args(&argv[1..])
+                std::process::Command::new(&args[0])
+                    .args(&args[1..])
                     .spawn()
                     .expect("Command failure");
             }
             Mode::Custom(mode_name) => {
-                let selected = self.state.selected;
-                let entry = self
-                    .state
-                    .entries
-                    .custom_entries_matches
-                    .get(mode_name)
-                    .unwrap()
-                    .get(selected)
-                    .unwrap();
-
                 let command = &SETTINGS.modes.get(mode_name).unwrap().target;
-                let command = command.replace("%", &entry.upgrade().unwrap().display_name);
-                let argv = shell_words::split(&command).unwrap();
+                let command = command.replace("%", &current_entry.display_name);
+                let args = shell_words::split(&command).unwrap();
+                let args = args.iter().collect::<Vec<&String>>();
 
-                std::process::Command::new(&argv[0])
-                    .args(&argv[1..])
+                std::process::Command::new(&args[0])
+                    .args(&args[1..])
                     .spawn()
                     .expect("Command failure");
             }
-        }
+        };
+
+        // Is this ok with iced or shall we exit with and internal command ?
         exit(0);
     }
 
@@ -390,16 +368,15 @@ impl Onagre {
                         }
                     }
                     KeyCode::Down => {
-                        let max_idx = match self.get_current_mode() {
-                            Mode::Drun => self.state.entries.desktop_entries_matches.len(),
-                            Mode::Custom(name) => self
-                                .state
-                                .entries
-                                .custom_entries_matches
-                                .get(name)
-                                .unwrap()
-                                .len(),
-                        };
+                        let mode = self.get_current_mode();
+
+                        let max_idx = self
+                            .state
+                            .entries
+                            .mode_matches
+                            .get(mode)
+                            .unwrap()
+                            .len();
 
                         if max_idx != 0 && self.state.selected < max_idx - 1 {
                             self.state.selected += 1
@@ -423,39 +400,27 @@ impl Onagre {
     fn reset_matches(&mut self) {
         self.state.selected = 0;
 
-        match self.get_current_mode() {
-            Mode::Drun => {
-                if self.state.input_value == "" {
-                    self.set_desktop_matches(self.state.entries.desktop_entries.default_matches());
-                } else {
-                    self.set_desktop_matches(
-                        self.state
-                            .entries
-                            .desktop_entries
-                            .get_matches(&self.state.input_value, &self.matcher.matcher),
-                    );
-                }
-            }
-            Mode::Custom(mode_name) => {
-                let mode_name = mode_name.clone();
-                if self.state.input_value == "" {
-                    self.set_custom_matches(
-                        &mode_name,
-                        self.state
-                            .entries
-                            .get_mode_entries(&mode_name)
-                            .default_matches(),
-                    );
-                } else {
-                    self.set_custom_matches(
-                        &mode_name,
-                        self.state
-                            .entries
-                            .get_mode_entries(&mode_name)
-                            .get_matches(&self.state.input_value, &self.matcher.matcher),
-                    )
-                }
-            }
+        let mode = self.get_current_mode().clone();
+        if self.state.input_value == "" {
+            let matches = self
+                .state
+                .entries
+                .mode_entries
+                .get(&mode)
+                .unwrap()
+                .default_matches();
+
+            self.set_custom_matches(mode, matches);
+        } else {
+            let matches = self
+                .state
+                .entries
+                .mode_entries
+                .get(&mode)
+                .unwrap()
+                .get_matches(&self.state.input_value, &self.matcher.matcher);
+
+            self.set_custom_matches(mode, matches)
         }
     }
 
@@ -480,15 +445,11 @@ impl Onagre {
         mode
     }
 
-    fn set_desktop_matches(&mut self, matches: Vec<Weak<Entry>>) {
-        self.state.entries.desktop_entries_matches = matches;
-    }
-
-    fn set_custom_matches(&mut self, mode_key: &str, matches: Vec<Weak<Entry>>) {
+    fn set_custom_matches(&mut self, mode: Mode, matches: Vec<Weak<Entry>>) {
         self.state
             .entries
-            .custom_entries_matches
-            .insert(mode_key.to_string(), matches);
+            .mode_matches
+            .insert(mode, matches);
     }
 }
 
