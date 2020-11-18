@@ -11,7 +11,7 @@ use iced_native::Svg;
 use std::collections::HashMap;
 
 // Calling Hashmap::get(key: &Mode).unwrap() should always be safe since we initialize all
-// known mode on startup.
+// known mode on startup and never add or remove them at runtime
 #[derive(Debug, Default, Clone)]
 pub struct EntriesState {
     pub mode_entries: HashMap<Mode, Vec<Entry>>,
@@ -96,25 +96,23 @@ impl<'a> Entry {
     }
 
     fn as_row(&self) -> Container<'a, Message> {
-        let mut row = Row::new();
         let maybe_icon = self.options.as_ref().map(|opt| opt.icon.as_ref()).flatten();
-
-        row = if let Some(icon) = maybe_icon {
+        let mut row = if let Some(icon) = maybe_icon {
             match &icon.extension {
-                Extension::SVG => row.push(
+                Extension::SVG => Row::new().push(
                     Svg::from_path(&icon.path)
                         .height(Length::Units(32))
                         .width(Length::Units(32)),
                 ),
 
-                Extension::PNG => row.push(
+                Extension::PNG => Row::new().push(
                     Image::new(&icon.path)
                         .height(Length::Units(32))
                         .width(Length::Units(32)),
                 ),
             }
         } else {
-            row
+            Row::new()
         };
 
         row = row.push(
@@ -149,8 +147,10 @@ impl Entries<Entry> for Vec<Entry> {
             .filter(|(_, _, score)| *score > 10i64)
             .collect();
 
-        // sort by match score
-        entries.sort_unstable_by(|(_, _, prev), (_, _, cur)| cur.cmp(prev));
+        entries.sort_unstable_by(|(_, prev_entry, prev), (_, cur_entry, cur)| {
+            // sort by match score + entry weight
+            (cur + cur_entry.weight as i64).cmp(&(prev + prev_entry.weight as i64))
+        });
 
         // Take only the first results ordered
         entries.iter().take(50).map(|(idx, _, _)| *idx).collect()

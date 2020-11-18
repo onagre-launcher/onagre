@@ -182,7 +182,10 @@ impl Application for Onagre {
                     .find(|current_entry| current_entry.display_name == entry.display_name);
 
                 if entry_is_known_already.is_none() {
-                    entries.push(entry)
+                    entries.push(entry);
+                    // TODO: maybe just match this entry against current
+                    // input value and update only if we have a good score
+                    self.reset_matches();
                 }
 
                 Command::none()
@@ -224,9 +227,9 @@ impl Application for Onagre {
                 .enumerate()
                 .map(|(idx, entry)| {
                     if idx == self.state.selected {
-                        self.resolve_match(*entry).to_row_selected().into()
+                        self.entry_by_idx(*entry).to_row_selected().into()
                     } else {
-                        self.resolve_match(*entry).to_row().into()
+                        self.entry_by_idx(*entry).to_row().into()
                     }
                 })
                 .collect();
@@ -297,7 +300,7 @@ impl Application for Onagre {
 }
 
 impl Onagre {
-    fn resolve_match(&self, idx: usize) -> &Entry {
+    fn entry_by_idx(&self, idx: usize) -> &Entry {
         let mode = self.get_current_mode();
         self.state
             .entries
@@ -308,7 +311,7 @@ impl Onagre {
             .unwrap()
     }
 
-    fn resolve_match_mut(&mut self, idx: usize) -> &mut Entry {
+    fn entry_mut_by_idx(&mut self, idx: usize) -> &mut Entry {
         let mode = self.get_current_mode().clone();
         self.state
             .entries
@@ -353,7 +356,7 @@ impl Onagre {
 
         let current_entry_idx = *mode_entries.get(selected).unwrap();
 
-        let mut current_entry = self.resolve_match_mut(current_entry_idx);
+        let mut current_entry = self.entry_mut_by_idx(current_entry_idx);
 
         // This is the single mutable operation we have to do for entry
         current_entry.weight += 1;
