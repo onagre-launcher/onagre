@@ -9,14 +9,13 @@ use fuzzy_matcher::FuzzyMatcher;
 use iced::{Container, HorizontalAlignment, Image, Length, Row, Text};
 use iced_native::Svg;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock, Weak};
 
 // Calling Hashmap::get(key: &Mode).unwrap() should always be safe since we initialize all
 // known mode on startup.
 #[derive(Debug, Default, Clone)]
 pub struct EntriesState {
-    pub mode_entries: HashMap<Mode, Vec<Arc<RwLock<Entry>>>>,
-    pub mode_matches: HashMap<Mode, Vec<Weak<RwLock<Entry>>>>,
+    pub mode_entries: HashMap<Mode, Vec<Entry>>,
+    pub mode_matches: HashMap<Mode, Vec<usize>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -129,37 +128,39 @@ impl<'a> Entry {
 }
 
 pub trait Entries<T> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<RwLock<T>>>;
-    fn default_matches(&self) -> Vec<Weak<RwLock<T>>>;
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<usize>;
+    fn default_matches(&self) -> Vec<usize>;
 }
 
-impl Entries<Entry> for Vec<Arc<RwLock<Entry>>> {
-    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<Weak<RwLock<Entry>>> {
-        let mut entries: Vec<(&Arc<RwLock<Entry>>, i64)> = self
+impl Entries<Entry> for Vec<Entry> {
+    fn get_matches(&self, input: &str, matcher: &SkimMatcherV2) -> Vec<usize> {
+        let mut entries: Vec<(usize, &Entry, i64)> = self
             .iter()
-            .map(|entry| {
+            .enumerate()
+            .map(|(idx, entry)| {
                 (
+                    idx,
                     entry,
                     matcher
-                        .fuzzy_match(&entry.read().unwrap().get_search_terms(), input)
+                        .fuzzy_match(&entry.get_search_terms(), input)
                         .unwrap_or(0),
                 )
             })
-            .filter(|(_, score)| *score > 10i64)
+            .filter(|(_, _, score)| *score > 10i64)
             .collect();
 
         // sort by match score
-        entries.sort_unstable_by(|(_, prev), (_, cur)| cur.cmp(prev));
+        entries.sort_unstable_by(|(_, _, prev), (_, _, cur)| cur.cmp(prev));
 
         // Take only the first results ordered
-        entries
-            .iter()
-            .take(50)
-            .map(|(entry, _)| Arc::downgrade(entry))
-            .collect()
+        entries.iter().take(50).map(|(idx, _, _)| *idx).collect()
     }
 
-    fn default_matches(&self) -> Vec<Weak<RwLock<Entry>>> {
-        self.iter().take(50).map(Arc::downgrade).collect()
+    fn default_matches(&self) -> Vec<usize> {
+        self.iter()
+            .enumerate()
+            .take(50)
+            .map(|(idx, _)| idx)
+            .collect()
     }
 }

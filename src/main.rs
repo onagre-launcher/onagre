@@ -28,7 +28,6 @@ use iced_native::Event;
 use serde::export::Formatter;
 use std::collections::HashMap;
 use std::process::exit;
-use std::sync::{Arc, RwLock, Weak};
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
 
@@ -100,7 +99,7 @@ pub enum Message {
     DesktopEntryEvent(Entry),
     CustomModeEvent(Vec<Entry>),
     EventOccurred(iced_native::Event),
-    Loaded(HashMap<Mode, Vec<Arc<RwLock<Entry>>>>),
+    Loaded(HashMap<Mode, Vec<Entry>>),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -152,16 +151,13 @@ impl Application for Onagre {
 
         match message {
             Message::CustomModeEvent(entries) => {
-                let new_entries: Vec<Arc<RwLock<Entry>>> =
-                    entries.into_iter().map(RwLock::new).map(Arc::new).collect();
-
                 let current_mode = self.get_current_mode().clone();
                 self.state
                     .entries
                     .mode_entries
                     .get_mut(&current_mode)
                     .unwrap()
-                    .extend(new_entries);
+                    .extend(entries);
                 Command::none()
             }
             Message::InputChanged(input) => {
@@ -181,15 +177,14 @@ impl Application for Onagre {
                     .get_mut(&Mode::Drun)
                     .unwrap();
 
-                if entries
+                let entry_is_known_already = entries
                     .iter()
-                    .find(|current_entry| {
-                        current_entry.read().unwrap().display_name == entry.display_name
-                    })
-                    .is_none()
-                {
-                    entries.push(Arc::new(RwLock::new(entry)))
+                    .find(|current_entry| current_entry.display_name == entry.display_name);
+
+                if entry_is_known_already.is_none() {
+                    entries.push(entry)
                 }
+
                 Command::none()
             }
             Message::Loaded(entries) => {
@@ -229,15 +224,9 @@ impl Application for Onagre {
                 .enumerate()
                 .map(|(idx, entry)| {
                     if idx == self.state.selected {
-                        entry
-                            .upgrade()
-                            .unwrap()
-                            .read()
-                            .unwrap()
-                            .to_row_selected()
-                            .into()
+                        self.resolve_match(*entry).to_row_selected().into()
                     } else {
-                        entry.upgrade().unwrap().read().unwrap().to_row().into()
+                        self.resolve_match(*entry).to_row().into()
                     }
                 })
                 .collect();
@@ -308,6 +297,28 @@ impl Application for Onagre {
 }
 
 impl Onagre {
+    fn resolve_match(&self, idx: usize) -> &Entry {
+        let mode = self.get_current_mode();
+        self.state
+            .entries
+            .mode_entries
+            .get(mode)
+            .unwrap()
+            .get(idx)
+            .unwrap()
+    }
+
+    fn resolve_match_mut(&mut self, idx: usize) -> &mut Entry {
+        let mode = self.get_current_mode().clone();
+        self.state
+            .entries
+            .mode_entries
+            .get_mut(&mode)
+            .unwrap()
+            .get_mut(idx)
+            .unwrap()
+    }
+
     fn build_mode_menu(mode_idx: usize, modes: &[Mode]) -> Row<'_, Message> {
         let rows: Vec<Element<Message>> = modes
             .iter()
@@ -335,14 +346,16 @@ impl Onagre {
     }
 
     fn run_command(&mut self) -> Command<Message> {
-        let mode = self.get_current_mode();
+        let mode = self.get_current_mode().clone();
         let selected = self.state.selected;
 
-        let mode_entries = self.state.entries.mode_matches.get(mode).unwrap();
+        let mode_entries = self.state.entries.mode_matches.get(&mode).unwrap();
+
+        let current_entry_idx = *mode_entries.get(selected).unwrap();
+
+        let mut current_entry = self.resolve_match_mut(current_entry_idx);
 
         // This is the single mutable operation we have to do for entry
-        let current_entry = mode_entries.get(selected).unwrap().upgrade().unwrap();
-        let mut current_entry = current_entry.write().unwrap();
         current_entry.weight += 1;
 
         match mode {
@@ -363,7 +376,7 @@ impl Onagre {
                     .expect("Command failure");
             }
             Mode::Custom(mode_name) => {
-                let command = &SETTINGS.modes.get(mode_name).unwrap().target;
+                let command = &SETTINGS.modes.get(&mode_name).unwrap().target;
                 let command = command.replace("%", &current_entry.display_name);
                 let args = shell_words::split(&command).unwrap();
                 let args = args.iter().collect::<Vec<&String>>();
@@ -375,8 +388,6 @@ impl Onagre {
             }
         };
 
-        // Need to release the lock manually otherwise flush would block
-        drop(current_entry);
         self.flush_all();
 
         // Is this ok with iced or shall we exit with and internal command ?
@@ -467,7 +478,7 @@ impl Onagre {
         mode
     }
 
-    fn set_custom_matches(&mut self, mode: Mode, matches: Vec<Weak<RwLock<Entry>>>) {
+    fn set_custom_matches(&mut self, mode: Mode, matches: Vec<usize>) {
         self.state.entries.mode_matches.insert(mode, matches);
     }
 
@@ -479,13 +490,7 @@ impl Onagre {
             .iter()
             .for_each(|(mode, entries)| {
                 let mut entries = entries.clone();
-                entries.sort_unstable_by(|entry, other| {
-                    other
-                        .read()
-                        .unwrap()
-                        .weight
-                        .cmp(&entry.read().unwrap().weight)
-                });
+                entries.sort_unstable_by(|entry, other| other.weight.cmp(&entry.weight));
                 entries::cache::flush_mode_cache(mode, &entries);
             });
     }

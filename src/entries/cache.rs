@@ -3,9 +3,8 @@ use crate::Mode;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::{Arc, RwLock};
 
-pub async fn get_cached_entries(modes: Vec<Mode>) -> HashMap<Mode, Vec<Arc<RwLock<Entry>>>> {
+pub async fn get_cached_entries(modes: Vec<Mode>) -> HashMap<Mode, Vec<Entry>> {
     let mut entry_map = HashMap::new();
 
     for mode in modes {
@@ -21,28 +20,20 @@ pub async fn get_cached_entries(modes: Vec<Mode>) -> HashMap<Mode, Vec<Arc<RwLoc
     entry_map
 }
 
-async fn get_cache(mode: &Mode) -> Vec<Arc<RwLock<Entry>>> {
+async fn get_cache(mode: &Mode) -> Vec<Entry> {
     let cache_file = get_cache_mode_path(mode);
     if let Ok(file_content) = fs::read_to_string(cache_file) {
         let entries: Result<Vec<Entry>, serde_json::Error> = serde_json::from_str(&file_content);
-        if let Ok(entries) = entries {
-            entries.into_iter().map(RwLock::new).map(Arc::new).collect()
-        } else {
-            vec![]
-        }
+        entries.unwrap_or_default()
     } else {
-        vec![]
+        Default::default()
     }
 }
 
-pub fn flush_mode_cache(mode: &Mode, entries: &[Arc<RwLock<Entry>>]) {
-    let mut owned_entries = vec![];
-    for entry in entries.iter().take(50) {
-        owned_entries.push(entry.read().unwrap().clone());
-    }
+pub fn flush_mode_cache(mode: &Mode, entries: &[Entry]) {
+    let entries: Vec<&Entry> = entries.iter().take(50).collect();
 
-    if let Ok(content) = serde_json::to_string(&owned_entries) {
-        debug!("Flushing {} entries for mode {:?}", entries.len(), mode);
+    if let Ok(content) = serde_json::to_string(&entries) {
         let _ = std::fs::write(get_cache_mode_path(mode), content);
     }
 }
