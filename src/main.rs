@@ -60,7 +60,6 @@ struct Onagre {
 
 #[derive(Debug)]
 struct State {
-    loading: bool,
     mode_button_idx: usize,
     selected: usize,
     entries: EntriesState,
@@ -82,7 +81,6 @@ impl std::fmt::Debug for OnagreMatcher {
 impl Default for State {
     fn default() -> Self {
         State {
-            loading: true,
             mode_button_idx: 0,
             selected: 0,
             entries: EntriesState::default(),
@@ -170,7 +168,6 @@ impl Application for Onagre {
                     .collect();
 
                     entries.extend(new_entries_filtered);
-                println!("{}", n);
                 Command::none()
             }
             Message::InputChanged(input) => {
