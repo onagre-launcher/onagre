@@ -150,14 +150,27 @@ impl Application for Onagre {
         self.state.input.focus(true);
 
         match message {
-            Message::CustomModeEvent(entries) => {
+            Message::CustomModeEvent(new_entries) => {
                 let current_mode = self.get_current_mode().clone();
-                self.state
+                let entries = self.state
                     .entries
                     .mode_entries
                     .get_mut(&current_mode)
-                    .unwrap()
-                    .extend(entries);
+                    .unwrap();
+
+                let new_entries_filtered: Vec<Entry> = new_entries.into_iter()
+                    .filter(|entry| {
+                        entries
+                            .iter()
+                            .find(|current_entry| {
+                                current_entry.display_name == entry.display_name
+                            })
+                            .is_none()
+                    })
+                    .collect();
+
+                    entries.extend(new_entries_filtered);
+                println!("{}", n);
                 Command::none()
             }
             Message::InputChanged(input) => {
