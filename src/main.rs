@@ -26,7 +26,7 @@ use crate::entries::{EntriesState, Entry};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::Event;
 use serde::export::Formatter;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::process::exit;
 use subscriptions::custom::ExternalCommandSubscription;
 use subscriptions::desktop_entries::DesktopEntryWalker;
@@ -60,8 +60,11 @@ struct Onagre {
 
 #[derive(Debug)]
 struct State {
-    mode_button_idx: usize,
-    selected: usize,
+    // This is used to ensure we never unsubscribe to a mode command
+    // this way we ensure the subscription command is never executed more than once
+    mode_subs: HashSet<Mode>,
+    current_mode_idx: usize,
+    line_selected_idx: usize,
     entries: EntriesState,
     scroll: scrollable::State,
     input: text_input::State,
@@ -78,11 +81,15 @@ impl std::fmt::Debug for OnagreMatcher {
     }
 }
 
-impl Default for State {
-    fn default() -> Self {
+impl State {
+    fn new(startup_mode: Mode) -> Self {
+        let mut mode_subs = HashSet::new();
+        mode_subs.insert(startup_mode);
+
         State {
-            mode_button_idx: 0,
-            selected: 0,
+            mode_subs,
+            current_mode_idx: 0,
+            line_selected_idx: 0,
             entries: EntriesState::default(),
             scroll: Default::default(),
             input: Default::default(),
@@ -127,7 +134,7 @@ impl Application for Onagre {
         (
             Onagre {
                 modes: modes.clone(),
-                state: State::default(),
+                state: State::new(Mode::Drun), //TODO: get startup mode form config
                 matcher: OnagreMatcher {
                     matcher: SkimMatcherV2::default().ignore_case(),
                 },
@@ -167,7 +174,7 @@ impl Application for Onagre {
                     })
                     .collect();
 
-                    entries.extend(new_entries_filtered);
+                entries.extend(new_entries_filtered);
                 Command::none()
             }
             Message::InputChanged(input) => {
@@ -210,22 +217,22 @@ impl Application for Onagre {
 
     fn subscription(&self) -> Subscription<Message> {
         let event = iced_native::subscription::events().map(Message::EventOccurred);
-        let desktop_entries = DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent);
+        let mut subs = vec![event];
 
-        let mut subscriptions = vec![event, desktop_entries];
-        if let Mode::Custom(name) = self.get_current_mode() {
-            let command = &SETTINGS.modes.get(name).unwrap().source;
-            subscriptions.push(
-                ExternalCommandSubscription::subscription(command).map(Message::CustomModeEvent),
-            );
-        }
+        let mode_subs: Vec<Subscription<Message>> = self.state.mode_subs
+            .iter()
+            .cloned()
+            .map(|mode| mode.into())
+            .collect();
 
-        Subscription::batch(subscriptions)
+        subs.extend(mode_subs);
+
+        Subscription::batch(subs)
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         let mode_buttons: Row<Message> =
-            Self::build_mode_menu(self.state.mode_button_idx, &self.modes);
+            Self::build_mode_menu(self.state.current_mode_idx, &self.modes);
 
         let current_mode = self.get_current_mode();
         let matches = self.state.entries.mode_matches.get(current_mode);
@@ -236,7 +243,7 @@ impl Application for Onagre {
                 .iter()
                 .enumerate()
                 .map(|(idx, entry)| {
-                    if idx == self.state.selected {
+                    if idx == self.state.line_selected_idx {
                         self.entry_by_idx(*entry).to_row_selected().into()
                     } else {
                         self.entry_by_idx(*entry).to_row().into()
@@ -259,8 +266,8 @@ impl Application for Onagre {
                 .scroller_width(THEME.scrollable.scrollbar_width)
                 .style(&THEME.scrollable),
         )
-        .style(&THEME.scrollable)
-        .padding(THEME.scrollable.padding);
+            .style(&THEME.scrollable)
+            .padding(THEME.scrollable.padding);
 
         // Switch mode menu
         let mode_menu = Container::new(
@@ -269,8 +276,8 @@ impl Application for Onagre {
                 .height(THEME.menu.width.into())
                 .width(THEME.menu.height.into()),
         )
-        .padding(THEME.menu.padding)
-        .style(&THEME.menu);
+            .padding(THEME.menu.padding)
+            .style(&THEME.menu);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -278,8 +285,8 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-        .width(THEME.search.bar.text_width.into())
-        .style(&THEME.search.bar);
+            .width(THEME.search.bar.text_width.into())
+            .style(&THEME.search.bar);
 
         let search_bar = Container::new(
             Row::new()
@@ -290,8 +297,8 @@ impl Application for Onagre {
                 .width(THEME.search.width.into())
                 .height(THEME.search.height.into()),
         )
-        .padding(THEME.search.padding)
-        .style(&THEME.search);
+            .padding(THEME.search.padding)
+            .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
@@ -303,7 +310,7 @@ impl Application for Onagre {
                 .width(Length::Fill)
                 .padding(20),
         )
-        .style(THEME.as_ref());
+            .style(THEME.as_ref());
 
         app_container.into()
     }
@@ -360,7 +367,7 @@ impl Onagre {
 
     fn run_command(&mut self) -> Command<Message> {
         let mode = self.get_current_mode().clone();
-        let selected = self.state.selected;
+        let selected = self.state.line_selected_idx;
 
         let mode_entries = self.state.entries.mode_matches.get(&mode).unwrap();
 
@@ -414,8 +421,8 @@ impl Onagre {
             if let iced_native::keyboard::Event::KeyPressed { key_code, .. } = keyboard_event {
                 match key_code {
                     KeyCode::Up => {
-                        if self.state.selected != 0 {
-                            self.state.selected -= 1
+                        if self.state.line_selected_idx != 0 {
+                            self.state.line_selected_idx -= 1
                         }
                     }
                     KeyCode::Down => {
@@ -423,8 +430,8 @@ impl Onagre {
 
                         let max_idx = self.state.entries.mode_matches.get(mode).unwrap().len();
 
-                        if max_idx != 0 && self.state.selected < max_idx - 1 {
-                            self.state.selected += 1
+                        if max_idx != 0 && self.state.line_selected_idx < max_idx - 1 {
+                            self.state.line_selected_idx += 1
                         }
                     }
                     KeyCode::Enter => {
@@ -432,6 +439,8 @@ impl Onagre {
                     }
                     KeyCode::Tab => {
                         self.cycle_mode();
+                        let mode = self.get_current_mode().clone();
+                        let _ = self.state.mode_subs.insert(mode);
                     }
                     KeyCode::Escape => {
                         self.flush_all();
@@ -444,7 +453,7 @@ impl Onagre {
     }
 
     fn reset_matches(&mut self) {
-        self.state.selected = 0;
+        self.state.line_selected_idx = 0;
 
         let mode = self.get_current_mode().clone();
         if self.state.input_value == "" {
@@ -471,23 +480,23 @@ impl Onagre {
     }
 
     fn cycle_mode(&mut self) {
-        println!("{}/{}", self.state.mode_button_idx, self.modes.len());
-        if self.state.mode_button_idx == self.modes.len() - 1 {
-            debug!("Changing mode {} -> 0", self.state.mode_button_idx);
-            self.state.mode_button_idx = 0
+        println!("{}/{}", self.state.current_mode_idx, self.modes.len());
+        if self.state.current_mode_idx == self.modes.len() - 1 {
+            debug!("Changing mode {} -> 0", self.state.current_mode_idx);
+            self.state.current_mode_idx = 0
         } else {
             debug!(
                 "Changing mode {} -> {}",
-                self.state.mode_button_idx,
-                self.state.mode_button_idx + 1
+                self.state.current_mode_idx,
+                self.state.current_mode_idx + 1
             );
-            self.state.mode_button_idx += 1
+            self.state.current_mode_idx += 1
         }
     }
 
     fn get_current_mode(&self) -> &Mode {
         // Safe unwrap, we control the idx here
-        let mode = self.modes.get(self.state.mode_button_idx).unwrap();
+        let mode = self.modes.get(self.state.current_mode_idx).unwrap();
         mode
     }
 
@@ -544,5 +553,17 @@ impl Onagre {
             .arg("for_window [app_id=\"Onagre\"] resize set width 45 ppt height  35 ppt")
             .output()
             .expect("not on sway");
+    }
+}
+
+impl Into<Subscription<Message>> for Mode {
+    fn into(self) -> Subscription<Message> {
+        match self {
+            Mode::Drun => DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent),
+            Mode::Custom(name) => {
+                let command = &SETTINGS.modes.get(&name).unwrap().source;
+                ExternalCommandSubscription::subscription(command).map(Message::CustomModeEvent)
+            }
+        }
     }
 }
