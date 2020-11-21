@@ -185,8 +185,11 @@ impl Application for Onagre {
                     .get_mut(&Mode::Drun)
                     .unwrap();
 
-                entries.push(entry);
-                entries.dedup_by(|entry, other| entry.display_name == other.display_name);
+                if !entries.contains(&entry) {
+                    entries.push(entry);
+                    self.reset_matches();
+                }
+
                 Command::none()
             }
             Message::Loaded(entries) => {

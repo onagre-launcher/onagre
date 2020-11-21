@@ -32,6 +32,12 @@ pub struct EntryOptions {
     pub icon: Option<IconPath>,
 }
 
+impl PartialEq<Entry> for Entry {
+    fn eq(&self, other: &Entry) -> bool {
+       self.display_name == other.display_name 
+    }
+}
+
 impl<'a> Entry {
     pub fn from_custom_entry(display_name: String) -> Self {
         Self {
