@@ -72,7 +72,7 @@ impl text_input::StyleSheet for &SearchBarStyles {
             border_radius: self.border_radius,
             border_width: self.border_width,
             border_color: self.border_color.into(),
-        }    
+        }
     }
 
     fn focused(&self) -> text_input::Style {

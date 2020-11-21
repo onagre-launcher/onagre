@@ -34,7 +34,21 @@ pub struct EntryOptions {
 
 impl PartialEq<Entry> for Entry {
     fn eq(&self, other: &Entry) -> bool {
-       self.display_name == other.display_name 
+        self.display_name == other.display_name
+    }
+}
+
+impl Eq for Entry {}
+
+impl PartialOrd<Entry> for Entry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.display_name.cmp(&other.display_name))
+    }
+}
+
+impl Ord for Entry {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.display_name.cmp(&other.display_name)
     }
 }
 
@@ -60,6 +74,7 @@ impl<'a> Entry {
             None => None,
             Some(finder) => desktop_entry.get_icon(32, finder),
         };
+
         let exec = desktop_entry.exec;
         let display_name = desktop_entry.name;
         Entry {

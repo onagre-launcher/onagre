@@ -165,7 +165,8 @@ impl Application for Onagre {
                     .unwrap();
 
                 entries.extend(new_entries);
-                entries.dedup_by(|entry, other| entry.display_name == other.display_name);
+                entries.sort();
+                entries.dedup();
                 Command::none()
             }
             Message::InputChanged(input) => {

@@ -46,10 +46,10 @@ impl OnagreSettings {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap; 
-    use super::OnagreSettings;
     use super::ModeSettings;
-    use anyhow::Result; 
+    use super::OnagreSettings;
+    use anyhow::Result;
+    use std::collections::HashMap;
 
     #[test]
     fn generate_default_conf() -> Result<()> {
@@ -85,4 +85,3 @@ mod tests {
         Ok(())
     }
 }
-
