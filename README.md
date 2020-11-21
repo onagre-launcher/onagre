@@ -123,16 +123,16 @@ To completely hide a menu you can simply set its height and width properties to 
   - [ ] prefix mode search (ex: type "de" to search for desktop entries).
   - [ ] config from flag.
 
-# Code of conduct
+## Code of conduct
 
 This project is bound by a [code of conduct](CODE_OF_CONDUCT.md) based on the [contributor covenant](https://www.contributor-covenant.org/) if you are not familiar with it, and want to contribute please, read it before going further.
 
-# Contributing
+## Contributing
 
 Having a question or suggestion for a new feature ? Feel free to open an issue or submit a PR.
 Currently what we need the most is feedback from users using different window managers and hardware. 
 If onagre does not work out of the box for you *please let us know* so we can fix it.
 
-# License 
+## License 
 
 All the code in this repository is released under the MIT License, for more information take a look at the [LICENSE](LICENSE) file.
