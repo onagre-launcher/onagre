@@ -110,6 +110,8 @@ width = "flex-1" # Fill portion (relative to other felx defined size in the cont
 height = "10" # Fixed value
 ```
 
+To completely hide a menu you can simply set its height and width properties to 0. 
+
 ## Roadmap
 
   - [x] default desktop entries launcher. 
