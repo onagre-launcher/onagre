@@ -33,18 +33,18 @@ impl Default for SearchContainerStyles {
         Self {
             border_radius: 0,
             border_width: 0,
-            text_color: OnagreColor::WHITE,
-            border_color: OnagreColor::WHITE,
-            background: OnagreColor::RED,
-            height: Length::fill(),
+            text_color: OnagreColor::BLACK,
+            border_color: OnagreColor::TRANSPARENT,
+            background: OnagreColor::TRANSPARENT,
+            height: Length::raw(40),
             bar: SearchBarStyles {
-                border_radius: 0,
+                border_radius: 6,
                 border_width: 0,
                 border_color: OnagreColor::GREEN,
-                background: OnagreColor::WHITE,
-                placeholder_color: OnagreColor::BLUE,
+                background: OnagreColor::from("#e8f1f9cf").unwrap(),
+                placeholder_color: OnagreColor::from("#fcfbfb").unwrap(),
                 value_color: OnagreColor::BLACK,
-                selection_color: OnagreColor::GREEN,
+                selection_color: OnagreColor::from("#fcfbfb").unwrap(),
                 text_width: Length::fill(),
             },
             width: Length::fill(),
@@ -72,7 +72,7 @@ impl text_input::StyleSheet for &SearchBarStyles {
             border_radius: self.border_radius,
             border_width: self.border_width,
             border_color: self.border_color.into(),
-        }
+        }    
     }
 
     fn focused(&self) -> text_input::Style {

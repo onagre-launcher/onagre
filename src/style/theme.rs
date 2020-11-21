@@ -32,11 +32,11 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
-            background: OnagreColor::GREEN,
-            foreground: OnagreColor::BLUE,
-            border_color: OnagreColor::RED,
-            border_radius: 0,
-            border_width: 2,
+            background: OnagreColor::from("#e8f1f9cf").unwrap(),
+            foreground: OnagreColor::from("#e8f1f9cf").unwrap(),
+            border_color: OnagreColor::from("#00000000").unwrap(),
+            border_radius: 10,
+            border_width: 0,
             rows: RowContainerStyles::default(),
             scrollable: ScrollableStyles::default(),
             search: SearchContainerStyles::default(),

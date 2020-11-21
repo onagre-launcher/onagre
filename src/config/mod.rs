@@ -44,36 +44,45 @@ impl OnagreSettings {
     }
 }
 
-#[test]
-fn generate_default_conf() -> Result<()> {
-    use crate::style::theme::Theme;
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap; 
+    use super::OnagreSettings;
+    use super::ModeSettings;
+    use anyhow::Result; 
 
-    let settings = Theme::default();
-    let settings = toml::to_string(&settings)?;
-    std::fs::write(
-        dirs::config_dir()
-            .unwrap()
-            .join("onagre")
-            .join("theme.toml"),
-        settings,
-    )?;
+    #[test]
+    fn generate_default_conf() -> Result<()> {
+        use crate::style::theme::Theme;
 
-    let mut modes = HashMap::new();
-    let mode_xdg = ModeSettings {
-        source: "fd . /home/okno/".to_string(),
-        target: "xdg-open %".to_string(),
-    };
-    modes.insert("xdg".to_string(), mode_xdg);
-    let settings = OnagreSettings { icons: None, modes };
+        let settings = Theme::default();
+        let settings = toml::to_string(&settings)?;
+        std::fs::write(
+            dirs::config_dir()
+                .unwrap()
+                .join("onagre")
+                .join("theme.toml"),
+            settings,
+        )?;
 
-    let settings = toml::to_string(&settings)?;
-    std::fs::write(
-        dirs::config_dir()
-            .unwrap()
-            .join("onagre")
-            .join("config.toml"),
-        settings,
-    )?;
+        let mut modes = HashMap::new();
+        let mode_xdg = ModeSettings {
+            source: "fd . /home/okno/".to_string(),
+            target: "xdg-open %".to_string(),
+        };
+        modes.insert("xdg".to_string(), mode_xdg);
+        let settings = OnagreSettings { icons: None, modes };
 
-    Ok(())
+        let settings = toml::to_string(&settings)?;
+        std::fs::write(
+            dirs::config_dir()
+                .unwrap()
+                .join("onagre")
+                .join("config.toml"),
+            settings,
+        )?;
+
+        Ok(())
+    }
 }
+

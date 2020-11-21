@@ -28,19 +28,19 @@ pub struct Scroller {
 impl Default for ScrollableStyles {
     fn default() -> Self {
         Self {
-            background: OnagreColor::BLUE,
-            border_color: OnagreColor::BLUE,
+            background: OnagreColor::TRANSPARENT,
+            border_color: OnagreColor::TRANSPARENT,
             border_radius: 0,
-            border_width: 20,
+            border_width: 0,
             scroller: Scroller {
-                color: OnagreColor::RED,
-                border_radius: 2,
-                border_width: 2,
-                border_color: OnagreColor::GREEN,
+                color: OnagreColor::from("#314c84").unwrap(),
+                border_radius: 4,
+                border_width: 1,
+                border_color: OnagreColor::from("#314c84bf").unwrap(),
             },
             height: Length::fill(),
             width: Length::fill(),
-            padding: 4,
+            padding: 0,
             scrollbar_width: 10,
             scroller_width: 10,
         }

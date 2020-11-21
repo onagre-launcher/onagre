@@ -17,6 +17,10 @@ impl OnagreColor {
         color: Color::WHITE,
     };
 
+    pub(crate) const TRANSPARENT: OnagreColor = OnagreColor {
+        color: Color::TRANSPARENT,
+    };
+
     pub(crate) const GREEN: OnagreColor = OnagreColor {
         color: Color {
             r: 0.0,
