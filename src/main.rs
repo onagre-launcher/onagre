@@ -157,24 +157,15 @@ impl Application for Onagre {
         match message {
             Message::CustomModeEvent(new_entries) => {
                 let current_mode = self.get_current_mode().clone();
-                let entries = self.state
+                let entries = self
+                    .state
                     .entries
                     .mode_entries
                     .get_mut(&current_mode)
                     .unwrap();
 
-                let new_entries_filtered: Vec<Entry> = new_entries.into_iter()
-                    .filter(|entry| {
-                        entries
-                            .iter()
-                            .find(|current_entry| {
-                                current_entry.display_name == entry.display_name
-                            })
-                            .is_none()
-                    })
-                    .collect();
-
-                entries.extend(new_entries_filtered);
+                entries.extend(new_entries);
+                entries.dedup_by(|entry, other| entry.display_name == other.display_name);
                 Command::none()
             }
             Message::InputChanged(input) => {
@@ -194,17 +185,8 @@ impl Application for Onagre {
                     .get_mut(&Mode::Drun)
                     .unwrap();
 
-                let entry_is_known_already = entries
-                    .iter()
-                    .find(|current_entry| current_entry.display_name == entry.display_name);
-
-                if entry_is_known_already.is_none() {
-                    entries.push(entry);
-                    // TODO: maybe just match this entry against current
-                    // input value and update only if we have a good score
-                    self.reset_matches();
-                }
-
+                entries.push(entry);
+                entries.dedup_by(|entry, other| entry.display_name == other.display_name);
                 Command::none()
             }
             Message::Loaded(entries) => {
@@ -219,7 +201,9 @@ impl Application for Onagre {
         let event = iced_native::subscription::events().map(Message::EventOccurred);
         let mut subs = vec![event];
 
-        let mode_subs: Vec<Subscription<Message>> = self.state.mode_subs
+        let mode_subs: Vec<Subscription<Message>> = self
+            .state
+            .mode_subs
             .iter()
             .cloned()
             .map(|mode| mode.into())
@@ -266,8 +250,8 @@ impl Application for Onagre {
                 .scroller_width(THEME.scrollable.scrollbar_width)
                 .style(&THEME.scrollable),
         )
-            .style(&THEME.scrollable)
-            .padding(THEME.scrollable.padding);
+        .style(&THEME.scrollable)
+        .padding(THEME.scrollable.padding);
 
         // Switch mode menu
         let mode_menu = Container::new(
@@ -276,8 +260,8 @@ impl Application for Onagre {
                 .height(THEME.menu.width.into())
                 .width(THEME.menu.height.into()),
         )
-            .padding(THEME.menu.padding)
-            .style(&THEME.menu);
+        .padding(THEME.menu.padding)
+        .style(&THEME.menu);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -285,8 +269,8 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-            .width(THEME.search.bar.text_width.into())
-            .style(&THEME.search.bar);
+        .width(THEME.search.bar.text_width.into())
+        .style(&THEME.search.bar);
 
         let search_bar = Container::new(
             Row::new()
@@ -297,8 +281,8 @@ impl Application for Onagre {
                 .width(THEME.search.width.into())
                 .height(THEME.search.height.into()),
         )
-            .padding(THEME.search.padding)
-            .style(&THEME.search);
+        .padding(THEME.search.padding)
+        .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
@@ -310,7 +294,7 @@ impl Application for Onagre {
                 .width(Length::Fill)
                 .padding(20),
         )
-            .style(THEME.as_ref());
+        .style(THEME.as_ref());
 
         app_container.into()
     }
