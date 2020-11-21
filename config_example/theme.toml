@@ -1,22 +1,22 @@
-background = "#e8f1f9"
-foreground = "#e8f1f9"
-border_color = "#000000"
+background = "#e8f1f9cf"
+foreground = "#e8f1f9cf"
+border_color = "#00000000"
 border_radius = 10
 border_width = 0
 
 [rows]
-background = "#e8f1f9"
-text_color = "#ffffff"
-border_color = "#000000"
+background = "#e8f1f9cf"
+text_color = "#ffffffff"
+border_color = "#000000ff"
 border_radius = 0
 border_width = 0
 width = "shrink"
 height = "fill"
 padding = 0
 [rows.lines.default]
-background = "#000000"
-text_color = "#18405a"
-border_color = "#000000"
+background = "#00000000"
+text_color = "#18405aff"
+border_color = "#000000ff"
 border_radius = 0
 border_width = 0
 width = "fill"
@@ -24,9 +24,9 @@ height = "shrink"
 padding = 4
 
 [rows.lines.selected]
-background = "#63b4fb"
-text_color = "#0000ff"
-border_color = "#000000"
+background = "#63b4fbcf"
+text_color = "#0000ffff"
+border_color = "#000000ff"
 border_radius = 5
 border_width = 0
 width = "fill"
@@ -34,8 +34,8 @@ height = "shrink"
 padding = 5
 
 [scrollable]
-background = "#000000"
-border_color = "#000000"
+background = "#00000000"
+border_color = "#00000000"
 border_radius = 0
 border_width = 0
 height = "fill"
@@ -45,56 +45,56 @@ scrollbar_width = 10
 scroller_width = 10
 
 [scrollable.scroller]
-color = "#314c84"
-border_color = "#314c84"
+color = "#314c84ff"
+border_color = "#314c84bf"
 border_radius = 4
 border_width = 1
 
 [search]
-background = "#000000"
-text_color = "#000000"
+background = "#00000000"
+text_color = "#000000ff"
 width = "fill"
 height = "40"
 padding = 4
-border_color = "#000000"
+border_color = "#00000000"
 border_radius = 0
 border_width = 0
 
 [search.bar]
-background = "#e8f1f9"
-value_color = "#000000"
-placeholder_color = "#fcfbfb"
-border_color = "#00ff00"
-selection_color = "#fcfbfb"
+background = "#e8f1f9cf"
+value_color = "#000000ff"
+placeholder_color = "#fcfbfbff"
+border_color = "#00ff00ff"
+selection_color = "#fcfbfbff"
 border_radius = 6
 border_width = 0
 text_width = "fill"
 
 [menu]
-background = "#63b4fb"
-text_color = "#ffffff"
-border_color = "#63b4fb"
+background = "#63b4fbcf"
+text_color = "#ffffffff"
+border_color = "#63b4fbcf"
 border_radius = 6
 border_width = 10
 width = "fill"
 height = "shrink"
 padding = 10
 [menu.lines.default]
-background = "#000000"
-text_color = "#000000"
-border_color = "#000000"
+background = "#00000000"
+text_color = "#000000ff"
+border_color = "#000000ff"
 border_radius = 0
 border_width = 0
-width = "shrink"
-height = "fill"
-padding = 5
+width = "0"
+height = "0"
+padding = 0
 
 [menu.lines.selected]
-background = "#314c84"
-text_color = "#000000"
-border_color = "#314c84"
-border_radius = 3
-border_width = 2
+background = "#00000000"
+text_color = "#000000ff"
+border_color = "#314c84ff"
+border_radius = 0
+border_width = 0
 width = "fill"
 height = "shrink"
-padding = 5
+padding = 0

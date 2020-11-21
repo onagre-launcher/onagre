@@ -13,10 +13,6 @@ impl OnagreColor {
         color: Color::BLACK,
     };
 
-    pub(crate) const WHITE: OnagreColor = OnagreColor {
-        color: Color::WHITE,
-    };
-
     pub(crate) const TRANSPARENT: OnagreColor = OnagreColor {
         color: Color::TRANSPARENT,
     };
@@ -26,24 +22,6 @@ impl OnagreColor {
             r: 0.0,
             g: 1.0,
             b: 0.0,
-            a: 1.0,
-        },
-    };
-
-    pub(crate) const RED: OnagreColor = OnagreColor {
-        color: Color {
-            r: 1.0,
-            g: 0.0,
-            b: 0.0,
-            a: 1.0,
-        },
-    };
-
-    pub(crate) const BLUE: OnagreColor = OnagreColor {
-        color: Color {
-            r: 0.0,
-            g: 0.0,
-            b: 1.0,
             a: 1.0,
         },
     };
@@ -90,11 +68,13 @@ impl ToString for OnagreColor {
         let r = (self.color.r * 255.0) as u32;
         let g = (self.color.g * 255.0) as u32;
         let b = (self.color.b * 255.0) as u32;
+        let a = (self.color.a * 255.0) as u32;
 
         let r = to_lower_gex_with_leading_zero(r);
         let g = to_lower_gex_with_leading_zero(g);
         let b = to_lower_gex_with_leading_zero(b);
-        format!("#{}{}{}", r, g, b)
+        let a = to_lower_gex_with_leading_zero(a);
+        format!("#{}{}{}{}", r, g, b, a)
     }
 }
 

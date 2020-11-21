@@ -164,9 +164,16 @@ impl Application for Onagre {
                     .get_mut(&current_mode)
                     .unwrap();
 
+                let len = entries.len();
+
                 entries.extend(new_entries);
                 entries.sort();
                 entries.dedup();
+
+                if entries.len() != len {
+                    self.reset_matches();
+                }
+
                 Command::none()
             }
             Message::InputChanged(input) => {
