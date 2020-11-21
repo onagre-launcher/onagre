@@ -112,8 +112,8 @@ impl RowContainerStyles {
                     border_width: 0,
                     text_color: OnagreColor::from("#000000").unwrap(),
                     border_color: OnagreColor::from("#000000").unwrap(),
-                    height: Length::fill(),
-                    width: Length::shrink(),
+                    height: Length::shrink(),
+                    width: Length::fill(),
                     padding: 5,
                 },
                 selected: RowStyles {
