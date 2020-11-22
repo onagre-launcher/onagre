@@ -19,7 +19,7 @@ pub struct DesktopEntryWalker {
 impl DesktopEntryWalker {
     pub fn subscription() -> Subscription<Entry> {
         iced::Subscription::from_recipe(DesktopEntryWalker {
-            id: "file_walker_subscription".to_string(),
+            id: "desktop_entry_subscription".to_string(),
         })
     }
 }

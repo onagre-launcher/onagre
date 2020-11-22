@@ -14,7 +14,7 @@ pub struct ModeSettings {
 
 #[derive(Deserialize, Serialize, Default)]
 pub struct OnagreSettings {
-    pub(crate) icons: Option<String>,
+    pub icons: Option<String>,
     pub modes: HashMap<String, ModeSettings>,
 }
 

@@ -2,6 +2,7 @@ pub mod cache;
 
 use crate::freedesktop::desktop::DesktopEntryInContent;
 use crate::freedesktop::icons::{Extension, IconFinder, IconPath};
+use crate::SETTINGS;
 use crate::THEME;
 use crate::{Message, Mode};
 use fuzzy_matcher::skim::SkimMatcherV2;
@@ -22,12 +23,7 @@ pub struct EntriesState {
 pub struct Entry {
     pub weight: u32,
     pub display_name: String,
-    pub options: Option<EntryOptions>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EntryOptions {
-    pub exec: String,
+    pub exec: Option<String>,
     pub search_terms: Option<String>,
     pub icon: Option<IconPath>,
 }
@@ -57,7 +53,9 @@ impl<'a> Entry {
         Self {
             weight: 0,
             display_name,
-            options: None,
+            exec: None,
+            search_terms: None,
+            icon: None,
         }
     }
 
@@ -75,29 +73,25 @@ impl<'a> Entry {
             Some(finder) => desktop_entry.get_icon(32, finder),
         };
 
-        let exec = desktop_entry.exec;
+        let exec = Some(desktop_entry.exec);
         let display_name = desktop_entry.name;
         Entry {
             weight: 0,
             display_name,
-            options: Some(EntryOptions {
-                exec,
-                search_terms,
-                icon,
-            }),
+            exec,
+            search_terms,
+            icon,
         }
     }
 
     // get the search term for desktop entries
     // or the display name if custom search terms can't be found
     fn get_search_terms(&self) -> &str {
-        if let Some(options) = &self.options {
-            if let Some(terms) = &options.search_terms {
-                return terms;
-            }
+        if let Some(terms) = &self.search_terms {
+            terms
+        } else {
+            &self.display_name
         }
-
-        &self.display_name
     }
 
     pub(crate) fn to_row(&self) -> Container<'a, Message> {
@@ -117,8 +111,8 @@ impl<'a> Entry {
     }
 
     fn as_row(&self) -> Container<'a, Message> {
-        let maybe_icon = self.options.as_ref().map(|opt| opt.icon.as_ref()).flatten();
-        let mut row = if let Some(icon) = maybe_icon {
+        let mut row = if SETTINGS.icons.is_some() && self.icon.is_some() {
+            let icon = self.icon.as_ref().unwrap();
             match &icon.extension {
                 Extension::SVG => Row::new().push(
                     Svg::from_path(&icon.path)

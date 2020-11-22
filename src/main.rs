@@ -165,7 +165,6 @@ impl Application for Onagre {
                     .unwrap();
 
                 let len = entries.len();
-
                 entries.extend(new_entries);
                 entries.sort();
                 entries.dedup();
@@ -375,9 +374,7 @@ impl Onagre {
 
         match mode {
             Mode::Drun => {
-                let options = current_entry.options.as_ref().unwrap();
-                let argv = shell_words::split(&options.exec);
-
+                let argv = shell_words::split(&current_entry.exec.as_ref().unwrap());
                 let args = argv.unwrap();
                 let args = args
                     .iter()

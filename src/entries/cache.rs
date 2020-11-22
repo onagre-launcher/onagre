@@ -14,6 +14,7 @@ pub async fn get_cached_entries(modes: Vec<Mode>) -> HashMap<Mode, Vec<Entry>> {
             entries.len(),
             mode
         );
+
         entry_map.insert(mode, entries);
     }
 
