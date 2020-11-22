@@ -2,9 +2,9 @@ pub mod cache;
 
 use crate::freedesktop::desktop::DesktopEntryInContent;
 use crate::freedesktop::icons::{Extension, IconFinder, IconPath};
+use crate::onagre::{Message, Mode};
 use crate::SETTINGS;
 use crate::THEME;
-use crate::{Message, Mode};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 use iced::{Container, HorizontalAlignment, Image, Length, Row, Text};

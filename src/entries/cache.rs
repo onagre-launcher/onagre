@@ -1,5 +1,5 @@
 use crate::entries::Entry;
-use crate::Mode;
+use crate::onagre::Mode;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
