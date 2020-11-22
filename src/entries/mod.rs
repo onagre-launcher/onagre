@@ -130,11 +130,12 @@ impl<'a> Entry {
             Row::new()
         };
 
-        row = row.push(
-            Text::new(&self.display_name)
-                .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Left)
-        )
+        row = row
+            .push(
+                Text::new(&self.display_name)
+                    .width(Length::Fill)
+                    .horizontal_alignment(HorizontalAlignment::Left),
+            )
             .spacing(10)
             .align_items(iced::Align::Center);
 
