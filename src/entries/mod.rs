@@ -134,7 +134,9 @@ impl<'a> Entry {
             Text::new(&self.display_name)
                 .width(Length::Fill)
                 .horizontal_alignment(HorizontalAlignment::Left)
-        ).align_items(iced::Align::Center);
+        )
+            .spacing(10)
+            .align_items(iced::Align::Center);
 
         Container::new(row)
     }
