@@ -133,8 +133,8 @@ impl<'a> Entry {
         row = row.push(
             Text::new(&self.display_name)
                 .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Left),
-        );
+                .horizontal_alignment(HorizontalAlignment::Left)
+        ).align_items(iced::Align::Center);
 
         Container::new(row)
     }

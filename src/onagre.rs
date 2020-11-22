@@ -3,6 +3,7 @@ use iced::{
     Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
 };
 
+use iced_native::keyboard::KeyCode;
 use crate::entries::{Entries, EntriesState, Entry};
 use crate::subscriptions::custom::ExternalCommandSubscription;
 use crate::subscriptions::desktop_entries::DesktopEntryWalker;
@@ -81,7 +82,7 @@ pub enum Message {
     InputChanged(String),
     DesktopEntryEvent(Entry),
     CustomModeEvent(Vec<Entry>),
-    EventOccurred(iced_native::Event),
+    KeyboardEvent(KeyCode),
     Loaded(HashMap<Mode, Vec<Entry>>),
 }
 
@@ -134,7 +135,7 @@ impl Application for Onagre {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.state.input.focus(true);
+        self.state.input.focus();
 
         match message {
             Message::CustomModeEvent(new_entries) => {
@@ -160,9 +161,10 @@ impl Application for Onagre {
             Message::InputChanged(input) => {
                 self.state.input_value = input;
                 self.reset_matches();
+                self.reset_selection();
                 Command::none()
             }
-            Message::EventOccurred(event) => {
+            Message::KeyboardEvent(event) => {
                 self.handle_input(event);
                 Command::none()
             }
@@ -190,8 +192,18 @@ impl Application for Onagre {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        let event = iced_native::subscription::events().map(Message::EventOccurred);
-        let mut subs = vec![event];
+
+        let keyboard_event = iced_native::subscription::events_with(|event, _status| {
+            match event {
+                Event::Keyboard(iced::keyboard::Event::KeyPressed {
+                    modifiers: _,
+                    key_code,
+                }) => Some(Message::KeyboardEvent(key_code)),
+                _ => None,
+            }
+        });
+
+        let mut subs = vec![keyboard_event];
 
         let mode_subs: Vec<Subscription<Message>> = self
             .state
@@ -225,7 +237,7 @@ impl Application for Onagre {
                         self.entry_by_idx(*entry).to_row().into()
                     }
                 })
-                .collect();
+            .collect();
 
             Column::with_children(rows)
         } else {
@@ -235,25 +247,25 @@ impl Application for Onagre {
         // Scrollable element containing the rows
         let scrollable = Container::new(
             Scrollable::new(&mut self.state.scroll)
-                .with_content(entries_column)
-                .height(THEME.scrollable.height.into())
-                .width(THEME.scrollable.width.into())
-                .scrollbar_width(THEME.scrollable.scroller_width)
-                .scroller_width(THEME.scrollable.scrollbar_width)
-                .style(&THEME.scrollable),
+            .with_content(entries_column)
+            .height(THEME.scrollable.height.into())
+            .width(THEME.scrollable.width.into())
+            .scrollbar_width(THEME.scrollable.scroller_width)
+            .scroller_width(THEME.scrollable.scrollbar_width)
+            .style(&THEME.scrollable),
         )
-        .style(&THEME.scrollable)
-        .padding(THEME.scrollable.padding);
+            .style(&THEME.scrollable)
+            .padding(THEME.scrollable.padding);
 
         // Switch mode menu
         let mode_menu = Container::new(
             Row::new()
-                .push(mode_buttons)
-                .height(THEME.menu.width.into())
-                .width(THEME.menu.height.into()),
+            .push(mode_buttons)
+            .height(THEME.menu.width.into())
+            .width(THEME.menu.height.into()),
         )
-        .padding(THEME.menu.padding)
-        .style(&THEME.menu);
+            .padding(THEME.menu.padding)
+            .style(&THEME.menu);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -261,32 +273,32 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-        .width(THEME.search.bar.text_width.into())
-        .style(&THEME.search.bar);
+            .width(THEME.search.bar.text_width.into())
+            .style(&THEME.search.bar);
 
         let search_bar = Container::new(
             Row::new()
-                .spacing(20)
-                .align_items(Align::Center)
-                .padding(2)
-                .push(search_input)
-                .width(THEME.search.width.into())
-                .height(THEME.search.height.into()),
+            .spacing(20)
+            .align_items(Align::Center)
+            .padding(2)
+            .push(search_input)
+            .width(THEME.search.width.into())
+            .height(THEME.search.height.into()),
         )
-        .padding(THEME.search.padding)
-        .style(&THEME.search);
+            .padding(THEME.search.padding)
+            .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
-                .push(mode_menu)
-                .push(search_bar)
-                .push(scrollable)
-                .align_items(Align::Start)
-                .height(Length::Fill)
-                .width(Length::Fill)
-                .padding(20),
+            .push(mode_menu)
+            .push(search_bar)
+            .push(scrollable)
+            .align_items(Align::Start)
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .padding(20),
         )
-        .style(THEME.as_ref());
+            .style(THEME.as_ref());
 
         app_container.into()
     }
@@ -336,7 +348,7 @@ impl Onagre {
                         .into()
                 }
             })
-            .collect();
+        .collect();
 
         Row::with_children(rows)
     }
@@ -368,7 +380,7 @@ impl Onagre {
                     .args(&args[1..])
                     .spawn()
                     .expect("Command failure");
-            }
+                }
             Mode::Custom(mode_name) => {
                 let command = &SETTINGS.modes.get(&mode_name).unwrap().target;
                 let command = command.replace("%", &current_entry.display_name);
@@ -379,7 +391,7 @@ impl Onagre {
                     .args(&args[1..])
                     .spawn()
                     .expect("Command failure");
-            }
+                }
         };
 
         self.flush_all();
@@ -388,47 +400,45 @@ impl Onagre {
         exit(0);
     }
 
-    fn handle_input(&mut self, event: iced_native::Event) {
-        use iced_native::keyboard::KeyCode;
-
-        if let Event::Keyboard(keyboard_event) = event {
-            if let iced_native::keyboard::Event::KeyPressed { key_code, .. } = keyboard_event {
-                match key_code {
-                    KeyCode::Up => {
-                        if self.state.line_selected_idx != 0 {
-                            self.state.line_selected_idx -= 1
-                        }
-                    }
-                    KeyCode::Down => {
-                        let mode = self.get_current_mode();
-
-                        let max_idx = self.state.entries.mode_matches.get(mode).unwrap().len();
-
-                        if max_idx != 0 && self.state.line_selected_idx < max_idx - 1 {
-                            self.state.line_selected_idx += 1
-                        }
-                    }
-                    KeyCode::Enter => {
-                        self.run_command();
-                    }
-                    KeyCode::Tab => {
-                        self.cycle_mode();
-                        let mode = self.get_current_mode().clone();
-                        let _ = self.state.mode_subs.insert(mode);
-                    }
-                    KeyCode::Escape => {
-                        self.flush_all();
-                        exit(0);
-                    }
-                    _ => {}
+    fn handle_input(&mut self, key_code: KeyCode) {
+        debug!("Handle input : {:?}", key_code);
+        match key_code {
+            KeyCode::Up => {
+                if self.state.line_selected_idx != 0 {
+                    self.state.line_selected_idx -= 1
                 }
             }
+            KeyCode::Down => {
+                let mode = self.get_current_mode();
+
+                let max_idx = self.state.entries.mode_matches.get(mode).unwrap().len();
+
+                if max_idx != 0 && self.state.line_selected_idx < max_idx - 1 {
+                    self.state.line_selected_idx += 1
+                }
+            }
+            KeyCode::Enter => {
+                self.run_command();
+            }
+            KeyCode::Tab => {
+                self.cycle_mode();
+                let mode = self.get_current_mode().clone();
+                let _ = self.state.mode_subs.insert(mode);
+            }
+            KeyCode::Escape => {
+                self.flush_all();
+                exit(0);
+            }
+            _ => {}
         }
     }
 
-    fn reset_matches(&mut self) {
+    fn reset_selection(&mut self) {
+        debug!("reset selected line index to 0"); 
         self.state.line_selected_idx = 0;
+    }
 
+    fn reset_matches(&mut self) {
         let mode = self.get_current_mode().clone();
         if self.state.input_value == "" {
             let matches = self
