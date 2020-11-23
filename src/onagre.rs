@@ -356,6 +356,14 @@ impl Onagre {
 
         let mode_entries = self.state.entries.mode_matches.get(&mode).unwrap();
 
+        if mode_entries.is_empty() {
+            eprintln!(
+                "No match found for {}, exiting onagre",
+                self.state.input_value
+            );
+            exit(1);
+        }
+
         let current_entry_idx = *mode_entries.get(selected).unwrap();
 
         let mut current_entry = self.entry_mut_by_idx(current_entry_idx);
