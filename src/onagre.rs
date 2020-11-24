@@ -17,6 +17,10 @@ use std::process::exit;
 pub fn run() -> iced::Result {
     env_logger::init();
     debug!("Starting Onagre in debug mode");
+    debug!(
+        "Settings : \n\tModes : {:#?}\n\t Icons : {:#?}",
+        SETTINGS.modes, SETTINGS.icons
+    );
 
     Onagre::run(Settings {
         window: window::Settings {

@@ -80,5 +80,6 @@ pub fn main() -> iced::Result {
                 .help("load one or more onagre custom modes"),
         )
         .get_matches();
+
     onagre::run()
 }
