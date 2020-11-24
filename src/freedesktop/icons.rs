@@ -72,6 +72,7 @@ pub struct IconFinder {
 impl IconFinder {
     // see : https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
     pub fn build(theme_name: &str) -> Result<Self> {
+        debug!("building icon finder for theme {:?}", theme_name);
         let mut theme_paths = vec![];
         let mut fallbacks = vec![];
 
@@ -112,8 +113,19 @@ impl IconFinder {
                     .collect::<Vec<(PathBuf, IconTheme)>>();
 
                 // last we push the current theme path
+                debug!(
+                    "Initializing icon finder with icon theme path {:?}",
+                    theme_path
+                );
                 theme_paths.push((theme_path, theme));
 
+                debug!(
+                    "Initializing icon finder with parent/fallback icon paths {:?}",
+                    parents
+                        .iter()
+                        .map(|parent| parent.0.clone())
+                        .collect::<Vec<PathBuf>>()
+                );
                 fallbacks.extend(parents);
             }
         }
