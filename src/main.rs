@@ -21,7 +21,15 @@ use crate::style::theme::Theme;
 
 lazy_static! {
     pub static ref THEME: Theme = Theme::load();
-    pub static ref SETTINGS: OnagreSettings = OnagreSettings::get().unwrap_or_default();
+    pub static ref SETTINGS: OnagreSettings = {
+        match OnagreSettings::get() {
+            Err(err) => {
+                eprintln!("Unable to load config file : {:?}", err);
+                OnagreSettings::default()
+            }
+            Ok(settings) => settings,
+        }
+    };
 }
 
 pub fn main() -> iced::Result {
