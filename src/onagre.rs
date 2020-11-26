@@ -6,7 +6,8 @@ use iced::{
 use crate::entries::{Entries, EntriesState, Entry};
 use crate::subscriptions::custom::ExternalCommandSubscription;
 use crate::subscriptions::desktop_entries::DesktopEntryWalker;
-use crate::{SETTINGS, THEME};
+use crate::SETTINGS;
+use crate::THEME;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::keyboard::KeyCode;
 use iced_native::Event;
@@ -14,15 +15,42 @@ use serde::export::Formatter;
 use std::collections::{HashMap, HashSet};
 use std::process::exit;
 
-pub fn run() -> iced::Result {
-    env_logger::init();
+pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
     debug!("Starting Onagre in debug mode");
     debug!(
-        "Settings : \n\tModes : {:#?}\n\t Icons : {:#?}",
+        "Settings : \n\tAvailable modes : {:#?}\n\t Icon theme : {:#?}",
         SETTINGS.modes, SETTINGS.icons
     );
+    debug!(
+        "Args : \n\tSelected modes : {:#?}\n\t dmenu : {:#?}",
+        requested_modes, dmenu
+    );
+
+    // Custom modes from user settings
+    let mut possible_modes: Vec<&str> = SETTINGS
+        .modes
+        .iter()
+        .map(|(name, _)| name.as_str())
+        .collect();
+
+    // Merge custom mode from config and default modes to match user input args
+    possible_modes.push("drun");
+    possible_modes.push("run");
+
+    // match possible modes against user selection
+    let mut modes = possible_modes
+        .iter()
+        .filter(|name| requested_modes.contains(name))
+        .map(|name| Mode::from(*name))
+        .collect::<Vec<Mode>>();
+
+    // Keep user args in place (first mode provided is the default one)
+    modes.reverse();
+
+    debug!("Got modes {:?} from args", modes);
 
     Onagre::run(Settings {
+        flags: modes,
         window: window::Settings {
             transparent: true,
             ..Default::default()
@@ -96,23 +124,22 @@ pub enum Mode {
     Custom(String),
 }
 
+impl From<&str> for Mode {
+    fn from(name: &str) -> Self {
+        match name {
+            "drun" => Mode::Drun,
+            other => Mode::Custom(other.to_string()),
+        }
+    }
+}
+
 impl Application for Onagre {
     type Executor = iced::executor::Default;
     type Message = Message;
-    type Flags = ();
+    type Flags = Vec<Mode>;
 
-    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+    fn new(modes: Self::Flags) -> (Self, Command<Self::Message>) {
         Onagre::sway_preloads();
-
-        let mut modes = vec![Mode::Drun];
-
-        let custom_modes = SETTINGS
-            .modes
-            .keys()
-            .map(|mode| mode.to_owned())
-            .map(Mode::Custom);
-
-        modes.extend(custom_modes);
 
         (
             Onagre {
@@ -489,6 +516,10 @@ impl Onagre {
 
     fn get_current_mode(&self) -> &Mode {
         // Safe unwrap, we control the idx here
+        debug!(
+            "Getting current mode in {:?} at index {}",
+            self.modes, self.state.current_mode_idx
+        );
         let mode = self.modes.get(self.state.current_mode_idx).unwrap();
         mode
     }
