@@ -8,7 +8,7 @@ pub mod theme_settings;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ModeSettings {
-    pub source: String,
+    pub source: Option<String>,
     pub target: String,
 }
 

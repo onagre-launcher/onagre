@@ -245,7 +245,7 @@ impl Application for Onagre {
             .mode_subs
             .iter()
             .cloned()
-            .map(|mode| mode.into())
+            .filter_map(Mode::into_subscription)
             .collect();
 
         subs.extend(mode_subs);
@@ -351,7 +351,7 @@ impl Onagre {
             .unwrap()
     }
 
-    fn entry_mut_by_idx(&mut self, idx: usize) -> &mut Entry {
+    fn entry_mut_by_idx(&mut self, idx: usize) -> Option<&mut Entry> {
         let mode = self.get_current_mode().clone();
         self.state
             .entries
@@ -359,7 +359,6 @@ impl Onagre {
             .get_mut(&mode)
             .unwrap()
             .get_mut(idx)
-            .unwrap()
     }
 
     fn build_mode_menu(mode_idx: usize, modes: &[Mode]) -> Row<'_, Message> {
@@ -394,48 +393,66 @@ impl Onagre {
 
         let mode_entries = self.state.entries.mode_matches.get(&mode).unwrap();
 
-        if mode_entries.is_empty() {
-            eprintln!(
-                "No match found for {}, exiting onagre",
-                self.state.input_value
-            );
-            exit(1);
-        }
-
-        let current_entry_idx = *mode_entries.get(selected).unwrap();
-
-        let mut current_entry = self.entry_mut_by_idx(current_entry_idx);
-
-        // This is the single mutable operation we have to do for entry
-        current_entry.weight += 1;
-
-        match mode {
-            Mode::Drun => {
-                let argv = shell_words::split(&current_entry.exec.as_ref().unwrap());
-                let args = argv.unwrap();
-                let args = args
-                    .iter()
-                    // Filtering out special freedesktop syntax
-                    .filter(|entry| !entry.starts_with('%'))
-                    .collect::<Vec<&String>>();
-
-                std::process::Command::new(&args[0])
-                    .args(&args[1..])
-                    .spawn()
-                    .expect("Command failure");
-            }
-            Mode::Custom(mode_name) => {
-                let command = &SETTINGS.modes.get(&mode_name).unwrap().target;
-                let command = command.replace("%", &current_entry.display_name);
-                let args = shell_words::split(&command).unwrap();
-                let args = args.iter().collect::<Vec<&String>>();
-
-                std::process::Command::new(&args[0])
-                    .args(&args[1..])
-                    .spawn()
-                    .expect("Command failure");
-            }
+        // Get the selected entry or fall back to user input for template/sourceless mode
+        let current_entry: Option<&mut Entry> = if mode_entries.is_empty() {
+            None
+        } else {
+            let current_entry_idx = *mode_entries.get(selected).unwrap();
+            self.entry_mut_by_idx(current_entry_idx)
         };
+
+        if let Some(entry) = current_entry {
+            // This is the single mutable operation we have to do for entry
+            entry.weight += 1;
+
+            match mode {
+                Mode::Drun => {
+                    let argv = shell_words::split(&entry.exec.as_ref().unwrap());
+                    let args = argv.unwrap();
+                    let args = args
+                        .iter()
+                        // Filtering out special freedesktop syntax
+                        .filter(|entry| !entry.starts_with('%'))
+                        .collect::<Vec<&String>>();
+
+                    std::process::Command::new(&args[0])
+                        .args(&args[1..])
+                        .spawn()
+                        .expect("Command failure");
+                }
+                Mode::Custom(mode_name) => {
+                    let command = &SETTINGS.modes.get(&mode_name).unwrap().target;
+                    let command = command.replace("%", &entry.display_name);
+                    let args = shell_words::split(&command).unwrap();
+                    let args = args.iter().collect::<Vec<&String>>();
+
+                    std::process::Command::new(&args[0])
+                        .args(&args[1..])
+                        .spawn()
+                        .expect("Command failure");
+                }
+            };
+        } else {
+            let input = &self.state.input_value;
+            let command = &SETTINGS.modes.get(&mode.to_string()).unwrap().target;
+            let command = command.replace("%", input);
+            let args = shell_words::split(&command).unwrap();
+            let args = args.iter().collect::<Vec<&String>>();
+            let entries = self.state.entries.mode_entries.get_mut(&mode).unwrap();
+
+            entries.push(Entry {
+                weight: 1,
+                display_name: input.clone(),
+                exec: None,
+                search_terms: None,
+                icon: None,
+            });
+
+            std::process::Command::new(&args[0])
+                .args(&args[1..])
+                .spawn()
+                .expect("Command failure");
+        }
 
         self.flush_all();
 
@@ -583,13 +600,21 @@ impl Onagre {
     }
 }
 
-impl Into<Subscription<Message>> for Mode {
-    fn into(self) -> Subscription<Message> {
+impl Mode {
+    fn into_subscription(self) -> Option<Subscription<Message>> {
         match self {
-            Mode::Drun => DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent),
+            Mode::Drun => Some(DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent)),
             Mode::Custom(name) => {
-                let command = &SETTINGS.modes.get(&name).unwrap().source;
-                ExternalCommandSubscription::subscription(command).map(Message::CustomModeEvent)
+                SETTINGS
+                    .modes
+                    .get(&name)
+                    .unwrap()
+                    .source
+                    .as_ref()
+                    .map(|source| {
+                        ExternalCommandSubscription::subscription(&source)
+                            .map(Message::CustomModeEvent)
+                    })
             }
         }
     }

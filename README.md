@@ -74,8 +74,11 @@ Onagre configuration is not stabilized yet but you can take a look at the [confi
 
 ### App config
 
-Onagre will look for a config file in `$XDG_CONFIG_DIR/onagre/config.toml`. 
 
+
+#### Custom mode
+
+Onagre will look for a config file in `$XDG_CONFIG_DIR/onagre/config.toml`. 
 By default it launches in desktop entries mode but you can add additional modes :
 
 ```toml
@@ -95,6 +98,18 @@ target = "xdg-open %"
 source = "sh -c \"cd $HOME/.password-store && fd -t f . | sed s/\\.gpg//\""
 target = "sh -c \"pass -c %\""
 ```
+#### Template mode
+
+If you omit the `source` attribute in the mode definition, onagre will display entries history and use your input instead
+of the matched entry to launch the command template. 
+(located in `$XDG_CACHE_DIR/onagre-{mode_name}`). 
+
+This kind of mode can be used to perform web search :
+
+```toml
+[modes.ddg]
+target = "xdg-open https://duckduckgo.com/?q=%"
+``` 
 
 ### Theming
 
@@ -137,10 +152,12 @@ To completely hide a menu you can simply set its height and width properties to 
   - [x] optional desktop icons.
   - [x] custom menu from external command.
   - [x] configurable styling.
+  - [x] template mode.
+  - [x] config from flag.
+  - [ ] dmenu mode.
   - [ ] xdg mime support for external commands. 
-  - [ ] templates command integration (alfred like workflow).
+  - [ ] alfred like workflow.
   - [ ] prefix mode search (ex: type "de" to search for desktop entries).
-  - [ ] config from flag.
 
 ## Code of conduct
 
