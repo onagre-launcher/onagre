@@ -71,7 +71,7 @@ pub fn main() -> iced::Result {
                 .short("c")
                 .long("config")
                 .takes_value(true)
-                .help("path to an alternate onagre config file")
+                .help("Path to an alternate onagre config file")
                 .default_value(default_settings),
         )
         .arg(
@@ -79,7 +79,7 @@ pub fn main() -> iced::Result {
                 .short("t")
                 .long("theme")
                 .takes_value(true)
-                .help("path to an alternate onagre theme file")
+                .help("Path to an alternate onagre theme file")
                 .default_value(default_theme),
         )
         .arg(
@@ -87,16 +87,15 @@ pub fn main() -> iced::Result {
                 .conflicts_with("modes")
                 .short("d")
                 .long("dmenu")
-                .help("run onagre in dmenu mode (read from stdin and write to stdout)"),
+                .help("Run onagre in dmenu mode (read from stdin and write to stdout)"),
         )
         .arg(
             Arg::with_name("modes")
                 .short("m")
                 .long("modes")
                 .takes_value(true)
-                .default_value("drun")
                 .multiple(true)
-                .help("load one or more onagre custom modes"),
+                .help("Specify which mode should be loaded, onagre will start with the mode at index zero"),
         )
         .get_matches();
 
@@ -123,11 +122,17 @@ pub fn main() -> iced::Result {
         debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
-    // User define mode, Drun otherwise
-    let modes = matches.values_of("modes").unwrap().into_iter().collect();
+    // User define mode, default : all modes
+    let modes = matches
+        .values_of("modes")
+        .map(|modes| modes.into_iter().collect())
+        .unwrap_or_default();
 
     // Dmenu mode (conflict with `--modes`)
     let dmenu = matches.is_present("dmenu");
+    if dmenu {
+        unimplemented!();
+    }
 
     onagre::run(modes, dmenu)
 }

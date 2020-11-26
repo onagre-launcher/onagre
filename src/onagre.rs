@@ -35,14 +35,21 @@ pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
 
     // Merge custom mode from config and default modes to match user input args
     possible_modes.push("drun");
-    possible_modes.push("run");
+    // TODO : possible_modes.push("run");
 
     // match possible modes against user selection
-    let mut modes = possible_modes
-        .iter()
-        .filter(|name| requested_modes.contains(name))
-        .map(|name| Mode::from(*name))
-        .collect::<Vec<Mode>>();
+    let mut modes = if requested_modes.is_empty() {
+        possible_modes
+            .iter()
+            .map(|name| Mode::from(*name))
+            .collect::<Vec<Mode>>()
+    } else {
+        possible_modes
+            .iter()
+            .filter(|name| requested_modes.contains(name))
+            .map(|name| Mode::from(*name))
+            .collect::<Vec<Mode>>()
+    };
 
     // Keep user args in place (first mode provided is the default one)
     modes.reverse();
@@ -72,7 +79,7 @@ struct Onagre {
 #[derive(Debug)]
 struct State {
     // This is used to ensure we never unsubscribe to a mode command
-    // this way we ensure the subscription command is never executed more than once
+    // we ensure the subscription command is never executed more than once
     mode_subs: HashSet<Mode>,
     current_mode_idx: usize,
     line_selected_idx: usize,
@@ -145,7 +152,7 @@ impl Application for Onagre {
             Onagre {
                 dmenu: false,
                 modes: modes.clone(),
-                state: State::new(Mode::Drun), //TODO: get startup mode form config
+                state: State::new(modes[0].clone()),
                 matcher: OnagreMatcher {
                     matcher: SkimMatcherV2::default().ignore_case(),
                 },
@@ -516,10 +523,6 @@ impl Onagre {
 
     fn get_current_mode(&self) -> &Mode {
         // Safe unwrap, we control the idx here
-        debug!(
-            "Getting current mode in {:?} at index {}",
-            self.modes, self.state.current_mode_idx
-        );
         let mode = self.modes.get(self.state.current_mode_idx).unwrap();
         mode
     }

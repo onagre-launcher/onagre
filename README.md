@@ -40,7 +40,26 @@ cargo install --git https://github.com/oknozor/onagre
 ```
 ## Usage 
 
-These are the default keybinding, they will soon be exposed in onagre config but for now you have to use the default ones: 
+### Cli
+
+**1. Alternate config**
+
+You can provide alternate config and theme with the `--config` and `--theme` flags.
+
+**2. Mode selection**
+
+To choose which mode will be available at runtime use the `--modes` flag. 
+
+   ```sh
+   onagre --modes xdg drun
+   ```
+
+This will start onagre in `xdg` mode (provided it exists in your config) with drun mode available (pressing tab).
+If you do not specify any mode onagre will start in drun mode and all config define modes will be available.
+
+For mode info run `onagre --help`.
+
+### Key bindings
 
 | Key     | Action  | 
 | :----   | :-----  |
