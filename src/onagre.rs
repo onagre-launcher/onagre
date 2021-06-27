@@ -1,7 +1,4 @@
-use iced::{
-    scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element,
-    Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
-};
+use iced::{scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, Clipboard};
 
 use crate::entries::{Entries, EntriesState, Entry};
 use crate::subscriptions::custom::ExternalCommandSubscription;
@@ -11,9 +8,9 @@ use crate::THEME;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use iced_native::keyboard::KeyCode;
 use iced_native::Event;
-use serde::export::Formatter;
 use std::collections::{HashMap, HashSet};
 use std::process::exit;
+use core::fmt::Formatter;
 
 pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
     debug!("Starting Onagre in debug mode");
@@ -168,11 +165,7 @@ impl Application for Onagre {
         "Onagre".to_string()
     }
 
-    fn background_color(&self) -> Color {
-        Color::TRANSPARENT
-    }
-
-    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+    fn update(&mut self, message: Self::Message, _clipboard: &mut Clipboard) -> Command<Self::Message> {
         self.state.input.focus();
 
         match message {
@@ -337,6 +330,10 @@ impl Application for Onagre {
 
         app_container.into()
     }
+
+    fn background_color(&self) -> Color {
+        Color::TRANSPARENT
+    }
 }
 
 impl Onagre {
@@ -500,7 +497,7 @@ impl Onagre {
 
     fn reset_matches(&mut self) {
         let mode = self.get_current_mode().clone();
-        if self.state.input_value == "" {
+        if self.state.input_value.is_empty() {
             let matches = self
                 .state
                 .entries

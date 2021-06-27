@@ -2,37 +2,44 @@ use crate::style::color::OnagreColor;
 use crate::style::layout::Length;
 use iced_style::{container, Background};
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct RowContainerStyles {
     pub background: OnagreColor,
     pub text_color: OnagreColor,
     pub border_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
     pub width: Length,
     pub height: Length,
     pub padding: u16,
     pub lines: RowEntries,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+impl Eq for RowContainerStyles {}
+
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct RowEntries {
     pub default: RowStyles,
     pub selected: RowStyles,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+impl Eq for RowEntries {}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct RowStyles {
     pub background: OnagreColor,
     pub text_color: OnagreColor,
     pub border_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
     pub width: Length,
     pub height: Length,
     pub padding: u16,
 }
+
+impl Eq for RowStyles {}
 
 impl container::StyleSheet for &RowContainerStyles {
     fn style(&self) -> container::Style {
@@ -62,8 +69,8 @@ impl Default for RowContainerStyles {
     fn default() -> Self {
         Self {
             background: OnagreColor::from("#e8f1f9cf").unwrap(),
-            border_radius: 0,
-            border_width: 0,
+            border_radius: 0.0,
+            border_width: 0.0,
             text_color: OnagreColor::from("#ffffff").unwrap(),
             border_color: OnagreColor::from("#000000").unwrap(),
             height: Length::fill(),
@@ -71,8 +78,8 @@ impl Default for RowContainerStyles {
             lines: RowEntries {
                 default: RowStyles {
                     background: OnagreColor::from("#00000000").unwrap(),
-                    border_radius: 0,
-                    border_width: 0,
+                    border_radius: 0.0,
+                    border_width: 0.0,
                     text_color: OnagreColor::from("#18405a").unwrap(),
                     border_color: OnagreColor::from("#000000").unwrap(),
                     height: Length::shrink(),
@@ -81,8 +88,8 @@ impl Default for RowContainerStyles {
                 },
                 selected: RowStyles {
                     background: OnagreColor::from("#63b4fbCf").unwrap(),
-                    border_radius: 5,
-                    border_width: 0,
+                    border_radius: 5.0,
+                    border_width: 0.0,
                     text_color: OnagreColor::from("#0000ff").unwrap(),
                     border_color: OnagreColor::from("#000000").unwrap(),
                     height: Length::shrink(),
@@ -99,8 +106,8 @@ impl RowContainerStyles {
     pub fn mode_entries() -> Self {
         Self {
             background: OnagreColor::from("#63b4fbCf").unwrap(),
-            border_radius: 6,
-            border_width: 10,
+            border_radius: 6.0,
+            border_width: 10.0,
             text_color: OnagreColor::from("#ffffff").unwrap(),
             border_color: OnagreColor::from("#63b4fbCf").unwrap(),
             height: Length::shrink(),
@@ -108,8 +115,8 @@ impl RowContainerStyles {
             lines: RowEntries {
                 default: RowStyles {
                     background: OnagreColor::from("#00000000").unwrap(),
-                    border_radius: 0,
-                    border_width: 0,
+                    border_radius: 0.0,
+                    border_width: 0.0,
                     text_color: OnagreColor::from("#000000").unwrap(),
                     border_color: OnagreColor::from("#000000").unwrap(),
                     height: Length::raw(0),
@@ -118,8 +125,8 @@ impl RowContainerStyles {
                 },
                 selected: RowStyles {
                     background: OnagreColor::TRANSPARENT,
-                    border_radius: 0,
-                    border_width: 0,
+                    border_radius: 0.0,
+                    border_width: 0.0,
                     text_color: OnagreColor::from("#000000").unwrap(),
                     border_color: OnagreColor::from("#314c84").unwrap(),
                     height: Length::shrink(),

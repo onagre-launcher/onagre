@@ -30,11 +30,9 @@ impl DesktopEntryInContent {
                 "png" => Some(Extension::PNG),
                 _ => None,
             };
-            if let Some(extension) = extension {
-                Some(IconPath { path, extension })
-            } else {
-                None
-            }
+
+            extension.map(|extension| IconPath { path, extension })
+
         } else {
             // otherwise we need to search for it
             icon_finder.lookup(&self.icon, size)

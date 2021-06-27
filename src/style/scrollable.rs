@@ -2,13 +2,13 @@ use crate::style::color::OnagreColor;
 use crate::style::layout::Length;
 use iced_style::{container, scrollable, Background};
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct ScrollableStyles {
     pub background: OnagreColor,
     pub border_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
     pub height: Length,
     pub width: Length,
     pub padding: u16,
@@ -17,25 +17,29 @@ pub struct ScrollableStyles {
     pub scroller: Scroller,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+impl Eq for ScrollableStyles {}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Scroller {
     pub color: OnagreColor,
     pub border_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
 }
+
+impl Eq for Scroller {}
 
 impl Default for ScrollableStyles {
     fn default() -> Self {
         Self {
             background: OnagreColor::TRANSPARENT,
             border_color: OnagreColor::TRANSPARENT,
-            border_radius: 0,
-            border_width: 0,
+            border_radius: 0.0,
+            border_width: 0.0,
             scroller: Scroller {
                 color: OnagreColor::from("#314c84").unwrap(),
-                border_radius: 4,
-                border_width: 1,
+                border_radius: 4.0,
+                border_width: 1.0,
                 border_color: OnagreColor::from("#314c84bf").unwrap(),
             },
             height: Length::fill(),

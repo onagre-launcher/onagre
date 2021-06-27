@@ -11,8 +11,8 @@ pub struct Theme {
     pub background: OnagreColor,
     pub foreground: OnagreColor,
     pub border_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
     pub rows: RowContainerStyles,
     pub scrollable: ScrollableStyles,
     pub search: SearchContainerStyles,
@@ -35,8 +35,8 @@ impl Default for Theme {
             background: OnagreColor::from("#e8f1f9cf").unwrap(),
             foreground: OnagreColor::from("#e8f1f9cf").unwrap(),
             border_color: OnagreColor::from("#00000000").unwrap(),
-            border_radius: 10,
-            border_width: 0,
+            border_radius: 10.0,
+            border_width: 0.0,
             rows: RowContainerStyles::default(),
             scrollable: ScrollableStyles::default(),
             search: SearchContainerStyles::default(),
@@ -52,8 +52,8 @@ impl container::StyleSheet for TransparentContainer {
     fn style(&self) -> container::Style {
         container::Style {
             background: Color::TRANSPARENT.into(),
-            border_radius: 0,
-            border_width: 0,
+            border_radius: 0.0,
+            border_width: 0.0,
             text_color: Color::TRANSPARENT.into(),
             border_color: Color::TRANSPARENT,
         }

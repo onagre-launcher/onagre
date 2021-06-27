@@ -2,7 +2,7 @@ use crate::style::color::OnagreColor;
 use crate::style::layout::Length;
 use iced_style::{container, text_input, Background, Color};
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct SearchContainerStyles {
     pub background: OnagreColor,
@@ -11,35 +11,39 @@ pub struct SearchContainerStyles {
     pub height: Length,
     pub padding: u16,
     pub border_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
     pub bar: SearchBarStyles,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+impl Eq for SearchContainerStyles {}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct SearchBarStyles {
     pub background: OnagreColor,
     pub value_color: OnagreColor,
     pub placeholder_color: OnagreColor,
     pub border_color: OnagreColor,
     pub selection_color: OnagreColor,
-    pub border_radius: u16,
-    pub border_width: u16,
+    pub border_radius: f32,
+    pub border_width: f32,
     pub text_width: Length,
 }
+
+impl Eq for SearchBarStyles {}
 
 impl Default for SearchContainerStyles {
     fn default() -> Self {
         Self {
-            border_radius: 0,
-            border_width: 0,
+            border_radius: 0.0,
+            border_width: 0.0,
             text_color: OnagreColor::BLACK,
             border_color: OnagreColor::TRANSPARENT,
             background: OnagreColor::TRANSPARENT,
             height: Length::raw(40),
             bar: SearchBarStyles {
-                border_radius: 6,
-                border_width: 0,
+                border_radius: 6.0,
+                border_width: 0.0,
                 border_color: OnagreColor::GREEN,
                 background: OnagreColor::from("#e8f1f9cf").unwrap(),
                 placeholder_color: OnagreColor::from("#fcfbfb").unwrap(),

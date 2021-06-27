@@ -32,11 +32,3 @@ palette = { version = "0.5.0", features = ["serializing"] }
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }
 clap = "2.33.3"
-
-
-[patch.crates-io]
-# patch: transparency (config.composite_alpha_mode = hal::window::CompositeAlphaMode::PREMULTIPLIED)
-# https://github.com/hecrj/iced/issues/596
-wgpu-core = { git = "https://github.com/myfreeweb/wgpu", branch = "v0.6-alpha" }
-wgpu-types = { git = "https://github.com/myfreeweb/wgpu", branch = "v0.6-alpha" }
-
