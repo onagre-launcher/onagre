@@ -28,7 +28,7 @@ impl OnagreColor {
 
     pub(crate) fn from(hex_color: &str) -> Result<Self> {
         let r = if let Some(red) = hex_color.get(1..3) {
-            OnagreColor::f32_from_str_hex(&red)?
+            OnagreColor::f32_from_str_hex(red)?
         } else {
             0.0
         };

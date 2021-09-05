@@ -61,7 +61,7 @@ mod tests {
 
         let mut modes = HashMap::new();
         let mode_xdg = ModeSettings {
-            source: "fd . /home/okno/".to_string(),
+            source: Some("fd . /home/okno/".to_string()),
             target: "xdg-open %".to_string(),
         };
         modes.insert("xdg".to_string(), mode_xdg);

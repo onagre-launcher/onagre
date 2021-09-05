@@ -1,16 +1,18 @@
-use iced::{scrollable, text_input, window, Align, Application, Color, Column, Command, Container, Element, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, Clipboard};
+use std::collections::HashSet;
+use std::path::PathBuf;
+use std::process::exit;
 
-use crate::entries::{Entries, EntriesState, Entry};
-use crate::subscriptions::custom::ExternalCommandSubscription;
-use crate::subscriptions::desktop_entries::DesktopEntryWalker;
+use iced::futures::channel::mpsc::Sender;
+use iced::{Application, Color, Column, Command, Container, Element, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, scrollable, text_input, window, Alignment};
+use iced_native::keyboard::KeyCode;
+use iced_native::{Event, Clipboard};
+use pop_launcher::Request;
+
+use crate::backend::launcher::{PopLauncherSubscription, PopMessage};
+use crate::backend::{PopResponse, PopSearchResult};
+use crate::freedesktop::desktop::DesktopEntry;
 use crate::SETTINGS;
 use crate::THEME;
-use fuzzy_matcher::skim::SkimMatcherV2;
-use iced_native::keyboard::KeyCode;
-use iced_native::Event;
-use std::collections::{HashMap, HashSet};
-use std::process::exit;
-use core::fmt::Formatter;
 
 pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
     debug!("Starting Onagre in debug mode");
@@ -57,6 +59,7 @@ pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
         flags: modes,
         window: window::Settings {
             transparent: true,
+            size: (800, 300),
             ..Default::default()
         },
         default_text_size: 20,
@@ -70,7 +73,7 @@ struct Onagre {
     dmenu: bool,
     modes: Vec<Mode>,
     state: State,
-    matcher: OnagreMatcher,
+    request_tx: Option<Sender<Request>>,
 }
 
 #[derive(Debug)]
@@ -80,20 +83,10 @@ struct State {
     mode_subs: HashSet<Mode>,
     current_mode_idx: usize,
     line_selected_idx: usize,
-    entries: EntriesState,
+    entries: Vec<PopSearchResult>,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
-}
-
-struct OnagreMatcher {
-    matcher: SkimMatcherV2,
-}
-
-impl std::fmt::Debug for OnagreMatcher {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "SkimMatcherV2")
-    }
 }
 
 impl State {
@@ -105,7 +98,7 @@ impl State {
             mode_subs,
             current_mode_idx: 0,
             line_selected_idx: 0,
-            entries: EntriesState::default(),
+            entries: Vec::with_capacity(0),
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
@@ -116,10 +109,8 @@ impl State {
 #[derive(Debug, Clone)]
 pub enum Message {
     InputChanged(String),
-    DesktopEntryEvent(Entry),
-    CustomModeEvent(Vec<Entry>),
     KeyboardEvent(KeyCode),
-    Loaded(HashMap<Mode, Vec<Entry>>),
+    PopSubscriptionResponse(PopMessage),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -150,14 +141,9 @@ impl Application for Onagre {
                 dmenu: false,
                 modes: modes.clone(),
                 state: State::new(modes[0].clone()),
-                matcher: OnagreMatcher {
-                    matcher: SkimMatcherV2::default().ignore_case(),
-                },
+                request_tx: None,
             },
-            Command::perform(
-                crate::entries::cache::get_cached_entries(modes),
-                Message::Loaded,
-            ),
+            Command::none(),
         )
     }
 
@@ -165,58 +151,48 @@ impl Application for Onagre {
         "Onagre".to_string()
     }
 
-    fn update(&mut self, message: Self::Message, _clipboard: &mut Clipboard) -> Command<Self::Message> {
+    fn update(
+        &mut self,
+        message: Self::Message,
+    ) -> Command<Self::Message> {
         self.state.input.focus();
 
         match message {
-            Message::CustomModeEvent(new_entries) => {
-                let current_mode = self.get_current_mode().clone();
-                let entries = self
-                    .state
-                    .entries
-                    .mode_entries
-                    .get_mut(&current_mode)
-                    .unwrap();
-
-                let len = entries.len();
-                entries.extend(new_entries);
-                entries.sort();
-                entries.dedup();
-
-                if entries.len() != len {
-                    self.reset_matches();
-                }
-
-                Command::none()
-            }
             Message::InputChanged(input) => {
                 self.state.input_value = input;
-                self.reset_matches();
-                self.reset_selection();
+                debug!("Input changed");
+
+                if let Some(sender) = &self.request_tx {
+                    let mut sender = sender.clone();
+                    let value = self.state.input_value.clone();
+                    debug!("Sending message to pop thread : {}", value);
+                    sender.try_send(Request::Search(value)).unwrap();
+                }
+
                 Command::none()
             }
             Message::KeyboardEvent(event) => {
                 self.handle_input(event);
                 Command::none()
             }
-            Message::DesktopEntryEvent(entry) => {
-                let entries = self
-                    .state
-                    .entries
-                    .mode_entries
-                    .get_mut(&Mode::Drun)
-                    .unwrap();
-
-                if !entries.contains(&entry) {
-                    entries.push(entry);
-                    self.reset_matches();
-                }
-
-                Command::none()
-            }
-            Message::Loaded(entries) => {
-                self.state.entries.mode_entries = entries;
-                self.reset_matches();
+            Message::PopSubscriptionResponse(message) => {
+                match message {
+                    PopMessage::Ready(sender) => {
+                        debug!("Subscription read, sender set");
+                        self.request_tx = Some(sender);
+                    }
+                    PopMessage::Message(response) => match response {
+                        PopResponse::Close => todo!(),
+                        PopResponse::Context { .. } => todo!(),
+                        PopResponse::DesktopEntry { path, .. } => {
+                            self.run_command(path);
+                        }
+                        PopResponse::Update(search_updates) => {
+                            self.state.entries = search_updates;
+                        }
+                        PopResponse::Fill(_) => todo!(),
+                    },
+                };
                 Command::none()
             }
         }
@@ -231,17 +207,10 @@ impl Application for Onagre {
             _ => None,
         });
 
-        let mut subs = vec![keyboard_event];
-
-        let mode_subs: Vec<Subscription<Message>> = self
-            .state
-            .mode_subs
-            .iter()
-            .cloned()
-            .filter_map(Mode::into_subscription)
-            .collect();
-
-        subs.extend(mode_subs);
+        let subs = vec![
+            keyboard_event,
+            PopLauncherSubscription::subscription().map(Message::PopSubscriptionResponse),
+        ];
 
         Subscription::batch(subs)
     }
@@ -250,27 +219,21 @@ impl Application for Onagre {
         let mode_buttons: Row<Message> =
             Self::build_mode_menu(self.state.current_mode_idx, &self.modes);
 
-        let current_mode = self.get_current_mode();
-        let matches = self.state.entries.mode_matches.get(current_mode);
-
         // Build rows from current mode search entries
-        let entries_column = if let Some(matches) = matches {
-            let rows: Vec<Element<Message>> = matches
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| {
-                    if idx == self.state.line_selected_idx {
-                        self.entry_by_idx(*entry).to_row_selected().into()
-                    } else {
-                        self.entry_by_idx(*entry).to_row().into()
-                    }
-                })
-                .collect();
+        let rows = self
+            .state
+            .entries
+            .iter()
+            .map(|entry| {
+                if entry.id as usize == self.state.line_selected_idx {
+                    entry.to_row_selected().into()
+                } else {
+                    entry.to_row().into()
+                }
+            })
+            .collect();
 
-            Column::with_children(rows)
-        } else {
-            Column::new()
-        };
+        let entries_column = Column::with_children(rows);
 
         // Scrollable element containing the rows
         let scrollable = Container::new(
@@ -307,7 +270,7 @@ impl Application for Onagre {
         let search_bar = Container::new(
             Row::new()
                 .spacing(20)
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .padding(2)
                 .push(search_input)
                 .width(THEME.search.width.into())
@@ -321,7 +284,7 @@ impl Application for Onagre {
                 .push(mode_menu)
                 .push(search_bar)
                 .push(scrollable)
-                .align_items(Align::Start)
+                .align_items(Alignment::Start)
                 .height(Length::Fill)
                 .width(Length::Fill)
                 .padding(20),
@@ -337,27 +300,6 @@ impl Application for Onagre {
 }
 
 impl Onagre {
-    fn entry_by_idx(&self, idx: usize) -> &Entry {
-        let mode = self.get_current_mode();
-        self.state
-            .entries
-            .mode_entries
-            .get(mode)
-            .unwrap()
-            .get(idx)
-            .unwrap()
-    }
-
-    fn entry_mut_by_idx(&mut self, idx: usize) -> Option<&mut Entry> {
-        let mode = self.get_current_mode().clone();
-        self.state
-            .entries
-            .mode_entries
-            .get_mut(&mode)
-            .unwrap()
-            .get_mut(idx)
-    }
-
     fn build_mode_menu(mode_idx: usize, modes: &[Mode]) -> Row<'_, Message> {
         let rows: Vec<Element<Message>> = modes
             .iter()
@@ -384,76 +326,21 @@ impl Onagre {
         Row::with_children(rows)
     }
 
-    fn run_command(&mut self) -> Command<Message> {
-        let mode = self.get_current_mode().clone();
-        let selected = self.state.line_selected_idx;
+    fn run_command(&mut self, desktop_entry_path: PathBuf) -> Command<Message> {
+        let desktop_entry = DesktopEntry::from_path(desktop_entry_path).unwrap();
+        let argv = shell_words::split(&desktop_entry.exec);
+        let args = argv.unwrap();
+        let args = args
+            .iter()
+            // Filtering out special freedesktop syntax
+            .filter(|entry| !entry.starts_with('%'))
+            .collect::<Vec<&String>>();
 
-        let mode_entries = self.state.entries.mode_matches.get(&mode).unwrap();
+        std::process::Command::new(&args[0])
+            .args(&args[1..])
+            .spawn()
+            .expect("Command failure");
 
-        // Get the selected entry or fall back to user input for template/sourceless mode
-        let current_entry: Option<&mut Entry> = if mode_entries.is_empty() {
-            None
-        } else {
-            let current_entry_idx = *mode_entries.get(selected).unwrap();
-            self.entry_mut_by_idx(current_entry_idx)
-        };
-
-        if let Some(entry) = current_entry {
-            // This is the single mutable operation we have to do for entry
-            entry.weight += 1;
-
-            match mode {
-                Mode::Drun => {
-                    let argv = shell_words::split(&entry.exec.as_ref().unwrap());
-                    let args = argv.unwrap();
-                    let args = args
-                        .iter()
-                        // Filtering out special freedesktop syntax
-                        .filter(|entry| !entry.starts_with('%'))
-                        .collect::<Vec<&String>>();
-
-                    std::process::Command::new(&args[0])
-                        .args(&args[1..])
-                        .spawn()
-                        .expect("Command failure");
-                }
-                Mode::Custom(mode_name) => {
-                    let command = &SETTINGS.modes.get(&mode_name).unwrap().target;
-                    let command = command.replace("%", &entry.display_name);
-                    let args = shell_words::split(&command).unwrap();
-                    let args = args.iter().collect::<Vec<&String>>();
-
-                    std::process::Command::new(&args[0])
-                        .args(&args[1..])
-                        .spawn()
-                        .expect("Command failure");
-                }
-            };
-        } else {
-            let input = &self.state.input_value;
-            let command = &SETTINGS.modes.get(&mode.to_string()).unwrap().target;
-            let command = command.replace("%", input);
-            let args = shell_words::split(&command).unwrap();
-            let args = args.iter().collect::<Vec<&String>>();
-            let entries = self.state.entries.mode_entries.get_mut(&mode).unwrap();
-
-            entries.push(Entry {
-                weight: 1,
-                display_name: input.clone(),
-                exec: None,
-                search_terms: None,
-                icon: None,
-            });
-
-            std::process::Command::new(&args[0])
-                .args(&args[1..])
-                .spawn()
-                .expect("Command failure");
-        }
-
-        self.flush_all();
-
-        // Is this ok with iced or shall we exit with and internal command ?
         exit(0);
     }
 
@@ -464,18 +351,21 @@ impl Onagre {
                 if self.state.line_selected_idx != 0 {
                     self.state.line_selected_idx -= 1
                 }
+                self.snap();
             }
             KeyCode::Down => {
-                let mode = self.get_current_mode();
-
-                let max_idx = self.state.entries.mode_matches.get(mode).unwrap().len();
-
-                if max_idx != 0 && self.state.line_selected_idx < max_idx - 1 {
+                let total_items = self.state.entries.len();
+                if total_items != 0 && self.state.line_selected_idx < total_items - 1 {
                     self.state.line_selected_idx += 1
                 }
+                self.snap();
             }
             KeyCode::Enter => {
-                self.run_command();
+                if let Some(sender) = &self.request_tx {
+                    let mut sender = sender.clone();
+                    let selected = self.state.line_selected_idx;
+                    sender.try_send(Request::Activate(selected as u32)).unwrap();
+                }
             }
             KeyCode::Tab => {
                 self.cycle_mode();
@@ -483,45 +373,26 @@ impl Onagre {
                 let _ = self.state.mode_subs.insert(mode);
             }
             KeyCode::Escape => {
-                self.flush_all();
                 exit(0);
             }
             _ => {}
         }
     }
 
-    fn reset_selection(&mut self) {
-        debug!("reset selected line index to 0");
-        self.state.line_selected_idx = 0;
-    }
+    fn snap(&mut self) {
+        let total_items = self.state.entries.len() as f32;
 
-    fn reset_matches(&mut self) {
-        let mode = self.get_current_mode().clone();
-        if self.state.input_value.is_empty() {
-            let matches = self
-                .state
-                .entries
-                .mode_entries
-                .get(&mode)
-                .unwrap()
-                .default_matches();
-
-            self.set_custom_matches(mode, matches);
+        let line_offset = if self.state.line_selected_idx == 0 {
+            0
         } else {
-            let matches = self
-                .state
-                .entries
-                .mode_entries
-                .get(&mode)
-                .unwrap()
-                .get_matches(&self.state.input_value, &self.matcher.matcher);
+            self.state.line_selected_idx + 1
+        } as f32;
 
-            self.set_custom_matches(mode, matches)
-        }
+        let offset = (1.0 / total_items) * (line_offset) as f32;
+        self.state.scroll.snap_to(offset);
     }
 
     fn cycle_mode(&mut self) {
-        println!("{}/{}", self.state.current_mode_idx, self.modes.len());
         if self.state.current_mode_idx == self.modes.len() - 1 {
             debug!("Changing mode {} -> 0", self.state.current_mode_idx);
             self.state.current_mode_idx = 0
@@ -539,23 +410,6 @@ impl Onagre {
         // Safe unwrap, we control the idx here
         let mode = self.modes.get(self.state.current_mode_idx).unwrap();
         mode
-    }
-
-    fn set_custom_matches(&mut self, mode: Mode, matches: Vec<usize>) {
-        self.state.entries.mode_matches.insert(mode, matches);
-    }
-
-    fn flush_all(&mut self) {
-        // This is really dirty but for now the only solution I see to not take the exclusive lock
-        self.state
-            .entries
-            .mode_entries
-            .iter()
-            .for_each(|(mode, entries)| {
-                let mut entries = entries.clone();
-                entries.sort_unstable_by(|entry, other| other.weight.cmp(&entry.weight));
-                crate::entries::cache::flush_mode_cache(mode, &entries);
-            });
     }
 }
 
@@ -597,22 +451,10 @@ impl Onagre {
     }
 }
 
-impl Mode {
-    fn into_subscription(self) -> Option<Subscription<Message>> {
-        match self {
-            Mode::Drun => Some(DesktopEntryWalker::subscription().map(Message::DesktopEntryEvent)),
-            Mode::Custom(name) => {
-                SETTINGS
-                    .modes
-                    .get(&name)
-                    .unwrap()
-                    .source
-                    .as_ref()
-                    .map(|source| {
-                        ExternalCommandSubscription::subscription(&source)
-                            .map(Message::CustomModeEvent)
-                    })
-            }
-        }
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test() {
+        assert_eq!(0.2 * 5 as f32, 1.0);
     }
 }

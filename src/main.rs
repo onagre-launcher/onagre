@@ -9,15 +9,16 @@ extern crate anyhow;
 
 use clap::{App, Arg};
 
+mod backend;
 mod config;
 pub mod entries;
 mod freedesktop;
 mod onagre;
 mod style;
-mod subscriptions;
 
 use crate::config::OnagreSettings;
 use crate::style::theme::Theme;
+use freedesktop::IconFinder;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -42,11 +43,18 @@ lazy_static! {
     pub static ref SETTINGS: OnagreSettings = {
         match OnagreSettings::get() {
             Err(err) => {
-                eprintln!("Unable to load config file : {:?}", err);
+                error!("Unable to load config file : {:?}", err);
                 OnagreSettings::default()
             }
             Ok(settings) => settings,
         }
+    };
+    pub static ref ICON_FINDER: Option<IconFinder> = {
+        SETTINGS
+            .icons
+            .as_ref()
+            .map(|theme_name| IconFinder::build(theme_name).ok())
+            .flatten()
     };
 }
 

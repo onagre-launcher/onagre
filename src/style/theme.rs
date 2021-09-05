@@ -74,6 +74,6 @@ impl container::StyleSheet for &Theme {
 
 impl AsRef<Theme> for Theme {
     fn as_ref(&self) -> &Theme {
-        &self
+        self
     }
 }

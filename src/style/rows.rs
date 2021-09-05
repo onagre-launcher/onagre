@@ -18,7 +18,6 @@ pub struct RowContainerStyles {
 
 impl Eq for RowContainerStyles {}
 
-
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct RowEntries {
     pub default: RowStyles,
