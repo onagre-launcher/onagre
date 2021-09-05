@@ -3,16 +3,16 @@ name = "onagre"
 version = "0.1.0"
 authors = ["Paul Delafosse <paul.delafosse@protonmail.com>"]
 edition = "2018"
-
+resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 default = ["iced/wgpu", "iced/default_system_font", "iced/palette"]
 
 [dependencies]
-iced = { git = "https://github.com/oknozor/iced", features = ["wgpu", "default_system_font", "palette", "svg", "image"] }
-iced_native = { git = "https://github.com/oknozor/iced" }
-iced_style = { git = "https://github.com/oknozor/iced" }
+iced = { git = "https://github.com/hecrj/iced", features = ["wgpu", "default_system_font", "palette", "svg", "image"] }
+iced_native = { git = "https://github.com/hecrj/iced" }
+iced_style = { git = "https://github.com/hecrj/iced" }
 
 fuzzy-matcher = "0.3.7"
 async-std = "1.6.5"
@@ -32,3 +32,4 @@ palette = { version = "0.5.0", features = ["serializing"] }
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }
 clap = "2.33.3"
+pop-launcher = "1.0.0"

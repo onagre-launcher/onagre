@@ -275,7 +275,7 @@ impl Application for Onagre {
         // Scrollable element containing the rows
         let scrollable = Container::new(
             Scrollable::new(&mut self.state.scroll)
-                .with_content(entries_column)
+                .push(entries_column)
                 .height(THEME.scrollable.height.into())
                 .width(THEME.scrollable.width.into())
                 .scrollbar_width(THEME.scrollable.scroller_width)
