@@ -33,7 +33,7 @@ Keep in mind that wofi/rofi are much more reliable app launchers and have been a
 
 ## Install
 
-Onagre is currently unreleased, however if you want to give it a shot you can install it with [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html). 
+Onagre is currently unreleased, however if you want to give it a shot you can install it with [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html). Alternatively, if using Arch Linux you can install the git version from the [AUR](https://aur.archlinux.org/packages/onagre-git/).
 
 ```
 cargo install --git https://github.com/oknozor/onagre
