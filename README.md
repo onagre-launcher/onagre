@@ -131,7 +131,7 @@ border_color = "#184057f"
 border_color = "#00000000" 
 ```
 
-#### Lenght and size
+#### Length and size
 
 You can define a container size using the following properties : 
 
