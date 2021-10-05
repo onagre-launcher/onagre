@@ -1,12 +1,12 @@
-use iced::{Container, Image, Length, Row, Svg, Text, Alignment};
+use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 use pop_launcher::IconSource;
 
 use crate::backend::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
 use crate::onagre::Message;
 use crate::{ICON_FINDER, SETTINGS, THEME};
-use std::path::PathBuf;
 use iced_native::alignment::Horizontal;
+use std::path::PathBuf;
 
 impl<'a> PopSearchResult {
     pub(crate) fn to_row_selected(&self) -> Container<'a, Message> {

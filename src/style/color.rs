@@ -87,9 +87,14 @@ fn to_lower_gex_with_leading_zero(value: u32) -> String {
     }
 }
 
-impl Into<Color> for OnagreColor {
-    fn into(self) -> Color {
-        self.color
+impl From<OnagreColor> for Color {
+    fn from(color: OnagreColor) -> Self {
+        Color {
+            r: color.color.r,
+            g: color.color.g,
+            b: color.color.b,
+            a: color.color.a,
+        }
     }
 }
 

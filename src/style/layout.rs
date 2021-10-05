@@ -69,12 +69,11 @@ impl ToString for Length {
     }
 }
 
-impl Into<IcedLenght> for Length {
-    fn into(self) -> IcedLenght {
-        self.0
+impl From<Length> for IcedLenght {
+    fn from(length: Length) -> Self {
+        length.0
     }
 }
-
 #[cfg(test)]
 mod test {
     use crate::style::layout::Length;

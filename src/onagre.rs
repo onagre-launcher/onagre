@@ -3,9 +3,12 @@ use std::path::PathBuf;
 use std::process::exit;
 
 use iced::futures::channel::mpsc::Sender;
-use iced::{Application, Color, Column, Command, Container, Element, Length, Row, Scrollable, Settings, Subscription, Text, TextInput, scrollable, text_input, window, Alignment};
+use iced::{
+    scrollable, text_input, window, Alignment, Application, Color, Column, Command, Container,
+    Element, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
+};
 use iced_native::keyboard::KeyCode;
-use iced_native::{Event, Clipboard};
+use iced_native::Event;
 use pop_launcher::Request;
 
 use crate::backend::launcher::{PopLauncherSubscription, PopMessage};
@@ -151,10 +154,7 @@ impl Application for Onagre {
         "Onagre".to_string()
     }
 
-    fn update(
-        &mut self,
-        message: Self::Message,
-    ) -> Command<Self::Message> {
+    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus();
 
         match message {
@@ -455,6 +455,6 @@ impl Onagre {
 mod test {
     #[test]
     fn test() {
-        assert_eq!(0.2 * 5 as f32, 1.0);
+        assert_eq!(0.2 * 5_f32, 1.0);
     }
 }
