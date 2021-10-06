@@ -1,4 +1,5 @@
 pub mod desktop;
+use serde::{Deserialize, Serialize};
 
 use anyhow::Result;
 use glob::glob;
@@ -21,6 +22,7 @@ pub enum Extension {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct IconTheme {
     #[serde(rename = "Icon Theme")]
     // This might not be useful since we work with path only
@@ -102,7 +104,7 @@ impl IconFinder {
                 let parents = parents
                     .trim()
                     .split(',')
-                    .filter_map(|parent_name| IconFinder::theme_path(parent_name))
+                    .filter_map(IconFinder::theme_path)
                     .map(|path| {
                         fs::read_to_string(path.join("index.theme")).map(|content| (path, content))
                     })

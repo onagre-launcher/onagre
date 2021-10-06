@@ -1,5 +1,6 @@
-use crate::backend::launcher::futures::join;
-use crate::backend::PopResponse;
+use crate::entries::external_entry::ExternalEntries;
+use crate::entries::pop_entry::PopResponse;
+use crate::subscriptions::pop_launcher::futures::join;
 use async_process::{ChildStderr, ChildStdin, ChildStdout, Command};
 use iced::futures;
 use iced::futures::channel::mpsc;
@@ -16,7 +17,7 @@ use pop_launcher::{json_input_stream, Request, Response};
 use std::hash::Hash;
 use std::process::Stdio;
 
-// Whenever a message is red from pop-laucnher stdout, send it to the subscription receiver
+// Whenever a message is red from pop-launcher stdout, send it to the subscription receiver
 async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
     debug!("Handling stdout");
 
@@ -28,7 +29,7 @@ async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
     }
 }
 
-// Whenever a message is red from pop-laucnher stderr, print it to onagre stderr
+// Whenever a message is red from pop-launcher stderr, print it to onagre stderr
 async fn handle_stderr(stderr: ChildStderr) {
     debug!("Handling stderr");
 
@@ -52,20 +53,19 @@ async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: mpsc::Receiver<Requ
 }
 
 pub struct PopLauncherSubscription {
-    id: String,
+    id: u8,
 }
 
 #[derive(Debug, Clone)]
-pub enum PopMessage {
+pub enum SubscriptionMessage {
     Ready(Sender<Request>),
-    Message(PopResponse),
+    PopMessage(PopResponse),
+    ExternalMessage(ExternalEntries),
 }
 
 impl PopLauncherSubscription {
-    pub fn subscription() -> Subscription<PopMessage> {
-        iced::Subscription::from_recipe(PopLauncherSubscription {
-            id: "pop-sub".to_string(),
-        })
+    pub fn create() -> Subscription<SubscriptionMessage> {
+        iced::Subscription::from_recipe(PopLauncherSubscription { id: 0 })
     }
 }
 
@@ -73,7 +73,7 @@ impl<H, I> iced_native::subscription::Recipe<H, I> for PopLauncherSubscription
 where
     H: std::hash::Hasher,
 {
-    type Output = PopMessage;
+    type Output = SubscriptionMessage;
 
     fn hash(&self, state: &mut H) {
         std::any::TypeId::of::<Self>().hash(state);
@@ -104,8 +104,10 @@ where
             join!(stdout_handle, stderr_handle, stdin_handle);
         });
 
-        let pop_response_rx = response_rx.map(PopResponse::from).map(PopMessage::Message);
+        let pop_response_rx = response_rx
+            .map(PopResponse::from)
+            .map(SubscriptionMessage::PopMessage);
 
-        Box::pin(stream::iter(vec![PopMessage::Ready(request_tx)]).chain(pop_response_rx))
+        Box::pin(stream::iter(vec![SubscriptionMessage::Ready(request_tx)]).chain(pop_response_rx))
     }
 }

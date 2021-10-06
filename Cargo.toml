@@ -19,11 +19,9 @@ fuzzy-matcher = "0.3.7"
 async-std = { version = "1.10.0", features = ["unstable", "async-process"] }
 async-process = "1.0.1"
 
-dirs = "3.0.1"
 anyhow = "1.0.34"
+serde = { version = "^1", features = ["derive"] }
 serde_ini = "0.2.0"
-serde = "1.0.117"
-serde_derive = "1.0.117"
 serde_json = "1.0.59"
 toml = "0.5.7"
 shell-words = "^1"
@@ -35,3 +33,6 @@ log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }
 clap = "2.33.3"
 pop-launcher = "1.0.1"
+skim = {version = "0.9.4", features = ["default"]}
+sled = "0.34.7"
+dirs = "4.0"

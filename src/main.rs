@@ -1,6 +1,4 @@
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
@@ -9,12 +7,13 @@ extern crate anyhow;
 
 use clap::{App, Arg};
 
-mod backend;
+mod app;
 mod config;
+mod db;
 pub mod entries;
 mod freedesktop;
-mod onagre;
 mod style;
+mod subscriptions;
 
 use crate::config::OnagreSettings;
 use crate::style::theme::Theme;
@@ -130,5 +129,5 @@ pub fn main() -> iced::Result {
         debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
-    onagre::run()
+    app::run()
 }

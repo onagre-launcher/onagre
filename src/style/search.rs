@@ -1,6 +1,7 @@
 use crate::style::color::OnagreColor;
 use crate::style::layout::Length;
 use iced_style::{container, text_input, Background, Color};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 #[serde(default)]

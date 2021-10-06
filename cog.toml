@@ -1,4 +1,4 @@
-    changelog_path = "CHANGELOG.md"
+changelog_path = "CHANGELOG.md"
 pre_bump_hooks = []
 post_bump_hooks = []
 authors = []

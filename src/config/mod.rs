@@ -2,6 +2,7 @@ use crate::SETTINGS_PATH;
 use anyhow::Result;
 use config::Config;
 use config::File;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 pub mod theme_settings;

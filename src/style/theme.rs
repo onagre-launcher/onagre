@@ -4,6 +4,7 @@ use crate::style::scrollable::ScrollableStyles;
 use crate::style::search::SearchContainerStyles;
 use iced::container;
 use iced_native::Background;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
