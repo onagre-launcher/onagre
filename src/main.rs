@@ -130,17 +130,5 @@ pub fn main() -> iced::Result {
         debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
-    // User define mode, default : all modes
-    let modes = matches
-        .values_of("modes")
-        .map(|modes| modes.into_iter().collect())
-        .unwrap_or_default();
-
-    // Dmenu mode (conflict with `--modes`)
-    let dmenu = matches.is_present("dmenu");
-    if dmenu {
-        unimplemented!();
-    }
-
-    onagre::run(modes, dmenu)
+    onagre::run()
 }

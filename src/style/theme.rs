@@ -45,21 +45,6 @@ impl Default for Theme {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct TransparentContainer;
-
-impl container::StyleSheet for TransparentContainer {
-    fn style(&self) -> container::Style {
-        container::Style {
-            background: Color::TRANSPARENT.into(),
-            border_radius: 0.0,
-            border_width: 0.0,
-            text_color: Color::TRANSPARENT.into(),
-            border_color: Color::TRANSPARENT,
-        }
-    }
-}
-
 impl container::StyleSheet for &Theme {
     fn style(&self) -> container::Style {
         container::Style {

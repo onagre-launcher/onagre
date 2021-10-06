@@ -1,65 +1,29 @@
-use std::collections::HashSet;
 use std::path::PathBuf;
 use std::process::exit;
 
-use iced::futures::channel::mpsc::Sender;
 use iced::{
-    scrollable, text_input, window, Alignment, Application, Color, Column, Command, Container,
-    Element, Length, Row, Scrollable, Settings, Subscription, Text, TextInput,
+    Alignment, Application, Color, Column, Command, Container, Element, Length, Row,
+    scrollable, Scrollable, Settings, Subscription, text_input, TextInput, window,
 };
-use iced_native::keyboard::KeyCode;
+use iced::futures::channel::mpsc::Sender;
 use iced_native::Event;
+use iced_native::keyboard::KeyCode;
 use pop_launcher::Request;
 
-use crate::backend::launcher::{PopLauncherSubscription, PopMessage};
 use crate::backend::{PopResponse, PopSearchResult};
+use crate::backend::launcher::{PopLauncherSubscription, PopMessage};
 use crate::freedesktop::desktop::DesktopEntry;
 use crate::SETTINGS;
 use crate::THEME;
 
-pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
+pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
     debug!(
         "Settings : \n\tAvailable modes : {:#?}\n\t Icon theme : {:#?}",
         SETTINGS.modes, SETTINGS.icons
     );
-    debug!(
-        "Args : \n\tSelected modes : {:#?}\n\t dmenu : {:#?}",
-        requested_modes, dmenu
-    );
-
-    // Custom modes from user settings
-    let mut possible_modes: Vec<&str> = SETTINGS
-        .modes
-        .iter()
-        .map(|(name, _)| name.as_str())
-        .collect();
-
-    // Merge custom mode from config and default modes to match user input args
-    possible_modes.push("drun");
-    // TODO : possible_modes.push("run");
-
-    // match possible modes against user selection
-    let mut modes = if requested_modes.is_empty() {
-        possible_modes
-            .iter()
-            .map(|name| Mode::from(*name))
-            .collect::<Vec<Mode>>()
-    } else {
-        possible_modes
-            .iter()
-            .filter(|name| requested_modes.contains(name))
-            .map(|name| Mode::from(*name))
-            .collect::<Vec<Mode>>()
-    };
-
-    // Keep user args in place (first mode provided is the default one)
-    modes.reverse();
-
-    debug!("Got modes {:?} from args", modes);
 
     Onagre::run(Settings {
-        flags: modes,
         window: window::Settings {
             transparent: true,
             size: (800, 300),
@@ -73,17 +37,12 @@ pub fn run(requested_modes: Vec<&str>, dmenu: bool) -> iced::Result {
 
 #[derive(Debug)]
 struct Onagre {
-    dmenu: bool,
-    modes: Vec<Mode>,
     state: State,
     request_tx: Option<Sender<Request>>,
 }
 
 #[derive(Debug)]
 struct State {
-    // This is used to ensure we never unsubscribe to a mode command
-    // we ensure the subscription command is never executed more than once
-    mode_subs: HashSet<Mode>,
     current_mode_idx: usize,
     line_selected_idx: usize,
     entries: Vec<PopSearchResult>,
@@ -92,13 +51,9 @@ struct State {
     input_value: String,
 }
 
-impl State {
-    fn new(startup_mode: Mode) -> Self {
-        let mut mode_subs = HashSet::new();
-        mode_subs.insert(startup_mode);
-
+impl Default for State {
+    fn default() -> Self {
         State {
-            mode_subs,
             current_mode_idx: 0,
             line_selected_idx: 0,
             entries: Vec::with_capacity(0),
@@ -116,33 +71,23 @@ pub enum Message {
     PopSubscriptionResponse(PopMessage),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum Mode {
-    Drun,
-    Custom(String),
-}
+// #[derive(Debug, Clone, Eq, PartialEq, Hash)]
+// pub enum Mode {
+//     PopLancher,
+//     Manual,
+// }
 
-impl From<&str> for Mode {
-    fn from(name: &str) -> Self {
-        match name {
-            "drun" => Mode::Drun,
-            other => Mode::Custom(other.to_string()),
-        }
-    }
-}
 
 impl Application for Onagre {
     type Executor = iced::executor::Default;
     type Message = Message;
-    type Flags = Vec<Mode>;
+    type Flags = ();
 
-    fn new(modes: Self::Flags) -> (Self, Command<Self::Message>) {
+    fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
         (
             Onagre {
-                dmenu: false,
-                modes: modes.clone(),
-                state: State::new(modes[0].clone()),
-                request_tx: None,
+                state: Default::default(),
+                request_tx: Default::default(),
             },
             Command::none(),
         )
@@ -201,9 +146,9 @@ impl Application for Onagre {
     fn subscription(&self) -> Subscription<Message> {
         let keyboard_event = iced_native::subscription::events_with(|event, _status| match event {
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
-                modifiers: _,
-                key_code,
-            }) => Some(Message::KeyboardEvent(key_code)),
+                                modifiers: _,
+                                key_code,
+                            }) => Some(Message::KeyboardEvent(key_code)),
             _ => None,
         });
 
@@ -216,9 +161,6 @@ impl Application for Onagre {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let mode_buttons: Row<Message> =
-            Self::build_mode_menu(self.state.current_mode_idx, &self.modes);
-
         // Build rows from current mode search entries
         let rows = self
             .state
@@ -245,18 +187,8 @@ impl Application for Onagre {
                 .scroller_width(THEME.scrollable.scrollbar_width)
                 .style(&THEME.scrollable),
         )
-        .style(&THEME.scrollable)
-        .padding(THEME.scrollable.padding);
-
-        // Switch mode menu
-        let mode_menu = Container::new(
-            Row::new()
-                .push(mode_buttons)
-                .height(THEME.menu.width.into())
-                .width(THEME.menu.height.into()),
-        )
-        .padding(THEME.menu.padding)
-        .style(&THEME.menu);
+            .style(&THEME.scrollable)
+            .padding(THEME.scrollable.padding);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -264,8 +196,8 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-        .width(THEME.search.bar.text_width.into())
-        .style(&THEME.search.bar);
+            .width(THEME.search.bar.text_width.into())
+            .style(&THEME.search.bar);
 
         let search_bar = Container::new(
             Row::new()
@@ -276,12 +208,11 @@ impl Application for Onagre {
                 .width(THEME.search.width.into())
                 .height(THEME.search.height.into()),
         )
-        .padding(THEME.search.padding)
-        .style(&THEME.search);
+            .padding(THEME.search.padding)
+            .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
-                .push(mode_menu)
                 .push(search_bar)
                 .push(scrollable)
                 .align_items(Alignment::Start)
@@ -289,7 +220,9 @@ impl Application for Onagre {
                 .width(Length::Fill)
                 .padding(20),
         )
-        .style(THEME.as_ref());
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .style(THEME.as_ref());
 
         app_container.into()
     }
@@ -300,32 +233,6 @@ impl Application for Onagre {
 }
 
 impl Onagre {
-    fn build_mode_menu(mode_idx: usize, modes: &[Mode]) -> Row<'_, Message> {
-        let rows: Vec<Element<Message>> = modes
-            .iter()
-            .enumerate()
-            .map(|(idx, mode)| {
-                if idx == mode_idx {
-                    Container::new(Text::new(mode.to_string()))
-                        .style(&THEME.menu.lines.selected)
-                        .width(THEME.menu.lines.selected.width.into())
-                        .height(THEME.menu.lines.selected.height.into())
-                        .padding(THEME.menu.lines.selected.padding)
-                        .into()
-                } else {
-                    Container::new(Text::new(mode.to_string()))
-                        .style(&THEME.menu.lines.default)
-                        .width(THEME.menu.lines.default.width.into())
-                        .height(THEME.menu.lines.default.height.into())
-                        .padding(THEME.menu.lines.default.padding)
-                        .into()
-                }
-            })
-            .collect();
-
-        Row::with_children(rows)
-    }
-
     fn run_command(&mut self, desktop_entry_path: PathBuf) -> Command<Message> {
         let desktop_entry = DesktopEntry::from_path(desktop_entry_path).unwrap();
         let argv = shell_words::split(&desktop_entry.exec);
@@ -367,11 +274,7 @@ impl Onagre {
                     sender.try_send(Request::Activate(selected as u32)).unwrap();
                 }
             }
-            KeyCode::Tab => {
-                self.cycle_mode();
-                let mode = self.get_current_mode().clone();
-                let _ = self.state.mode_subs.insert(mode);
-            }
+            KeyCode::Tab => { /* Todo */ }
             KeyCode::Escape => {
                 exit(0);
             }
@@ -390,34 +293,5 @@ impl Onagre {
 
         let offset = (1.0 / total_items) * (line_offset) as f32;
         self.state.scroll.snap_to(offset);
-    }
-
-    fn cycle_mode(&mut self) {
-        if self.state.current_mode_idx == self.modes.len() - 1 {
-            debug!("Changing mode {} -> 0", self.state.current_mode_idx);
-            self.state.current_mode_idx = 0
-        } else {
-            debug!(
-                "Changing mode {} -> {}",
-                self.state.current_mode_idx,
-                self.state.current_mode_idx + 1
-            );
-            self.state.current_mode_idx += 1
-        }
-    }
-
-    fn get_current_mode(&self) -> &Mode {
-        // Safe unwrap, we control the idx here
-        let mode = self.modes.get(self.state.current_mode_idx).unwrap();
-        mode
-    }
-}
-
-impl ToString for Mode {
-    fn to_string(&self) -> String {
-        match &self {
-            Mode::Drun => "Drun".to_string(),
-            Mode::Custom(name) => name.clone(),
-        }
     }
 }
