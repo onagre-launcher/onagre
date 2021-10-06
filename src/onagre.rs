@@ -137,8 +137,6 @@ impl Application for Onagre {
     type Flags = Vec<Mode>;
 
     fn new(modes: Self::Flags) -> (Self, Command<Self::Message>) {
-        Onagre::sway_preloads();
-
         (
             Onagre {
                 dmenu: false,
@@ -182,15 +180,17 @@ impl Application for Onagre {
                         self.request_tx = Some(sender);
                     }
                     PopMessage::Message(response) => match response {
-                        PopResponse::Close => todo!(),
-                        PopResponse::Context { .. } => todo!(),
+                        PopResponse::Close => exit(0),
+                        PopResponse::Context { .. } => {
+                            todo!("Discrete graphics is not implemented")
+                        }
                         PopResponse::DesktopEntry { path, .. } => {
                             self.run_command(path);
                         }
                         PopResponse::Update(search_updates) => {
                             self.state.entries = search_updates;
                         }
-                        PopResponse::Fill(_) => todo!(),
+                        PopResponse::Fill(fill) => self.state.input_value = fill,
                     },
                 };
                 Command::none()
@@ -419,42 +419,5 @@ impl ToString for Mode {
             Mode::Drun => "Drun".to_string(),
             Mode::Custom(name) => name.clone(),
         }
-    }
-}
-
-impl Onagre {
-    fn sway_preloads() {
-        // Tell sway to enable floating mode for Onagre
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] floating enable")
-            .output()
-            .expect("not on sway");
-
-        // [set|plus|minus] <value>
-        // Tells sway to focus on startup
-        std::process::Command::new("swaymsg")
-            .arg("[app_id=\"Onagre\"] focus")
-            .output()
-            .expect("not on sway");
-
-        // Tells sway to remove borders on startup
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] border none ")
-            .output()
-            .expect("not on sway");
-
-        // Tells sway to remove borders on startup
-        std::process::Command::new("swaymsg")
-            .arg("for_window [app_id=\"Onagre\"] resize set width 45 ppt height  35 ppt")
-            .output()
-            .expect("not on sway");
-    }
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test() {
-        assert_eq!(0.2 * 5_f32, 1.0);
     }
 }

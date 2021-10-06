@@ -35,7 +35,7 @@ async fn handle_stderr(stderr: ChildStderr) {
     let mut lines = BufReader::new(stderr).lines();
 
     while let Some(line) = lines.next().await {
-        error!("{}", line.unwrap());
+        debug!("line : {}", line.unwrap());
     }
 }
 
