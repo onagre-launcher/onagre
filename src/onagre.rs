@@ -1,17 +1,17 @@
 use std::path::PathBuf;
 use std::process::exit;
 
-use iced::{
-    Alignment, Application, Color, Column, Command, Container, Element, Length, Row,
-    scrollable, Scrollable, Settings, Subscription, text_input, TextInput, window,
-};
 use iced::futures::channel::mpsc::Sender;
-use iced_native::Event;
+use iced::{
+    scrollable, text_input, window, Alignment, Application, Color, Column, Command, Container,
+    Element, Length, Row, Scrollable, Settings, Subscription, TextInput,
+};
 use iced_native::keyboard::KeyCode;
+use iced_native::Event;
 use pop_launcher::Request;
 
-use crate::backend::{PopResponse, PopSearchResult};
 use crate::backend::launcher::{PopLauncherSubscription, PopMessage};
+use crate::backend::{PopResponse, PopSearchResult};
 use crate::freedesktop::desktop::DesktopEntry;
 use crate::SETTINGS;
 use crate::THEME;
@@ -76,7 +76,6 @@ pub enum Message {
 //     PopLancher,
 //     Manual,
 // }
-
 
 impl Application for Onagre {
     type Executor = iced::executor::Default;
@@ -146,9 +145,9 @@ impl Application for Onagre {
     fn subscription(&self) -> Subscription<Message> {
         let keyboard_event = iced_native::subscription::events_with(|event, _status| match event {
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
-                                modifiers: _,
-                                key_code,
-                            }) => Some(Message::KeyboardEvent(key_code)),
+                modifiers: _,
+                key_code,
+            }) => Some(Message::KeyboardEvent(key_code)),
             _ => None,
         });
 
@@ -187,8 +186,8 @@ impl Application for Onagre {
                 .scroller_width(THEME.scrollable.scrollbar_width)
                 .style(&THEME.scrollable),
         )
-            .style(&THEME.scrollable)
-            .padding(THEME.scrollable.padding);
+        .style(&THEME.scrollable)
+        .padding(THEME.scrollable.padding);
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -196,8 +195,8 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-            .width(THEME.search.bar.text_width.into())
-            .style(&THEME.search.bar);
+        .width(THEME.search.bar.text_width.into())
+        .style(&THEME.search.bar);
 
         let search_bar = Container::new(
             Row::new()
@@ -208,8 +207,8 @@ impl Application for Onagre {
                 .width(THEME.search.width.into())
                 .height(THEME.search.height.into()),
         )
-            .padding(THEME.search.padding)
-            .style(&THEME.search);
+        .padding(THEME.search.padding)
+        .style(&THEME.search);
 
         let app_container = Container::new(
             Column::new()
@@ -220,9 +219,9 @@ impl Application for Onagre {
                 .width(Length::Fill)
                 .padding(20),
         )
-            .height(Length::Fill)
-            .width(Length::Fill)
-            .style(THEME.as_ref());
+        .height(Length::Fill)
+        .width(Length::Fill)
+        .style(THEME.as_ref());
 
         app_container.into()
     }

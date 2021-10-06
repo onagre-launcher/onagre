@@ -10,7 +10,12 @@ impl Eq for OnagreColor {}
 
 impl OnagreColor {
     pub(crate) const DEFAULT_BACKGROUND: OnagreColor = OnagreColor {
-        color:  Color { r: 0.9098039, g: 0.94509804, b: 0.9764706, a: 0.8117647 },
+        color: Color {
+            r: 0.9098039,
+            g: 0.94509804,
+            b: 0.9764706,
+            a: 0.8117647,
+        },
     };
 
     pub(crate) const BLACK: OnagreColor = OnagreColor {

@@ -67,7 +67,7 @@ impl container::StyleSheet for &RowStyles {
 impl Default for RowContainerStyles {
     fn default() -> Self {
         Self {
-            background: OnagreColor::from("#e8f1f9cf").unwrap(),
+            background: OnagreColor::DEFAULT_BACKGROUND,
             border_radius: 0.0,
             border_width: 0.0,
             text_color: OnagreColor::from("#ffffff").unwrap(),
@@ -87,7 +87,7 @@ impl Default for RowContainerStyles {
                 },
                 selected: RowStyles {
                     background: OnagreColor::from("#63b4fbCf").unwrap(),
-                    border_radius: 5.0,
+                    border_radius: 0.0,
                     border_width: 0.0,
                     text_color: OnagreColor::from("#0000ff").unwrap(),
                     border_color: OnagreColor::from("#000000").unwrap(),
@@ -105,7 +105,7 @@ impl RowContainerStyles {
     pub fn mode_entries() -> Self {
         Self {
             background: OnagreColor::from("#63b4fbCf").unwrap(),
-            border_radius: 6.0,
+            border_radius: 0.0,
             border_width: 10.0,
             text_color: OnagreColor::from("#ffffff").unwrap(),
             border_color: OnagreColor::from("#63b4fbCf").unwrap(),

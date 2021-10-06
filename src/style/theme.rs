@@ -2,7 +2,7 @@ use crate::style::color::OnagreColor;
 use crate::style::rows::RowContainerStyles;
 use crate::style::scrollable::ScrollableStyles;
 use crate::style::search::SearchContainerStyles;
-use iced::{container, Color};
+use iced::container;
 use iced_native::Background;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -32,10 +32,10 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
-            background: OnagreColor::from("#e8f1f9cf").unwrap(),
-            foreground: OnagreColor::from("#e8f1f9cf").unwrap(),
+            background: OnagreColor::DEFAULT_BACKGROUND,
+            foreground: OnagreColor::DEFAULT_BACKGROUND,
             border_color: OnagreColor::from("#00000000").unwrap(),
-            border_radius: 10.0,
+            border_radius: 0.0,
             border_width: 0.0,
             rows: RowContainerStyles::default(),
             scrollable: ScrollableStyles::default(),

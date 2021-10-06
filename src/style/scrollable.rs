@@ -38,7 +38,7 @@ impl Default for ScrollableStyles {
             border_width: 0.0,
             scroller: Scroller {
                 color: OnagreColor::from("#314c84").unwrap(),
-                border_radius: 4.0,
+                border_radius: 0.0,
                 border_width: 1.0,
                 border_color: OnagreColor::from("#314c84bf").unwrap(),
             },
