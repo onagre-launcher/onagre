@@ -250,8 +250,9 @@ impl Onagre {
     }
 
     fn on_input_changed(&mut self, input: String) -> Command<Message> {
+        self.state.line_selected_idx = 0;
+        self.state.scroll.snap_to(0.0);
         self.state.input_value = input;
-        debug!("Input changed");
 
         if !self.state.input_value.is_empty() {
             self.state.mode = Mode::PopLauncher
