@@ -1,12 +1,9 @@
 use std::path::PathBuf;
 
-use iced::alignment::Horizontal;
-use iced::{Alignment, Container, Length, Row, Text};
 use pop_launcher::{
     ContextOption, Generation, GpuPreference, IconSource, Indice, Response, SearchResult,
 };
 
-use crate::app::Message;
 use crate::entries::AsEntry;
 use crate::freedesktop::IconPath;
 
@@ -103,16 +100,8 @@ impl From<Response> for PopResponse {
 }
 
 impl<'a> AsEntry<'a> for PopSearchResult {
-    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
-        Container::new(
-            row.push(
-                Text::new(&self.name)
-                    .width(Length::Fill)
-                    .horizontal_alignment(Horizontal::Left),
-            )
-            .spacing(10)
-            .align_items(Alignment::Center),
-        )
+    fn get_display_name(&self) -> &str {
+        self.name.as_str()
     }
 
     fn get_icon(&self) -> Option<IconPath> {

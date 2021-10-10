@@ -1,4 +1,4 @@
-use iced::{Container, Image, Length, Row, Svg};
+use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 
 use crate::app::Message;
 use crate::db::entity::DesktopEntryEntity;
@@ -6,6 +6,7 @@ use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
 use crate::{SETTINGS, THEME};
+use iced::alignment::Horizontal;
 
 pub(crate) mod db_entry;
 pub(crate) mod external_entry;
@@ -79,6 +80,17 @@ pub(crate) trait AsEntry<'a> {
         }
     }
 
-    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message>;
+    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
+        Container::new(
+            row.push(
+                Text::new(self.get_display_name())
+                    .width(Length::Fill)
+                    .horizontal_alignment(Horizontal::Left),
+            )
+            .spacing(10)
+            .align_items(Alignment::Center),
+        )
+    }
+    fn get_display_name(&self) -> &str;
     fn get_icon(&self) -> Option<IconPath>;
 }

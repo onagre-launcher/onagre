@@ -1,10 +1,8 @@
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
-use iced::alignment::Horizontal;
-use iced::{Alignment, Container, Length, Row, Text};
+
 use serde::{Deserialize, Serialize};
 
-use crate::app::Message;
 use crate::entries::AsEntry;
 use crate::freedesktop::IconPath;
 
@@ -80,16 +78,8 @@ impl ExternalCommandEntry {
 }
 
 impl<'a> AsEntry<'a> for ExternalCommandEntry {
-    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
-        Container::new(
-            row.push(
-                Text::new(&self.value)
-                    .width(Length::Fill)
-                    .horizontal_alignment(Horizontal::Left),
-            )
-            .spacing(10)
-            .align_items(Alignment::Center),
-        )
+    fn get_display_name(&self) -> &str {
+        self.value.as_str()
     }
 
     fn get_icon(&self) -> Option<IconPath> {
