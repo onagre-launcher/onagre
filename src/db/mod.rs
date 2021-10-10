@@ -6,6 +6,7 @@ use serde::Serialize;
 
 pub mod desktop_entry;
 pub mod run;
+pub mod web;
 
 #[derive(Clone, Debug)]
 pub struct Database {

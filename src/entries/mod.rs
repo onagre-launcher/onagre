@@ -3,6 +3,7 @@ use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 use crate::app::Message;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::run::RunCommandEntity;
+use crate::db::web::WebEntity;
 use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
@@ -18,6 +19,7 @@ pub struct EntryCache {
     pub external: ExternalEntries,
     pub pop_search: Vec<PopSearchResult>,
     pub de_history: Vec<DesktopEntryEntity>,
+    pub web_history: Vec<WebEntity>,
     pub terminal: Vec<RunCommandEntity>,
 }
 
@@ -38,7 +40,7 @@ pub(crate) trait AsEntry<'a> {
             .padding(THEME.rows.lines.default.padding)
     }
 
-    fn to_row(&self, selected: usize, idx: usize) -> Container<'a, Message> {
+    fn to_row(&self, selected: Option<usize>, idx: usize) -> Container<'a, Message> {
         let icon = SETTINGS
             .icons
             .as_ref()
@@ -59,10 +61,9 @@ pub(crate) trait AsEntry<'a> {
             })
             .unwrap_or_else(Row::new);
 
-        if idx == selected {
-            self.to_row_selected(icon)
-        } else {
-            self.to_row_unselected(icon)
+        match selected {
+            Some(selected) if idx == selected => self.to_row_selected(icon),
+            _ => self.to_row_unselected(icon),
         }
     }
 
