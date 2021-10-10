@@ -1,42 +1,15 @@
-use iced::Container;
+use iced::{Container, Image, Length, Row, Svg};
 
 use crate::app::Message;
 use crate::db::entity::DesktopEntryEntity;
 use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopSearchResult;
-use crate::THEME;
+use crate::freedesktop::{Extension, IconPath};
+use crate::{SETTINGS, THEME};
 
 pub(crate) mod db_entry;
 pub(crate) mod external_entry;
 pub(crate) mod pop_entry;
-
-pub(crate) trait AsEntry<'a> {
-    fn to_row_selected(&self) -> Container<'a, Message> {
-        self.as_row()
-            .width(THEME.rows.lines.selected.width.into())
-            .height(THEME.rows.lines.selected.height.into())
-            .style(&THEME.rows.lines.selected)
-            .padding(THEME.rows.lines.selected.padding)
-    }
-
-    fn to_row_unselected(&self) -> Container<'a, Message> {
-        self.as_row()
-            .width(THEME.rows.lines.default.width.into())
-            .height(THEME.rows.lines.default.height.into())
-            .style(&THEME.rows.lines.default)
-            .padding(THEME.rows.lines.default.padding)
-    }
-
-    fn to_row(&self, selected: usize, idx: usize) -> Container<'a, Message> {
-        if idx == selected {
-            self.to_row_selected()
-        } else {
-            self.to_row_unselected()
-        }
-    }
-
-    fn as_row(&self) -> Container<'a, Message>;
-}
 
 #[derive(Debug)]
 pub enum Entries {
@@ -59,4 +32,53 @@ impl Entries {
     pub fn _empty(&self) -> bool {
         self.len() == 0
     }
+}
+
+pub(crate) trait AsEntry<'a> {
+    fn to_row_selected(&self, row: Row<'a, Message>) -> Container<'a, Message> {
+        self.as_row(row)
+            .width(THEME.rows.lines.selected.width.into())
+            .height(THEME.rows.lines.selected.height.into())
+            .style(&THEME.rows.lines.selected)
+            .padding(THEME.rows.lines.selected.padding)
+    }
+
+    fn to_row_unselected(&self, row: Row<'a, Message>) -> Container<'a, Message> {
+        self.as_row(row)
+            .width(THEME.rows.lines.default.width.into())
+            .height(THEME.rows.lines.default.height.into())
+            .style(&THEME.rows.lines.default)
+            .padding(THEME.rows.lines.default.padding)
+    }
+
+    fn to_row(&self, selected: usize, idx: usize) -> Container<'a, Message> {
+        let icon = SETTINGS
+            .icons
+            .as_ref()
+            .map(|_| self.get_icon())
+            .flatten()
+            .map(|icon| match &icon.extension {
+                Extension::Svg => Row::new().push(
+                    Svg::from_path(&icon.path)
+                        .height(Length::Units(32))
+                        .width(Length::Units(32)),
+                ),
+
+                Extension::Png => Row::new().push(
+                    Image::new(&icon.path)
+                        .height(Length::Units(32))
+                        .width(Length::Units(32)),
+                ),
+            })
+            .unwrap_or_else(Row::new);
+
+        if idx == selected {
+            self.to_row_selected(icon)
+        } else {
+            self.to_row_unselected(icon)
+        }
+    }
+
+    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message>;
+    fn get_icon(&self) -> Option<IconPath>;
 }

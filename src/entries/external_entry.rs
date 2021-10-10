@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::Message;
 use crate::entries::AsEntry;
+use crate::freedesktop::IconPath;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalEntries(Vec<ExternalCommandEntry>);
@@ -79,16 +80,19 @@ impl ExternalCommandEntry {
 }
 
 impl<'a> AsEntry<'a> for ExternalCommandEntry {
-    fn as_row(&self) -> Container<'a, Message> {
+    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
         Container::new(
-            Row::new()
-                .push(
-                    Text::new(&self.value)
-                        .width(Length::Fill)
-                        .horizontal_alignment(Horizontal::Left),
-                )
-                .spacing(10)
-                .align_items(Alignment::Center),
+            row.push(
+                Text::new(&self.value)
+                    .width(Length::Fill)
+                    .horizontal_alignment(Horizontal::Left),
+            )
+            .spacing(10)
+            .align_items(Alignment::Center),
         )
+    }
+
+    fn get_icon(&self) -> Option<IconPath> {
+        None
     }
 }

@@ -3,8 +3,6 @@ use std::path::PathBuf;
 
 use iced::alignment::Horizontal;
 use iced::{Alignment, Container, Length, Row, Text};
-use iced_native::widget::image::Image;
-use iced_native::widget::svg::Svg;
 use pop_launcher::{
     ContextOption, Generation, GpuPreference, IconSource, Indice, Response, SearchResult,
 };
@@ -12,7 +10,7 @@ use pop_launcher::{
 use crate::app::Message;
 use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
-use crate::{ICON_FINDER, SETTINGS};
+use crate::ICON_FINDER;
 
 #[derive(Debug, Clone)]
 pub enum PopResponse {
@@ -107,9 +105,20 @@ impl From<Response> for PopResponse {
 }
 
 impl<'a> AsEntry<'a> for PopSearchResult {
-    fn as_row(&self) -> Container<'a, Message> {
-        let icon_path = self
-            .icon
+    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
+        Container::new(
+            row.push(
+                Text::new(&self.name)
+                    .width(Length::Fill)
+                    .horizontal_alignment(Horizontal::Left),
+            )
+            .spacing(10)
+            .align_items(Alignment::Center),
+        )
+    }
+
+    fn get_icon(&self) -> Option<IconPath> {
+        self.icon
             .as_ref()
             .or_else(|| self.category_icon.as_ref())
             .map(|icon| {
@@ -136,35 +145,6 @@ impl<'a> AsEntry<'a> for PopSearchResult {
                 })
             })
             .flatten()
-            .flatten();
-
-        let mut row = if let (Some(_icon_enabled), Some(icon_path)) = (&SETTINGS.icons, icon_path) {
-            match &icon_path.extension {
-                Extension::Svg => Row::new().push(
-                    Svg::from_path(&icon_path.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
-                ),
-
-                Extension::Png => Row::new().push(
-                    Image::new(&icon_path.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
-                ),
-            }
-        } else {
-            Row::new()
-        };
-
-        row = row
-            .push(
-                Text::new(&self.name)
-                    .width(Length::Fill)
-                    .horizontal_alignment(Horizontal::Left),
-            )
-            .spacing(10)
-            .align_items(Alignment::Center);
-
-        Container::new(row)
+            .flatten()
     }
 }
