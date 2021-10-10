@@ -1,4 +1,3 @@
-use core::option::Option::{None, Some};
 use std::path::PathBuf;
 
 use iced::alignment::Horizontal;
@@ -9,8 +8,7 @@ use pop_launcher::{
 
 use crate::app::Message;
 use crate::entries::AsEntry;
-use crate::freedesktop::{Extension, IconPath};
-use crate::ICON_FINDER;
+use crate::freedesktop::IconPath;
 
 #[derive(Debug, Clone)]
 pub enum PopResponse {
@@ -122,29 +120,14 @@ impl<'a> AsEntry<'a> for PopSearchResult {
             .as_ref()
             .or_else(|| self.category_icon.as_ref())
             .map(|icon| {
-                ICON_FINDER.as_ref().map(|finder| {
-                    let name = match icon {
-                        IconSource::Name(icon) => icon,
-                        IconSource::Mime(icon) => icon,
-                        IconSource::Window(_) => todo!("What is this ?"),
-                    };
+                let path = match icon {
+                    IconSource::Name(icon) => icon,
+                    IconSource::Mime(icon) => icon,
+                    IconSource::Window(_) => todo!("What is this ?"),
+                };
 
-                    let path = PathBuf::from(name.to_string());
-                    if path.is_absolute() && path.exists() {
-                        let extension = path.extension().unwrap().to_str().unwrap();
-                        let extension = match extension {
-                            "svg" => Some(Extension::Svg),
-                            "png" => Some(Extension::Png),
-                            _ => None,
-                        };
-
-                        extension.map(|extension| IconPath { path, extension })
-                    } else {
-                        finder.lookup(name, 48)
-                    }
-                })
+                IconPath::from_path(path)
             })
-            .flatten()
             .flatten()
     }
 }

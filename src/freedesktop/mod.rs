@@ -1,11 +1,14 @@
-pub mod desktop;
-use serde::{Deserialize, Serialize};
-
-use anyhow::Result;
-use glob::glob;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+use anyhow::Result;
+use glob::glob;
+use serde::{Deserialize, Serialize};
+
+use crate::ICON_FINDER;
+
+pub mod desktop;
 
 const BASE_DIRS: &[&str] = &["/usr/share/icons", "/usr/share/pixmaps"];
 
@@ -13,6 +16,32 @@ const BASE_DIRS: &[&str] = &["/usr/share/icons", "/usr/share/pixmaps"];
 pub struct IconPath {
     pub path: PathBuf,
     pub extension: Extension,
+}
+
+impl IconPath {
+    pub fn from_path(path: &str) -> Option<Self> {
+        ICON_FINDER
+            .as_ref()
+            .map(|finder| {
+                let pathbuf = PathBuf::from(path);
+                if pathbuf.is_absolute() && pathbuf.exists() {
+                    let extension = pathbuf.extension().unwrap().to_str().unwrap();
+                    let extension = match extension {
+                        "svg" => Some(Extension::Svg),
+                        "png" => Some(Extension::Png),
+                        _ => None,
+                    };
+
+                    extension.map(|extension| IconPath {
+                        path: pathbuf,
+                        extension,
+                    })
+                } else {
+                    finder.lookup(path, 48)
+                }
+            })
+            .flatten()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
