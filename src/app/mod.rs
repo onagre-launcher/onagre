@@ -2,7 +2,7 @@ use std::path::Path;
 use std::process::exit;
 
 use fuzzy_matcher::skim::SkimMatcherV2;
-use iced::futures::channel::mpsc::Sender;
+use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::{
     scrollable, text_input, window, Alignment, Application, Color, Column, Command, Container,
     Element, Length, Row, Scrollable, Settings, Subscription, TextInput,
@@ -11,17 +11,21 @@ use iced_native::keyboard::KeyCode;
 use iced_native::Event;
 use pop_launcher::Request;
 
+use crate::app::active_mode::ActiveMode;
 use crate::config::ModeSettings;
-use crate::db::entity::DesktopEntryEntity;
+use crate::db::desktop_entry::DesktopEntryEntity;
+use crate::db::run::RunCommandEntity;
 use crate::db::Database;
 use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopResponse;
-use crate::entries::{AsEntry, Entries};
+use crate::entries::{AsEntry, EntryCache};
 use crate::freedesktop::desktop::DesktopEntry;
 use crate::subscriptions::external::ExternalCommandSubscription;
 use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::SETTINGS;
 use crate::THEME;
+
+mod active_mode;
 
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
@@ -42,13 +46,6 @@ pub fn run() -> iced::Result {
     })
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum Mode {
-    History,
-    PopLauncher,
-    Custom(String),
-}
-
 #[derive(Debug)]
 struct Onagre {
     state: State,
@@ -57,27 +54,34 @@ struct Onagre {
 
 #[derive(Debug)]
 struct State {
-    mode: Mode,
+    mode: ActiveMode,
     db: Database,
     line_selected_idx: usize,
-    entries: Entries,
+    entries: EntryCache,
     external_entries_match: ExternalEntries,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
+    exec_on_next_search: bool,
 }
 
 impl Default for State {
     fn default() -> Self {
         State {
-            mode: Mode::History,
+            mode: ActiveMode::History,
             db: Default::default(),
             line_selected_idx: 0,
-            entries: Entries::None,
+            entries: EntryCache {
+                external: Default::default(),
+                pop_search: vec![],
+                de_history: vec![],
+                terminal: vec![],
+            },
             external_entries_match: Default::default(),
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
+            exec_on_next_search: false,
         }
     }
 }
@@ -109,8 +113,26 @@ impl Application for Onagre {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.state.input.focus();
-        if Mode::History == self.state.mode {
-            self.state.entries = Entries::History(self.state.db.get_all());
+        match self.state.mode {
+            ActiveMode::Calc => {}
+            ActiveMode::DesktopEntry => {}
+            ActiveMode::Find => {}
+            ActiveMode::Files => {}
+            ActiveMode::Recent => {}
+            ActiveMode::Scripts => {}
+            ActiveMode::Terminal => {
+                if self.state.entries.terminal.is_empty() {
+                    let entries = self.state.db.get_all::<RunCommandEntity>();
+                    self.state.entries.terminal = entries;
+                }
+            }
+            ActiveMode::Web(_) => {}
+            ActiveMode::External(_) => {}
+            ActiveMode::History => {
+                if self.state.entries.de_history.is_empty() {
+                    self.state.entries.de_history = self.state.db.get_all();
+                }
+            }
         }
 
         match message {
@@ -125,7 +147,7 @@ impl Application for Onagre {
 
         let pop_launcher = PopLauncherSubscription::create().map(Message::SubscriptionResponse);
         let sub = match &self.state.mode {
-            Mode::Custom(key) => {
+            ActiveMode::External(key) => {
                 let command = SETTINGS.modes.get(key).unwrap();
                 Some(
                     ExternalCommandSubscription::create(command.source.as_ref().unwrap())
@@ -147,12 +169,29 @@ impl Application for Onagre {
     fn view(&mut self) -> Element<'_, Self::Message> {
         // Build rows from current mode search entries
         let selected = self.state.line_selected_idx;
-        let rows = match &self.state.entries {
-            Entries::Pop(pop_entries) => pop_entries
+        let rows = match &self.state.mode {
+            ActiveMode::DesktopEntry
+            | ActiveMode::Find
+            | ActiveMode::Files
+            | ActiveMode::Recent
+            | ActiveMode::Scripts
+            | ActiveMode::Calc
+            | ActiveMode::Web(_) => self
+                .state
+                .entries
+                .pop_search
                 .iter()
                 .map(|entry| entry.to_row(selected, entry.id as usize).into())
                 .collect(),
-            Entries::External(_external_entries) => self
+            ActiveMode::Terminal => self
+                .state
+                .entries
+                .terminal
+                .iter()
+                .enumerate()
+                .map(|(idx, entry)| entry.to_row(selected, idx).into())
+                .collect(),
+            ActiveMode::External(_) => self
                 .state
                 .external_entries_match
                 .get()
@@ -160,12 +199,14 @@ impl Application for Onagre {
                 .enumerate()
                 .map(|(idx, entry)| entry.to_row(selected, idx).into())
                 .collect(),
-            Entries::History(history) => history
+            ActiveMode::History => self
+                .state
+                .entries
+                .de_history
                 .iter()
                 .enumerate()
                 .map(|(idx, entry)| entry.to_row(selected, idx).into())
                 .collect(),
-            Entries::None => Vec::with_capacity(0),
         };
 
         let entries_column = Column::with_children(rows);
@@ -226,26 +267,29 @@ impl Application for Onagre {
 }
 
 impl Onagre {
+    // Only call this if we are using a non pop_launcher mode
+    // Pop Launcher entries provides their indices
     fn current_entry(&self) -> Option<&str> {
         match &self.state.mode {
-            Mode::History => {
-                if let Entries::History(history) = &self.state.entries {
-                    history
-                        .get(self.state.line_selected_idx)
-                        .map(|entry| entry.path.to_str().unwrap())
-                } else {
-                    None
-                }
-            }
-            Mode::Custom(_custom) => self
+            ActiveMode::History => self
+                .state
+                .entries
+                .de_history
+                .get(self.state.line_selected_idx)
+                .map(|entry| entry.path.to_str().unwrap()),
+            ActiveMode::External(_custom) => self
                 .state
                 .external_entries_match
                 .get()
                 .get(self.state.line_selected_idx)
                 .map(|entry| entry.value.as_str()),
-            Mode::PopLauncher => {
-                unreachable!()
-            }
+            ActiveMode::Terminal => self
+                .state
+                .entries
+                .terminal
+                .get(self.state.line_selected_idx)
+                .map(|entry| entry.command.as_str()),
+            _pop_mode => None,
         }
     }
 
@@ -253,52 +297,47 @@ impl Onagre {
         self.state.line_selected_idx = 0;
         self.state.scroll.snap_to(0.0);
         self.state.input_value = input;
-
-        if !self.state.input_value.is_empty() {
-            self.state.mode = Mode::PopLauncher
-        };
-
-        // TODO : anymode
-        if self.state.input_value.starts_with("pass") {
-            self.state.mode = Mode::Custom("pass".to_string())
-        } else {
-            self.state.mode = Mode::PopLauncher
-        };
+        self.state.mode = ActiveMode::from(self.state.input_value.as_str());
 
         debug!("Current mode : {:?}", self.state.mode);
 
         match &self.state.mode {
-            Mode::PopLauncher => {
-                self.state.external_entries_match = ExternalEntries::new(Vec::with_capacity(0));
-                if let Some(sender) = &self.request_tx {
-                    let mut sender = sender.clone();
-                    let value = self.state.input_value.clone();
-                    debug!("Sending message to pop thread : {}", value);
-                    sender.try_send(Request::Search(value)).unwrap();
-                }
-            }
-            Mode::Custom(mode) => {
-                if let Entries::External(entries) = &self.state.entries {
-                    let term = self
-                        .state
-                        .input_value
-                        .strip_prefix(mode)
-                        .map(str::trim_start);
+            ActiveMode::External(mode) => {
+                let term = self
+                    .state
+                    .input_value
+                    .strip_prefix(mode)
+                    .map(str::trim_start);
 
-                    match term {
-                        Some(term) if !term.is_empty() => {
-                            debug!("Search term for external command : {:?}", term);
-                            let entries = entries
-                                .match_external(term, &SkimMatcherV2::default().ignore_case());
-                            let entries = ExternalEntries::new(entries);
-                            self.state.external_entries_match = entries;
-                            debug!("{:?}", self.state.entries);
-                        }
-                        _ => self.state.external_entries_match = entries.clone(),
+                match term {
+                    Some(term) if !term.is_empty() => {
+                        debug!("Search term for external command : {:?}", term);
+                        let entries = self
+                            .state
+                            .entries
+                            .external
+                            .match_external(term, &SkimMatcherV2::default().ignore_case());
+                        let entries = ExternalEntries::new(entries);
+                        self.state.external_entries_match = entries;
+                        debug!("{:?}", self.state.entries);
                     }
+                    _ => self.state.external_entries_match = self.state.entries.external.clone(),
                 }
             }
-            Mode::History => {}
+            ActiveMode::Calc
+            | ActiveMode::DesktopEntry
+            | ActiveMode::Find
+            | ActiveMode::Files
+            | ActiveMode::Recent
+            | ActiveMode::Scripts
+            | ActiveMode::Terminal
+            | ActiveMode::Web(_) => {
+                self.state.external_entries_match = ExternalEntries::new(Vec::with_capacity(0));
+                let value = self.state.input_value.clone();
+                self.pop_request(Request::Search(value))
+                    .expect("Unable to send search request to pop-launcher")
+            }
+            ActiveMode::History => {}
         }
 
         Command::none()
@@ -334,14 +373,17 @@ impl Onagre {
                 self.snap();
             }
             KeyCode::Down => {
-                let total_items = self.state.entries.len();
+                let total_items = self.current_entries_len();
                 if total_items != 0 && self.state.line_selected_idx < total_items - 1 {
                     self.state.line_selected_idx += 1
                 }
                 self.snap();
             }
             KeyCode::Enter => return self.on_execute(),
-            KeyCode::Tab => {}
+            KeyCode::Tab => {
+                self.pop_request(Request::Complete(self.state.line_selected_idx as u32))
+                    .expect("Unable to send request to pop-launcher");
+            }
             KeyCode::Escape => {
                 exit(0);
             }
@@ -352,7 +394,7 @@ impl Onagre {
     }
 
     fn snap(&mut self) {
-        let total_items = self.state.entries.len() as f32;
+        let total_items = self.current_entries_len() as f32;
 
         let line_offset = if self.state.line_selected_idx == 0 {
             0
@@ -379,15 +421,17 @@ impl Onagre {
                     self.run_command(path);
                 }
                 PopResponse::Update(search_updates) => {
-                    self.state.entries = Entries::Pop(search_updates);
+                    if self.state.exec_on_next_search {
+                        self.pop_request(Request::Activate(0))
+                            .expect("Unable to send Activate request to pop-launcher");
+                        return Command::none();
+                    }
+                    self.state.entries.pop_search = search_updates;
                 }
                 PopResponse::Fill(fill) => self.state.input_value = fill,
             },
-            SubscriptionMessage::ExternalMessage(mut entries) => {
-                if let Entries::External(current_entries) = &self.state.entries {
-                    entries.extend_from_slice(current_entries);
-                }
-                self.state.entries = Entries::External(entries);
+            SubscriptionMessage::ExternalMessage(entries) => {
+                self.state.entries.external.extend_from_slice(&entries);
             }
         };
         Command::none()
@@ -395,19 +439,32 @@ impl Onagre {
 
     fn on_execute(&mut self) -> Command<Message> {
         match &self.state.mode {
-            Mode::PopLauncher => {
+            ActiveMode::Calc
+            | ActiveMode::DesktopEntry
+            | ActiveMode::Find
+            | ActiveMode::Files
+            | ActiveMode::Recent
+            | ActiveMode::Scripts
+            | ActiveMode::Web(_) => {
                 if let Some(sender) = &self.request_tx {
                     let mut sender = sender.clone();
                     let selected = self.state.line_selected_idx;
                     sender.try_send(Request::Activate(selected as u32)).unwrap();
                 }
             }
-            Mode::Custom(mode) => {
+            ActiveMode::Terminal => {
+                RunCommandEntity::persist(&self.state.input_value, &self.state.db);
+                self.state.exec_on_next_search = true;
+                self.state.input_value = self.current_entry().unwrap().to_string();
+                self.pop_request(Request::Search(self.state.input_value.clone()))
+                    .expect("Error sending search request to pop-launcher")
+            }
+            ActiveMode::External(mode) => {
                 let mode_settings = SETTINGS.modes.get(mode).unwrap();
                 let entry = self.current_entry().unwrap();
                 mode_settings.execute(entry);
             }
-            Mode::History => {
+            ActiveMode::History => {
                 let path = self.current_entry();
                 let path = path.unwrap();
                 self.run_command(path);
@@ -415,6 +472,28 @@ impl Onagre {
         }
 
         Command::none()
+    }
+
+    fn current_entries_len(&self) -> usize {
+        match self.state.mode {
+            ActiveMode::Calc
+            | ActiveMode::DesktopEntry
+            | ActiveMode::Find
+            | ActiveMode::Files
+            | ActiveMode::Recent
+            | ActiveMode::Web(_)
+            | ActiveMode::Scripts => self.state.entries.pop_search.len(),
+            ActiveMode::Terminal => self.state.entries.terminal.len(),
+            ActiveMode::External(_) => self.state.external_entries_match.len(),
+            ActiveMode::History => self.state.entries.de_history.len(),
+        }
+    }
+
+    fn pop_request(&self, request: Request) -> Result<(), TrySendError<Request>> {
+        let sender = self.request_tx.as_ref().unwrap();
+        let mut sender = sender.clone();
+        debug!("Sending message to pop launcher : {:?}", request);
+        sender.try_send(request)
     }
 
     fn keyboard_event() -> Subscription<Message> {

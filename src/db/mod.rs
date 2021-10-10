@@ -1,11 +1,11 @@
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-
-use crate::db::entity::Entity;
 use std::cmp::Reverse;
 use std::fmt::Debug;
 
-pub mod entity;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+
+pub mod desktop_entry;
+pub mod run;
 
 #[derive(Clone, Debug)]
 pub struct Database {
@@ -50,7 +50,7 @@ impl Database {
         self.inner
             .open_tree(T::COLLECTION)
             .unwrap()
-            .get(key)
+            .get(key.as_bytes())
             .ok()
             .flatten()
             .map(|data| data.to_vec())
@@ -79,4 +79,10 @@ impl Database {
         debug!("History {:?}", results);
         results
     }
+}
+
+pub trait Entity {
+    fn get_key(&self) -> Vec<u8>;
+    fn get_weight(&self) -> u8;
+    const COLLECTION: &'static str;
 }

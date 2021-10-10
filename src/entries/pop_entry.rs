@@ -105,18 +105,8 @@ impl<'a> AsEntry<'a> for PopSearchResult {
     }
 
     fn get_icon(&self) -> Option<IconPath> {
-        self.icon
-            .as_ref()
-            .or_else(|| self.category_icon.as_ref())
-            .map(|icon| {
-                let path = match icon {
-                    IconSource::Name(icon) => icon,
-                    IconSource::Mime(icon) => icon,
-                    IconSource::Window(_) => todo!("What is this ?"),
-                };
+        let source = self.icon.as_ref().or_else(|| self.category_icon.as_ref());
 
-                IconPath::from_path(path)
-            })
-            .flatten()
+        IconPath::from_icon_source(source)
     }
 }
