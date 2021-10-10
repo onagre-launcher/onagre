@@ -2433,6 +2433,7 @@ dependencies = [
  "log",
  "palette",
  "pop-launcher",
+ "ron",
  "serde 1.0.130",
  "serde_ini",
  "serde_json",
@@ -2975,6 +2976,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fddb3b23626145d1776addfc307e1a1851f60ef6ca64f376bcb889697144cf0"
 dependencies = [
  "bytemuck",
+]
+
+[[package]]
+name = "ron"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45005aa836116903a49cf3461474da697cfe66221762c6e95871092009ec86d6"
+dependencies = [
+ "base64",
+ "bitflags",
+ "serde 1.0.130",
 ]
 
 [[package]]

@@ -1,7 +1,8 @@
 use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 
 use crate::app::Message;
-use crate::db::entity::DesktopEntryEntity;
+use crate::db::desktop_entry::DesktopEntryEntity;
+use crate::db::run::RunCommandEntity;
 use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
@@ -13,26 +14,11 @@ pub(crate) mod external_entry;
 pub(crate) mod pop_entry;
 
 #[derive(Debug)]
-pub enum Entries {
-    Pop(Vec<PopSearchResult>),
-    External(ExternalEntries),
-    History(Vec<DesktopEntryEntity>),
-    None,
-}
-
-impl Entries {
-    pub(crate) fn len(&self) -> usize {
-        match self {
-            Entries::Pop(pop_entry) => pop_entry.len(),
-            Entries::External(external_entry) => external_entry.len(),
-            Entries::None => 0,
-            Entries::History(history) => history.len(),
-        }
-    }
-
-    pub fn _empty(&self) -> bool {
-        self.len() == 0
-    }
+pub struct EntryCache {
+    pub external: ExternalEntries,
+    pub pop_search: Vec<PopSearchResult>,
+    pub de_history: Vec<DesktopEntryEntity>,
+    pub terminal: Vec<RunCommandEntity>,
 }
 
 pub(crate) trait AsEntry<'a> {

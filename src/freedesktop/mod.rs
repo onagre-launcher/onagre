@@ -7,6 +7,7 @@ use glob::glob;
 use serde::{Deserialize, Serialize};
 
 use crate::ICON_FINDER;
+use pop_launcher::IconSource;
 
 pub mod desktop;
 
@@ -19,6 +20,20 @@ pub struct IconPath {
 }
 
 impl IconPath {
+    pub fn from_icon_source(source: Option<&IconSource>) -> Option<Self> {
+        source
+            .map(|icon| {
+                let path = match icon {
+                    IconSource::Name(icon) => icon,
+                    IconSource::Mime(icon) => icon,
+                    IconSource::Window(_) => todo!("What is this ?"),
+                };
+
+                IconPath::from_path(path)
+            })
+            .flatten()
+    }
+
     pub fn from_path(path: &str) -> Option<Self> {
         ICON_FINDER
             .as_ref()

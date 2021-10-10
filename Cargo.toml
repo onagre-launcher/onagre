@@ -36,4 +36,4 @@ skim = {version = "0.9.4", features = ["default"]}
 sled = "0.34.7"
 dirs = "4.0"
 clap = {version = "2.33", default-features = false }
-
+ron = "0.6.5"
