@@ -1,12 +1,5 @@
 icons = "Arc"
 
-[modes.xdg]
-source = "fd . /home/okno/"
-target = "xdg-open %"
-
 [modes.pass]
 source = "sh -c \"cd $HOME/.password-store && fd -t f . | sed s/\\.gpg//\"" 
 target = "sh -c \"pass -c %\""
-
-[modes.ddg]
-target = "xdg-open https://duckduckgo.com/?q=%"

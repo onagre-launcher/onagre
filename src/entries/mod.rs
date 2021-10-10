@@ -18,12 +18,21 @@ pub(crate) trait AsEntry<'a> {
             .style(&THEME.rows.lines.selected)
             .padding(THEME.rows.lines.selected.padding)
     }
-    fn to_row(&self) -> Container<'a, Message> {
+
+    fn to_row_unselected(&self) -> Container<'a, Message> {
         self.as_row()
             .width(THEME.rows.lines.default.width.into())
             .height(THEME.rows.lines.default.height.into())
             .style(&THEME.rows.lines.default)
             .padding(THEME.rows.lines.default.padding)
+    }
+
+    fn to_row(&self, selected: usize, idx: usize) -> Container<'a, Message> {
+        if idx == selected {
+            self.to_row_selected()
+        } else {
+            self.to_row_unselected()
+        }
     }
 
     fn as_row(&self) -> Container<'a, Message>;

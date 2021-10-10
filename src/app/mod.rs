@@ -146,16 +146,11 @@ impl Application for Onagre {
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         // Build rows from current mode search entries
+        let selected = self.state.line_selected_idx;
         let rows = match &self.state.entries {
             Entries::Pop(pop_entries) => pop_entries
                 .iter()
-                .map(|entry| {
-                    if entry.id as usize == self.state.line_selected_idx {
-                        entry.to_row_selected().into()
-                    } else {
-                        entry.to_row().into()
-                    }
-                })
+                .map(|entry| entry.to_row(selected, entry.id as usize).into())
                 .collect(),
             Entries::External(_external_entries) => self
                 .state
@@ -163,24 +158,12 @@ impl Application for Onagre {
                 .get()
                 .iter()
                 .enumerate()
-                .map(|(idx, entry)| {
-                    if idx == self.state.line_selected_idx {
-                        entry.to_row_selected().into()
-                    } else {
-                        entry.to_row().into()
-                    }
-                })
+                .map(|(idx, entry)| entry.to_row(selected, idx).into())
                 .collect(),
             Entries::History(history) => history
                 .iter()
                 .enumerate()
-                .map(|(idx, entry)| {
-                    if idx == self.state.line_selected_idx {
-                        entry.to_row_selected().into()
-                    } else {
-                        entry.to_row().into()
-                    }
-                })
+                .map(|(idx, entry)| entry.to_row(selected, idx).into())
                 .collect(),
             Entries::None => Vec::with_capacity(0),
         };
@@ -357,7 +340,7 @@ impl Onagre {
                 self.snap();
             }
             KeyCode::Enter => return self.on_execute(),
-            KeyCode::Tab => { /* Todo */ }
+            KeyCode::Tab => {}
             KeyCode::Escape => {
                 exit(0);
             }
