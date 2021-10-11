@@ -31,7 +31,7 @@ mod active_mode;
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
     debug!(
-        "Settings : \n\tAvailable modes : {:#?}\n\t Icon theme : {:#?}",
+        "Settings : \n\t Additional modes : {:#?}\n\t Icon theme : {:#?}",
         SETTINGS.modes, SETTINGS.icons
     );
 
@@ -352,7 +352,9 @@ impl Onagre {
     }
 
     fn on_input_changed(&mut self, input: String) -> Command<Message> {
+        self.state.input_value = input;
         self.state.mode = ActiveMode::from(self.state.input_value.as_str());
+        debug!("Current mode : {:?}", self.state.mode);
         self.state.line_selected_idx = match self.state.mode {
             // For those mode first line is unselected on change
             // We want execute user input on index zero
@@ -361,9 +363,6 @@ impl Onagre {
         };
 
         self.state.scroll.snap_to(0.0);
-        self.state.input_value = input;
-
-        debug!("Current mode : {:?}", self.state.mode);
 
         match &self.state.mode {
             ActiveMode::External(mode) => {
@@ -375,7 +374,6 @@ impl Onagre {
 
                 match term {
                     Some(term) if !term.is_empty() => {
-                        debug!("Search term for external command : {:?}", term);
                         let entries = self
                             .state
                             .entries
@@ -383,7 +381,6 @@ impl Onagre {
                             .match_external(term, &SkimMatcherV2::default().ignore_case());
                         let entries = ExternalEntries::new(entries);
                         self.state.external_entries_match = entries;
-                        debug!("{:?}", self.state.entries);
                     }
                     _ => self.state.external_entries_match = self.state.entries.external.clone(),
                 }
@@ -427,7 +424,6 @@ impl Onagre {
     }
 
     fn handle_input(&mut self, key_code: KeyCode) -> Command<Message> {
-        debug!("Handle input : {:?}", key_code);
         match key_code {
             KeyCode::Up => {
                 self.dec_selected();
@@ -470,7 +466,6 @@ impl Onagre {
     fn on_pop_launcher_message(&mut self, message: SubscriptionMessage) -> Command<Message> {
         match message {
             SubscriptionMessage::Ready(sender) => {
-                debug!("Subscription read, sender set");
                 self.request_tx = Some(sender);
             }
             SubscriptionMessage::PopMessage(response) => match response {

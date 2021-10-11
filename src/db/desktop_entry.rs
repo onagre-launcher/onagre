@@ -39,8 +39,6 @@ impl DesktopEntryEntity {
             weight,
         };
 
-        debug!("Inserting {:?} in {}", entity, Self::COLLECTION);
-
         db.insert(&entity).expect("Unable to insert history entry");
     }
 }

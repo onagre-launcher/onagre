@@ -19,20 +19,16 @@ use std::process::Stdio;
 
 // Whenever a message is red from pop-launcher stdout, send it to the subscription receiver
 async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
-    debug!("Handling stdout");
-
     let mut stream = json_input_stream::<_, Response>(stdout);
 
     while let Some(response) = stream.next().await {
-        debug!("Got response from pop {:?}", response);
+        debug!("Got a response from pop-launcher");
         sender.send(response.unwrap()).await.unwrap();
     }
 }
 
 // Whenever a message is red from pop-launcher stderr, print it to onagre stderr
 async fn handle_stderr(stderr: ChildStderr) {
-    debug!("Handling stderr");
-
     let mut lines = BufReader::new(stderr).lines();
 
     while let Some(line) = lines.next().await {
@@ -47,7 +43,7 @@ async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: mpsc::Receiver<Requ
         let request = serde_json::to_string(&request).unwrap();
         let request = format!("{}\n", request);
         stdin.write(request.as_bytes()).await.unwrap();
-        debug!("wrote request {:?} to pop-launcher stdin", request);
+        debug!("Wrote request {:?} to pop-launcher stdin", request);
         stdin.flush().await.unwrap();
     }
 }
