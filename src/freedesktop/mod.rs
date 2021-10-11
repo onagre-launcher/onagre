@@ -120,7 +120,7 @@ pub struct IconFinder {
 impl IconFinder {
     // see : https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
     pub fn build(theme_name: &str) -> Result<Self> {
-        debug!("building icon finder for theme {:?}", theme_name);
+        debug!("Building icon finder for theme {:?}", theme_name);
         let mut theme_paths = vec![];
         let mut fallbacks = vec![];
 
@@ -225,7 +225,6 @@ impl IconFinder {
             let path = path.to_str().unwrap();
             let glob = format!("{}/{}x{}/**/{}.*", path, size, size, icon_name);
             if let Some(path) = self.search_icon(&glob) {
-                debug!("Found icon for {} in {:?}", icon_name, path);
                 return Some(path);
             }
         }
@@ -264,7 +263,7 @@ impl IconFinder {
                         return Some(icon_path);
                     }
                 }
-                Err(e) => debug!("No match {:?}", e),
+                Err(e) => debug!("No icon match {:?}", e),
             }
         }
 

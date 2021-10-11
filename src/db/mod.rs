@@ -77,7 +77,6 @@ impl Database {
             .collect();
 
         results.sort_by_key(|b| Reverse(b.get_weight()));
-        debug!("History {:?}", results);
         results
     }
 }
