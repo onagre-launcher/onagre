@@ -1,5 +1,6 @@
 use crate::db::{Database, Entity};
 use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WebEntity {
     pub query: String,
@@ -39,5 +40,5 @@ impl Entity for WebEntity {
         self.weight
     }
 
-    const COLLECTION: &'static str = "run_commands";
+    const COLLECTION: &'static str = "web";
 }

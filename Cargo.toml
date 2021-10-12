@@ -32,8 +32,9 @@ palette = { version = "0.5.0", features = ["serializing"] }
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }
 pop-launcher = "1.0.1"
-skim = {version = "0.9.4", features = ["default"]}
+skim = { version = "0.9.4", features = ["default"] }
 sled = "0.34.7"
 dirs = "4.0"
-clap = {version = "2.33", default-features = false }
+clap = { version = "2.33", default-features = false }
 ron = "0.6.5"
+ico = "0.1.0"

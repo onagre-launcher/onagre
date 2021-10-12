@@ -25,8 +25,9 @@ use crate::subscriptions::external::ExternalCommandSubscription;
 use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::SETTINGS;
 use crate::THEME;
+use pop_launcher::Request::Activate;
 
-mod active_mode;
+pub mod active_mode;
 
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
@@ -114,6 +115,7 @@ impl Application for Onagre {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+        debug!("Current mode mode : {:?}", self.state.mode);
         self.state.input.focus();
         match self.state.mode {
             ActiveMode::Calc => {}
@@ -505,21 +507,36 @@ impl Onagre {
                 .pop_request(Request::Activate(self.selected().unwrap() as u32))
                 .expect("Unable to send pop-launcher request"),
             ActiveMode::Web(kind) => {
-                self.state.exec_on_next_search = true;
                 let query = self.state.input_value.strip_prefix(kind).unwrap();
                 WebEntity::persist(query, kind, &self.state.db);
-                let command = self.current_entry().unwrap();
-                self.state.input_value = command.clone();
-                self.pop_request(Request::Search(command))
-                    .expect("Unable to send pop-launcher request")
+                // Running the user input query at index zero
+                if self.selected().is_none() {
+                    self.pop_request(Activate(0))
+                        .expect("Unable to send pop-launcher request")
+                } else {
+                    // Re ask pop-launcher for a stored query
+                    let command = self.current_entry().unwrap();
+                    self.state.input_value = command.clone();
+                    self.state.exec_on_next_search = true;
+                    self.pop_request(Request::Search(command))
+                        .expect("Unable to send pop-launcher request")
+                }
             }
             ActiveMode::Terminal => {
                 RunCommandEntity::persist(&self.state.input_value, &self.state.db);
-                self.state.exec_on_next_search = true;
-                let command = self.current_entry().unwrap();
-                self.state.input_value = command.clone();
-                self.pop_request(Request::Search(command))
-                    .expect("Unable to send pop-launcher request");
+
+                // Running the user input query at index zero
+                if self.selected().is_none() {
+                    self.pop_request(Activate(0))
+                        .expect("Unable to send pop-launcher request")
+                } else {
+                    // Re ask pop-launcher for a stored query
+                    self.state.exec_on_next_search = true;
+                    let command = self.current_entry().unwrap();
+                    self.state.input_value = command.clone();
+                    self.pop_request(Request::Search(command))
+                        .expect("Unable to send pop-launcher request");
+                }
             }
             ActiveMode::External(mode) => {
                 let mode_settings = SETTINGS.modes.get(mode).unwrap();

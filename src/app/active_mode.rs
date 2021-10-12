@@ -2,6 +2,18 @@ use serde::Deserialize;
 
 use crate::SETTINGS;
 
+lazy_static! {
+    pub static ref WEB_CONFIG: Option<WebConfig> = {
+        pop_launcher::config::find("web")
+            .next()
+            .map(|path| std::fs::read_to_string(path).ok())
+            .flatten()
+            .map(|config| ron::from_str::<WebConfig>(&config).ok())
+            .flatten()
+    };
+    static ref EXTERNAL_MODES: Vec<String> = SETTINGS.modes.keys().cloned().collect();
+}
+
 #[derive(Debug, PartialEq)]
 pub enum ActiveMode {
     Calc,
@@ -17,25 +29,20 @@ pub enum ActiveMode {
 }
 
 #[derive(Debug, Deserialize)]
-struct WebConfig {
+pub struct WebConfig {
     pub rules: Vec<Rule>,
 }
 
 #[derive(Debug, Deserialize)]
-struct Rule {
+pub struct Rule {
     pub matches: Vec<String>,
+    pub queries: Vec<WebQuery>,
 }
 
-lazy_static! {
-    static ref WEB_CONFIG: Option<WebConfig> = {
-        pop_launcher::config::find("web")
-            .next()
-            .map(|path| std::fs::read_to_string(path).ok())
-            .flatten()
-            .map(|config| ron::from_str::<WebConfig>(&config).ok())
-            .flatten()
-    };
-    static ref EXTERNAL_MODES: Vec<String> = SETTINGS.modes.keys().cloned().collect();
+#[derive(Debug, Deserialize)]
+pub struct WebQuery {
+    pub name: String,
+    pub query: String,
 }
 
 impl From<&str> for ActiveMode {
@@ -62,7 +69,6 @@ impl From<&str> for ActiveMode {
                         .iter()
                         .map(|rule| rule.matches.as_slice())
                         .any(|matches| matches.contains(&other));
-
                     if is_web_config {
                         ActiveMode::Web(other)
                     } else if EXTERNAL_MODES.contains(&other) {

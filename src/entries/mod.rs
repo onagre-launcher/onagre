@@ -49,14 +49,14 @@ pub(crate) trait AsEntry<'a> {
             .map(|icon| match &icon.extension {
                 Extension::Svg => Row::new().push(
                     Svg::from_path(&icon.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
+                        .height(Length::Units(24))
+                        .width(Length::Units(24)),
                 ),
 
                 Extension::Png => Row::new().push(
                     Image::new(&icon.path)
-                        .height(Length::Units(32))
-                        .width(Length::Units(32)),
+                        .height(Length::Units(24))
+                        .width(Length::Units(24)),
                 ),
             })
             .unwrap_or_else(Row::new);

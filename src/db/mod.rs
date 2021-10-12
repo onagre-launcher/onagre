@@ -77,6 +77,8 @@ impl Database {
             .collect();
 
         results.sort_by_key(|b| Reverse(b.get_weight()));
+        debug!("Fetching {} history from database", T::COLLECTION);
+        trace!("{:?}", results);
         results
     }
 }
