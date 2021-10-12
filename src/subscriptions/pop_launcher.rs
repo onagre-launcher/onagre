@@ -23,6 +23,7 @@ async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
 
     while let Some(response) = stream.next().await {
         debug!("Got a response from pop-launcher");
+        trace!("{:?}", response);
         sender.send(response.unwrap()).await.unwrap();
     }
 }

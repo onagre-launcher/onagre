@@ -4,10 +4,10 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use glob::glob;
+use pop_launcher::IconSource;
 use serde::{Deserialize, Serialize};
 
 use crate::ICON_FINDER;
-use pop_launcher::IconSource;
 
 pub mod desktop;
 
