@@ -10,8 +10,8 @@ Onagre is a general purpose application launcher for X and wayland  inspired by 
 
 I built onagre for my main setup (sway/wayland) as an alternative to [wofi](https://hg.sr.ht/~scoopta/wofi) so it's worth mentioning there are a few differences : 
 
-- ~~Window transparency.~~ (see: #18)
-- ~~Rounded corner~~ (also #18).
+- Window transparency.
+- Rounded corner (even on sway).
 - Several default plugins (thanks to pop-launcher)
 - Change mode with prefix.
 - Build with rust and iced.
