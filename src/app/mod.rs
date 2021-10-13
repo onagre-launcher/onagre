@@ -206,25 +206,25 @@ impl Application for Onagre {
                 .collect(),
             ActiveMode::Web(kind) => {
                 if !self.state.entries.web_history.is_empty() {
-                    self.state.entries.web_history[1..]
+                    self.state.entries.web_history
                         .iter()
                         .filter(|entry| &entry.kind == kind)
                         .enumerate()
                         .map(|(idx, entry)| entry.to_row(selected, idx).into())
                         .collect()
                 } else {
-                    vec![]
+                    Vec::with_capacity(0)
                 }
             }
             ActiveMode::Terminal => {
                 if !self.state.entries.terminal.is_empty() {
-                    self.state.entries.terminal[1..]
+                    self.state.entries.terminal
                         .iter()
                         .enumerate()
                         .map(|(idx, entry)| entry.to_row(selected, idx).into())
                         .collect()
                 } else {
-                    vec![]
+                    Vec::with_capacity(0)
                 }
             }
             ActiveMode::External(_) => self
@@ -568,7 +568,7 @@ impl Onagre {
                 .iter()
                 .filter(|entry| &entry.kind == kind)
                 .count(),
-            ActiveMode::Terminal => self.state.entries.terminal.len() - 1,
+            ActiveMode::Terminal => self.state.entries.terminal.len(),
             ActiveMode::External(_) => self.state.external_entries_match.len(),
             ActiveMode::History => self.state.entries.de_history.len(),
         }
