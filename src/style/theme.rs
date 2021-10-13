@@ -17,7 +17,6 @@ pub struct Theme {
     pub rows: RowContainerStyles,
     pub scrollable: ScrollableStyles,
     pub search: SearchContainerStyles,
-    pub menu: RowContainerStyles,
 }
 
 impl Theme {
@@ -36,12 +35,11 @@ impl Default for Theme {
             background: OnagreColor::DEFAULT_BACKGROUND,
             foreground: OnagreColor::DEFAULT_BACKGROUND,
             border_color: OnagreColor::from("#00000000").unwrap(),
-            border_radius: 0.0,
-            border_width: 0.0,
+            border_radius: 25.0,
+            border_width: 20.0,
             rows: RowContainerStyles::default(),
             scrollable: ScrollableStyles::default(),
             search: SearchContainerStyles::default(),
-            menu: RowContainerStyles::mode_entries(),
         }
     }
 }

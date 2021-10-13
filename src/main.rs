@@ -89,21 +89,6 @@ pub fn main() -> iced::Result {
                 .help("Path to an alternate onagre theme file")
                 .default_value(default_theme),
         )
-        .arg(
-            Arg::with_name("dmenu")
-                .conflicts_with("modes")
-                .short("d")
-                .long("dmenu")
-                .help("Run onagre in dmenu mode (read from stdin and write to stdout)"),
-        )
-        .arg(
-            Arg::with_name("modes")
-                .short("m")
-                .long("modes")
-                .takes_value(true)
-                .multiple(true)
-                .help("Specify which mode should be loaded, onagre will start with the mode at index zero"),
-        )
         .get_matches();
 
     // User defined config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise
