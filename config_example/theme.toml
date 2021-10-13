@@ -13,6 +13,7 @@ border_width = 0
 width = "shrink"
 height = "fill"
 padding = 0
+
 [rows.lines.default]
 background = "#00000000"
 text_color = "#18405aff"
@@ -69,32 +70,3 @@ selection_color = "#fcfbfbff"
 border_radius = 6
 border_width = 0
 text_width = "fill"
-
-[menu]
-background = "#63b4fbcf"
-text_color = "#ffffffff"
-border_color = "#63b4fbcf"
-border_radius = 6
-border_width = 10
-width = "fill"
-height = "shrink"
-padding = 10
-[menu.lines.default]
-background = "#00000000"
-text_color = "#000000ff"
-border_color = "#000000ff"
-border_radius = 0
-border_width = 0
-width = "0"
-height = "0"
-padding = 0
-
-[menu.lines.selected]
-background = "#00000000"
-text_color = "#000000ff"
-border_color = "#314c84ff"
-border_radius = 0
-border_width = 0
-width = "fill"
-height = "shrink"
-padding = 0
