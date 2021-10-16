@@ -13,10 +13,10 @@ pub mod freedesktop;
 pub mod style;
 pub mod subscriptions;
 
-use std::sync::Mutex;
 use crate::config::OnagreSettings;
 use freedesktop::IconFinder;
 use std::path::PathBuf;
+use std::sync::Mutex;
 use style::theme::Theme;
 
 lazy_static! {
@@ -53,5 +53,4 @@ lazy_static! {
             .map(|theme_name| IconFinder::build(theme_name).ok())
             .flatten()
     };
-
 }
