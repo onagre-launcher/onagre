@@ -102,15 +102,15 @@ To completely hide a menu you can simply set its height and width properties to 
 
 ## Screenshots
 
-![screenshot](screenshots/sc-main.png)
+![screenshot](docs/screenshots/sc-main.png)
 
 *History mode*
 
-![screenshot](screenshots/sc-run.png)
+![screenshot](docs/screenshots/sc-run.png)
 
 *Terminal mode*
 
-![screenshot](screenshots/sc-file.png)
+![screenshot](docs/screenshots/sc-file.png)
 
 *File mode*
 

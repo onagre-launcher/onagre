@@ -40,7 +40,7 @@ lazy_static! {
     pub static ref SETTINGS: OnagreSettings = {
         match OnagreSettings::get() {
             Err(err) => {
-                error!("Unable to load config file : {:?}", err);
+                eprintln!("Unable to load theme config : {:?}", err);
                 OnagreSettings::default()
             }
             Ok(settings) => settings,

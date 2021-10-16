@@ -210,7 +210,7 @@ impl IconFinder {
             }
         }
 
-        // No luck, we fallback to parent themes
+        // No luck, we fallback to parent theme_examples
         for (theme_path, theme) in &self.fallbacks {
             for glob in IconFinder::globs_patterns(size, theme_path.to_owned(), theme, icon_name) {
                 if let Some(path) = self.search_icon(&glob) {

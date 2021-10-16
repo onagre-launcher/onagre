@@ -1,5 +1,5 @@
 use crate::style::color::OnagreColor;
-use crate::style::layout::Length;
+use crate::style::layout::{Length};
 use serde::de::{Deserialize, Deserializer};
 use serde::{Serialize, Serializer};
 use std::convert::TryFrom;

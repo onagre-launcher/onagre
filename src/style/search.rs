@@ -4,7 +4,7 @@ use iced_style::{container, text_input, Background, Color};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct SearchContainerStyles {
     pub background: OnagreColor,
     pub text_color: OnagreColor,
@@ -19,7 +19,24 @@ pub struct SearchContainerStyles {
 
 impl Eq for SearchContainerStyles {}
 
+impl Default for SearchContainerStyles {
+    fn default() -> Self {
+        Self {
+            border_radius: 0.0,
+            border_width: 0.0,
+            text_color: OnagreColor::BLACK,
+            border_color: OnagreColor::TRANSPARENT,
+            background: OnagreColor::TRANSPARENT,
+            height: Length::raw(40),
+            bar: Default::default(),
+            width: Length::fill(),
+            padding: 4,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct SearchBarStyles {
     pub background: OnagreColor,
     pub value_color: OnagreColor,
@@ -32,28 +49,17 @@ pub struct SearchBarStyles {
 }
 
 impl Eq for SearchBarStyles {}
-
-impl Default for SearchContainerStyles {
+impl Default for SearchBarStyles {
     fn default() -> Self {
-        Self {
+        SearchBarStyles {
             border_radius: 0.0,
             border_width: 0.0,
-            text_color: OnagreColor::BLACK,
             border_color: OnagreColor::TRANSPARENT,
             background: OnagreColor::TRANSPARENT,
-            height: Length::raw(40),
-            bar: SearchBarStyles {
-                border_radius: 6.0,
-                border_width: 0.0,
-                border_color: OnagreColor::GREEN,
-                background: OnagreColor::from("#e8f1f9cf").unwrap(),
-                placeholder_color: OnagreColor::from("#fcfbfb").unwrap(),
-                value_color: OnagreColor::BLACK,
-                selection_color: OnagreColor::from("#fcfbfb").unwrap(),
-                text_width: Length::fill(),
-            },
-            width: Length::fill(),
-            padding: 4,
+            placeholder_color: OnagreColor::BLUE,
+            value_color: OnagreColor::RED,
+            selection_color: OnagreColor::BLACK,
+            text_width: Length::fill(),
         }
     }
 }

@@ -12,7 +12,7 @@ impl Theme {
             let mut s = Config::new();
             s.merge(File::from(theme_path.clone()))?;
             s.try_into()
-                .map_err(|err| anyhow!("{} : {}", "Config format error", err))
+                .map_err(|err| anyhow!("{} : {}", "Theme format error", err))
         } else {
             Err(anyhow!(
                 "Unable to find theme settings file {}",

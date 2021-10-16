@@ -8,7 +8,7 @@ use iced::{
     Element, Length, Row, Scrollable, Settings, Subscription, TextInput,
 };
 use iced_native::keyboard::KeyCode;
-use iced_native::Event;
+use iced_native::{Event, Padding};
 use pop_launcher::Request;
 use pop_launcher::Request::Activate;
 
@@ -264,8 +264,15 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-        .width(THEME.search.bar.text_width.into())
-        .style(&THEME.search.bar);
+            .style(&THEME.search.bar)
+            .padding(Padding {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 10
+            })
+            .width(THEME.search.bar.text_width.into());
+
 
         let search_bar = Container::new(
             Row::new()
