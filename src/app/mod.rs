@@ -206,7 +206,9 @@ impl Application for Onagre {
                 .collect(),
             ActiveMode::Web(kind) => {
                 if !self.state.entries.web_history.is_empty() {
-                    self.state.entries.web_history
+                    self.state
+                        .entries
+                        .web_history
                         .iter()
                         .filter(|entry| &entry.kind == kind)
                         .enumerate()
@@ -218,7 +220,9 @@ impl Application for Onagre {
             }
             ActiveMode::Terminal => {
                 if !self.state.entries.terminal.is_empty() {
-                    self.state.entries.terminal
+                    self.state
+                        .entries
+                        .terminal
                         .iter()
                         .enumerate()
                         .map(|(idx, entry)| entry.to_row(selected, idx).into())
