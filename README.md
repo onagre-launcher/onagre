@@ -2,18 +2,21 @@
 
 Onagre is a general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred and build with [iced](https://github.com/hecrj/iced/).
 
+![nord-theme-screenshot](docs/screenshots/nord.png)
+
 ## Disclaimer 
 
-⚠️️ Until the roadmap is completed, expect breaking changes, bugs and performance issues. ⚠️
+⚠️️ Onagre is currently unreleased. 
+Until the roadmap is completed, expect breaking changes, bugs and performance issues. ⚠️
 
 ## Difference with wofi/rofi
 
-I built onagre for my main setup (sway/wayland) as an alternative to [wofi](https://hg.sr.ht/~scoopta/wofi) so it's worth mentioning there are a few differences : 
+I built onagre for my main setup (sway/i3) as an alternative to [wofi](https://hg.sr.ht/~scoopta/wofi) so it's worth mentioning there are a few differences : 
 
 - Window transparency.
 - Rounded corner (even on sway).
 - Several default plugins (thanks to pop-launcher)
-- Change mode with prefix.
+- Change mode with prefix not rofi link modi.
 - Build with rust and iced.
   Hopefully the choice of a higher level language (compared to C) and a GUI framework 
   will allow onboarding new contributors easily, without sacrificing too much performance. 
@@ -25,6 +28,7 @@ I built onagre for my main setup (sway/wayland) as an alternative to [wofi](http
 - [Qalculate](http://qalculate.github.io/) (optional)
 
 **Installation:**
+
 ```bash
 cargo install --git https://github.com/oknozor/onagre
 ```
@@ -62,45 +66,43 @@ Mode with no prefix are enabled by default, there entry will be mixed in the sea
 | External    | Shell command as launcher entries                             | configurable    | `$HOME/.config/onagre/config.toml`                        |
 | Help        | List available pop-launcher modes                             | '?'             |                                                           |
 
-## Configure
+## Configuration
 
-Onagre will look for a config file in `$XDG_CONFIG_DIR/onagre/config.toml`.
-By default it launches in desktop entries
+### External mode
+
+**1. Example:**
+
+You can add mode from external commands like so: 
 
 ```toml
-# (Optional) Icon theme, the value must match the theme directory under `$XDG_DATA_DIRS/icons/{my_theme}`
-icons = "Arc"
-
-# An other example to integrate `pass` password manager.
+# Integrate `pass` password manager.
 # Note that we need to run command in a subshell to escape double quotes and have env variables accessible.
 [modes.pass]
 source = "sh -c \"cd $HOME/.password-store && fd -t f . | sed s/\\.gpg//\""
+# Execute this command on `enter` `%` will be replaced with the selected entry
 target = "sh -c \"pass -c %\""
 ```
-**1. Alternate config**
+
+**2. Alternate config:**
 
 You can provide alternate config and theme with the `--config` and `--theme` flags.
 For more info run `onagre --help`.
 
 ## Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.toml` and will fall back to the default theme if none is found. 
+Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.toml` and will fall back to the default theme if none is found.
 
-#### Length and size
-
-You can define a container size using the following properties : 
-
-```toml
-width = "fill" # Fill the container
-height = "shrink" # Shrink to fit
-# ... 
-width = "flex-1" # Fill portion (relative to other felx defined size in the container) 
-height = "10" # Fixed value
-```
-
-To completely hide a menu you can simply set its height and width properties to 0. 
+⚠ Until the theming API is stabilized you can take a look at [the examples](docs/theme_examples)
 
 ## Screenshots
+
+![murz-theme-screenshot](docs/screenshots/murz.png)
+
+[*Murz theme*](docs/theme_examples/murz-theme.toml) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
+
+![simple-theme-screenshot](docs/screenshots/simple.png)
+
+[*Simple theme*](docs/theme_examples/simple-theme.toml)
 
 ![screenshot](docs/screenshots/sc-main.png)
 
@@ -114,6 +116,7 @@ To completely hide a menu you can simply set its height and width properties to 
 
 *File mode*
 
+
 ## Roadmap
 
   - [x] default desktop entries launcher. 
@@ -122,7 +125,8 @@ To completely hide a menu you can simply set its height and width properties to 
   - [x] configurable styling.
   - [x] config from flag.
   - [x] prefix mode search (ex: type "de" to search for desktop entries).
-  - [ ] transparency (blocked) 
+  - [x] transparency 
+  - [ ] packaging 
   - [ ] theme config stabilization
 
 ## Code of conduct
