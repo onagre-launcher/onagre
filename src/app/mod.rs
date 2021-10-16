@@ -24,7 +24,7 @@ use crate::entries::{AsEntry, EntryCache};
 use crate::freedesktop::desktop::DesktopEntry;
 use crate::subscriptions::external::ExternalCommandSubscription;
 use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
-use crate::SETTINGS;
+use crate::{SETTINGS, style};
 use crate::THEME;
 
 pub mod active_mode;
@@ -33,17 +33,22 @@ pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
     debug!(
         "Settings : \n\t Additional modes : {:#?}\n\t Icon theme : {:#?}",
-        SETTINGS.modes, SETTINGS.icons
+        THEME.icon_theme, THEME.icon_theme
     );
+
+    let default_font = THEME.font.as_ref()
+        .map(|font| style::font::load(font))
+        .flatten();
 
     Onagre::run(Settings {
         window: window::Settings {
             transparent: true,
-            size: (800, 300),
+            size: THEME.size,
             ..Default::default()
         },
-        default_text_size: 20,
+        default_text_size: THEME.font_size,
         antialiasing: true,
+        default_font,
         ..Default::default()
     })
 }

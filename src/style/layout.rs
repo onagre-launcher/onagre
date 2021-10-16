@@ -18,7 +18,7 @@ impl TryFrom<String> for Length {
             portion if portion.starts_with("flex") => {
                 let value = portion[4..].trim().parse::<u16>().map_err(|err| {
                     anyhow!(
-                        "Expected 'fill', 'shrink', 'flex-{{value}}', or {{value}}, got {} :\n{}",
+                        "Expected 'fill', 'shrink', 'flex {{value}}', or {{value}}, got {} :\n{}",
                         portion,
                         err
                     )

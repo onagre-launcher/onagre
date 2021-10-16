@@ -7,8 +7,12 @@ use iced_native::Background;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct Theme {
+    pub size: (u32, u32),
+    pub font: Option<String>,
+    pub font_size: u16,
+    pub icon_theme: Option<String>,
     pub background: OnagreColor,
     pub foreground: OnagreColor,
     pub border_color: OnagreColor,
@@ -32,6 +36,10 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
+            size: (800, 600),
+            font: None,
+            font_size: 12,
+            icon_theme: None,
             background: OnagreColor::DEFAULT_BACKGROUND,
             foreground: OnagreColor::DEFAULT_BACKGROUND,
             border_color: OnagreColor::from("#00000000").unwrap(),

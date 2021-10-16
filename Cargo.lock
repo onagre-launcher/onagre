@@ -2556,6 +2556,7 @@ dependencies = [
  "criterion",
  "dirs 4.0.0",
  "env_logger",
+ "font-kit",
  "fuzzy-matcher",
  "glob",
  "iced",
