@@ -498,7 +498,11 @@ impl Onagre {
 
                     self.state.entries.pop_search = search_updates;
                 }
-                PopResponse::Fill(fill) => self.state.input_value = fill,
+                PopResponse::Fill(fill) => {
+                    self.state.input_value = fill;
+                    self.state.input.move_cursor_to_end();
+                    self.on_input_changed(self.state.input_value.clone());
+                },
             },
             SubscriptionMessage::ExternalMessage(entries) => {
                 self.state.entries.external.extend_from_slice(&entries);
