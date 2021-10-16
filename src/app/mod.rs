@@ -31,10 +31,7 @@ pub mod active_mode;
 
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
-    debug!(
-        "Settings : \n\t Additional modes : {:#?}\n\t Icon theme : {:#?}",
-        THEME.icon_theme, THEME.icon_theme
-    );
+    debug!("{:?}", SETTINGS.modes);
 
     let default_font = THEME
         .font
