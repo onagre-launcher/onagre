@@ -58,7 +58,7 @@ impl Default for RowStyles {
             border_width: 0.0,
             text_color: OnagreColor::from("#18405a").unwrap(),
             border_color: OnagreColor::from("#000000").unwrap(),
-            padding: 5
+            padding: 5,
         }
     }
 }
@@ -99,7 +99,7 @@ impl Default for RowEntries {
                 border_width: 0.0,
                 text_color: OnagreColor::from("#0000ff").unwrap(),
                 border_color: OnagreColor::from("#000000").unwrap(),
-                padding: 5
+                padding: 5,
             },
         }
     }

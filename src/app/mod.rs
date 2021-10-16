@@ -24,8 +24,8 @@ use crate::entries::{AsEntry, EntryCache};
 use crate::freedesktop::desktop::DesktopEntry;
 use crate::subscriptions::external::ExternalCommandSubscription;
 use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
-use crate::{SETTINGS, style};
 use crate::THEME;
+use crate::{style, SETTINGS};
 
 pub mod active_mode;
 
@@ -36,7 +36,9 @@ pub fn run() -> iced::Result {
         THEME.icon_theme, THEME.icon_theme
     );
 
-    let default_font = THEME.font.as_ref()
+    let default_font = THEME
+        .font
+        .as_ref()
         .map(|font| style::font::load(font))
         .flatten();
 
@@ -264,15 +266,14 @@ impl Application for Onagre {
             &self.state.input_value,
             Message::InputChanged,
         )
-            .style(&THEME.search.bar)
-            .padding(Padding {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 10
-            })
-            .width(THEME.search.bar.text_width.into());
-
+        .style(&THEME.search.bar)
+        .padding(Padding {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 10,
+        })
+        .width(THEME.search.bar.text_width.into());
 
         let search_bar = Container::new(
             Row::new()
@@ -502,7 +503,7 @@ impl Onagre {
                     self.state.input_value = fill;
                     self.state.input.move_cursor_to_end();
                     self.on_input_changed(self.state.input_value.clone());
-                },
+                }
             },
             SubscriptionMessage::ExternalMessage(entries) => {
                 self.state.entries.external.extend_from_slice(&entries);
