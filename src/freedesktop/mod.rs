@@ -256,9 +256,9 @@ impl IconFinder {
     }
 
     const MATCH_OPT: MatchOptions = MatchOptions {
-         case_sensitive: false,
-         require_literal_separator: true,
-         require_literal_leading_dot: false,
+        case_sensitive: false,
+        require_literal_separator: true,
+        require_literal_leading_dot: false,
     };
 
     fn search_icon(&self, pattern: &str) -> Option<IconPath> {

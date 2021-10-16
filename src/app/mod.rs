@@ -10,6 +10,7 @@ use iced::{
 use iced_native::keyboard::KeyCode;
 use iced_native::Event;
 use pop_launcher::Request;
+use pop_launcher::Request::Activate;
 
 use crate::app::active_mode::ActiveMode;
 use crate::config::ModeSettings;
@@ -25,7 +26,6 @@ use crate::subscriptions::external::ExternalCommandSubscription;
 use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::SETTINGS;
 use crate::THEME;
-use pop_launcher::Request::Activate;
 
 pub mod active_mode;
 
@@ -117,7 +117,7 @@ impl Application for Onagre {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         debug!("Current mode mode : {:?}", self.state.mode);
         self.state.input.focus();
-        match self.state.mode {
+        match &self.state.mode {
             ActiveMode::Calc => {}
             ActiveMode::DesktopEntry => {}
             ActiveMode::Find => {}
@@ -126,29 +126,19 @@ impl Application for Onagre {
             ActiveMode::Scripts => {}
             ActiveMode::Terminal => {
                 if self.state.entries.terminal.is_empty() {
-                    // Reserved slot for user input
-                    let mut entries = vec![RunCommandEntity {
-                        command: "".to_string(),
-                        weight: 0,
-                    }];
-
-                    entries.extend(self.state.db.get_all());
-                    self.state.entries.terminal = entries;
+                    self.state.entries.terminal = self.state.db.get_all();
                 }
             }
-            ActiveMode::Web(_) => {
-                if self.state.entries.web_history.is_empty() {
-                    // Reserved slot for user input
-                    let mut entries = vec![WebEntity {
-                        kind: "".to_string(),
-                        query: "".to_string(),
-                        weight: 0,
-                    }];
-
-                    entries.extend(self.state.db.get_all());
-                    self.state.entries.web_history = entries;
-                }
+            ActiveMode::Web(kind) => {
+                self.state.entries.web_history = self
+                    .state
+                    .db
+                    .get_all::<WebEntity>()
+                    .into_iter()
+                    .filter(|e| &e.kind == kind)
+                    .collect();
             }
+
             ActiveMode::External(_) => {}
             ActiveMode::History => {
                 if self.state.entries.de_history.is_empty() {
@@ -204,13 +194,12 @@ impl Application for Onagre {
                 .iter()
                 .map(|entry| entry.to_row(selected, entry.id as usize).into())
                 .collect(),
-            ActiveMode::Web(kind) => {
+            ActiveMode::Web(_) => {
                 if !self.state.entries.web_history.is_empty() {
                     self.state
                         .entries
                         .web_history
                         .iter()
-                        .filter(|entry| &entry.kind == kind)
                         .enumerate()
                         .map(|(idx, entry)| entry.to_row(selected, idx).into())
                         .collect()
@@ -333,9 +322,12 @@ impl Onagre {
                             .entries
                             .pop_search
                             .get(0)
-                            .map(|entry| entry.name.clone())
+                            .map(|entry| entry.name.clone());
                     }
-                    Some(selected) => self.state.entries.terminal[1..]
+                    Some(selected) => self
+                        .state
+                        .entries
+                        .terminal
                         .get(selected)
                         .map(|entry| entry.command.clone()),
                 }
@@ -347,9 +339,12 @@ impl Onagre {
                         .entries
                         .pop_search
                         .get(0)
-                        .map(|entry| entry.name.clone())
+                        .map(|entry| entry.name.clone());
                 }
-                Some(selected) => self.state.entries.web_history[1..]
+                Some(selected) => self
+                    .state
+                    .entries
+                    .web_history
                     .get(selected)
                     .map(|entry| entry.query()),
             },
@@ -565,13 +560,7 @@ impl Onagre {
             | ActiveMode::Files
             | ActiveMode::Recent
             | ActiveMode::Scripts => self.state.entries.pop_search.len(),
-            ActiveMode::Web(kind) => self
-                .state
-                .entries
-                .web_history
-                .iter()
-                .filter(|entry| &entry.kind == kind)
-                .count(),
+            ActiveMode::Web(_) => self.state.entries.web_history.len(),
             ActiveMode::Terminal => self.state.entries.terminal.len(),
             ActiveMode::External(_) => self.state.external_entries_match.len(),
             ActiveMode::History => self.state.entries.de_history.len(),
