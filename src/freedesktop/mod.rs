@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
-use glob::glob;
+use glob::{glob_with, MatchOptions};
 use pop_launcher::IconSource;
 use serde::{Deserialize, Serialize};
 
@@ -255,8 +255,14 @@ impl IconFinder {
             .collect()
     }
 
+    const MATCH_OPT: MatchOptions = MatchOptions {
+         case_sensitive: false,
+         require_literal_separator: true,
+         require_literal_leading_dot: false,
+    };
+
     fn search_icon(&self, pattern: &str) -> Option<IconPath> {
-        for entry in glob(pattern).expect("Failed to read glob pattern") {
+        for entry in glob_with(pattern, Self::MATCH_OPT).expect("Failed to read glob pattern") {
             match entry {
                 Ok(path) => {
                     if let Some(icon_path) = IconPath::try_from(path) {
