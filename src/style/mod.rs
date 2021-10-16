@@ -1,5 +1,5 @@
 pub mod color;
-mod layout;
+pub mod layout;
 pub mod rows;
 pub mod scrollable;
 pub mod search;

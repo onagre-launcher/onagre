@@ -4,7 +4,7 @@ use iced_style::{container, scrollable, Background};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct ScrollableStyles {
     pub background: OnagreColor,
     pub border_color: OnagreColor,
@@ -21,14 +21,13 @@ pub struct ScrollableStyles {
 impl Eq for ScrollableStyles {}
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct Scroller {
     pub color: OnagreColor,
     pub border_color: OnagreColor,
     pub border_radius: f32,
     pub border_width: f32,
 }
-
-impl Eq for Scroller {}
 
 impl Default for ScrollableStyles {
     fn default() -> Self {
@@ -37,17 +36,25 @@ impl Default for ScrollableStyles {
             border_color: OnagreColor::TRANSPARENT,
             border_radius: 0.0,
             border_width: 0.0,
-            scroller: Scroller {
-                color: OnagreColor::from("#314c84").unwrap(),
-                border_radius: 0.0,
-                border_width: 1.0,
-                border_color: OnagreColor::from("#314c84bf").unwrap(),
-            },
+            scroller: Default::default(),
             height: Length::fill(),
             width: Length::fill(),
             padding: 0,
             scrollbar_width: 10,
             scroller_width: 10,
+        }
+    }
+}
+
+impl Eq for Scroller {}
+
+impl Default for Scroller {
+    fn default() -> Self {
+        Scroller {
+            color: OnagreColor::from("#314c84").unwrap(),
+            border_radius: 0.0,
+            border_width: 1.0,
+            border_color: OnagreColor::from("#314c84bf").unwrap(),
         }
     }
 }

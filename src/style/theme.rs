@@ -25,10 +25,12 @@ pub struct Theme {
 
 impl Theme {
     pub fn load() -> Self {
-        if let Ok(theme) = Theme::get() {
-            theme
-        } else {
-            Theme::default()
+        match Theme::get() {
+            Ok(theme) => theme,
+            Err(err) => {
+                eprintln!("Unable to load user theme: {}", err);
+                Theme::default()
+            }
         }
     }
 }
@@ -36,15 +38,15 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
-            size: (800, 600),
+            size: (800, 300),
             font: None,
-            font_size: 12,
+            font_size: 22,
             icon_theme: None,
             background: OnagreColor::DEFAULT_BACKGROUND,
             foreground: OnagreColor::DEFAULT_BACKGROUND,
             border_color: OnagreColor::from("#00000000").unwrap(),
-            border_radius: 25.0,
-            border_width: 20.0,
+            border_radius: 0.0,
+            border_width: 0.0,
             rows: RowContainerStyles::default(),
             scrollable: ScrollableStyles::default(),
             search: SearchContainerStyles::default(),

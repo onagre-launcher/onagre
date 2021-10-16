@@ -1,0 +1,31 @@
+font = "Iosevka,Iosevka Nerd Font"
+size = [550, 380]
+font_size = 18
+background = "#18181B"
+border_width = 4.0
+border_color = "#5D5E72"
+
+[rows.lines.default]
+background = "#18181B"
+text_color = "#A0A0AB" rerer
+padding = 5
+
+[rows.lines.selected]
+background = "#20212C"
+text_color = "#5D5E72"
+padding = 5
+
+[scrollable]
+scrollbar_width = 5
+scroller_width = 5
+
+[scrollable.scroller]
+color = "#A0A0AB"
+border_color ="#18181B"
+
+[search.bar]
+value_color = "#5D5E72"
+placeholder_color = "#5D5E72"
+
+[search]
+height = 30
