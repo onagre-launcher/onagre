@@ -7,7 +7,7 @@ use crate::db::web::WebEntity;
 use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
-use crate::{SETTINGS, THEME};
+use crate::{THEME};
 use iced::alignment::Horizontal;
 
 pub(crate) mod db_entry;
@@ -41,8 +41,8 @@ pub(crate) trait AsEntry<'a> {
     }
 
     fn to_row(&self, selected: Option<usize>, idx: usize) -> Container<'a, Message> {
-        let icon = SETTINGS
-            .icons
+        let icon = THEME
+            .icon_theme
             .as_ref()
             .map(|_| self.get_icon())
             .flatten()

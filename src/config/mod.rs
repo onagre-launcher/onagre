@@ -14,8 +14,8 @@ pub struct ModeSettings {
 }
 
 #[derive(Deserialize, Serialize, Default, Debug)]
+#[serde(deny_unknown_fields)]
 pub struct OnagreSettings {
-    pub icons: Option<String>,
     #[serde(default)]
     pub modes: HashMap<String, ModeSettings>,
 }
@@ -66,7 +66,7 @@ mod tests {
             target: "xdg-open %".to_string(),
         };
         modes.insert("xdg".to_string(), mode_xdg);
-        let settings = OnagreSettings { icons: None, modes };
+        let settings = OnagreSettings { modes };
 
         let settings = toml::to_string(&settings)?;
         std::fs::write(

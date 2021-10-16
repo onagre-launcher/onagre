@@ -12,8 +12,8 @@ pub mod entries;
 pub mod freedesktop;
 pub mod style;
 pub mod subscriptions;
-use std::sync::Mutex;
 
+use std::sync::Mutex;
 use crate::config::OnagreSettings;
 use freedesktop::IconFinder;
 use std::path::PathBuf;
@@ -31,7 +31,7 @@ lazy_static! {
     pub static ref THEME_PATH: Mutex<PathBuf> = {
         let path = dirs::config_dir()
             .ok_or_else(|| anyhow!("Theme config not found"))
-            .map(|path| path.join("onagre").join("settings.toml"))
+            .map(|path| path.join("onagre").join("theme.toml"))
             .unwrap();
 
         Mutex::new(path)
@@ -47,10 +47,11 @@ lazy_static! {
         }
     };
     pub static ref ICON_FINDER: Option<IconFinder> = {
-        SETTINGS
-            .icons
+        THEME
+            .icon_theme
             .as_ref()
             .map(|theme_name| IconFinder::build(theme_name).ok())
             .flatten()
     };
+
 }

@@ -39,6 +39,7 @@ dirs = "4.0"
 structopt = { version = "^0", default-features = false, optional = true }
 ron = "0.6.5"
 ico = "0.1.0"
+font-kit = "0.10.1"
 
 [[bin]]
 name = "onagre"
