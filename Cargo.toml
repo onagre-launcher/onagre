@@ -6,6 +6,10 @@ edition = "2018"
 resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+codegen-units = 1
+lto = true
+
 [features]
 default = ["iced/wgpu", "iced/default_system_font", "iced/palette", "cli"]
 cli = ["structopt"]
@@ -51,4 +55,8 @@ criterion = "0.3"
 
 [[bench]]
 name = "icon"
+harness = false
+
+[[bench]]
+name = "database"
 harness = false
