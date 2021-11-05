@@ -422,7 +422,7 @@ impl Onagre {
         let args = argv.unwrap();
         let args = args
             .iter()
-            // Filtering out special freedesktop syntax
+            // Filter out special freedesktop syntax
             .filter(|entry| !entry.starts_with('%'))
             .collect::<Vec<&String>>();
 
