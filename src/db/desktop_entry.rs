@@ -8,7 +8,7 @@ use crate::freedesktop::desktop::DesktopEntry;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DesktopEntryEntity {
     pub name: String,
-    pub icon: String,
+    pub icon: Option<String>,
     pub path: PathBuf,
     pub weight: u8,
 }

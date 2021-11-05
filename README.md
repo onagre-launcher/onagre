@@ -14,12 +14,9 @@ Until the roadmap is completed, expect breaking changes, bugs and performance is
 I built onagre for my main setup (sway/i3) as an alternative to [wofi](https://hg.sr.ht/~scoopta/wofi) so it's worth mentioning there are a few differences : 
 
 - Window transparency.
-- Rounded corner (even on sway).
+- Rounded corners (even on sway).
 - Several default plugins (thanks to pop-launcher)
-- Change mode with prefix not rofi link modi.
-- Build with rust and iced.
-  Hopefully the choice of a higher level language (compared to C) and a GUI framework 
-  will allow onboarding new contributors easily, without sacrificing too much performance. 
+- Change mode with prefix not rofi like modi.
   
 ## Install
 
@@ -96,13 +93,17 @@ Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.toml` and wil
 
 ## Screenshots
 
+[*Murz theme*](docs/theme_examples/murz-theme.toml) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
 ![murz-theme-screenshot](docs/screenshots/murz.png)
 
-[*Murz theme*](docs/theme_examples/murz-theme.toml) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
-
-![simple-theme-screenshot](docs/screenshots/simple.png)
-
+---
 [*Simple theme*](docs/theme_examples/simple-theme.toml)
+![simple-theme-screenshot](docs/screenshots/simple.png)
+---
+
+[*Nord rounded*](docs/theme_examples/simple-theme.toml)
+![screenshot](docs/screenshots/nord-rounded.png)
+
 
 ![screenshot](docs/screenshots/sc-main.png)
 
