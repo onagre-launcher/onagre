@@ -1,6 +1,20 @@
-changelog_path = "CHANGELOG.md"
-pre_bump_hooks = []
-post_bump_hooks = []
-authors = []
+pre_bump_hooks = [
+    "cargo build --release",
+    "cargo clippy",
+    "cargo fmt --all",
+    "cargo bump {{version}}",
+]
 
-[commit_types]
+post_bump_hooks = [
+    "git push",
+    "git push origin {{version}}",
+]
+
+[changelog]
+template = "remote"
+remote = "github.com"
+owner = "oknozor"
+repository = "onagre"
+authors = [
+    { signature = "Paul Delafosse", username = "oknozor" },
+]
