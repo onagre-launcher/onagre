@@ -26,10 +26,9 @@ impl IconPath {
                 let path = match icon {
                     IconSource::Name(icon) => icon,
                     IconSource::Mime(icon) => icon,
-                    IconSource::Window(_) => todo!("What is this ?"),
                 };
 
-                IconPath::from_path(path)
+                IconPath::from_path(path.as_ref())
             })
             .flatten()
     }
