@@ -1,6 +1,9 @@
-changelog_path = "CHANGELOG.md"
-pre_bump_hooks = []
-post_bump_hooks = []
-authors = []
-
-[commit_types]
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+repository = "onagre"
+owner = "oknozor"
+authors = [
+    { signature = "Paul Delafosse", username = "oknozor" },
+]
