@@ -2762,9 +2762,9 @@ dependencies = [
 
 [[package]]
 name = "pop-launcher"
-version = "1.0.1"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "041c926779dd07ff0b7875de96c23ca1b081c385388b31a0bc933b6def13763e"
+checksum = "1af92d2c48f1879d1e2bc4c2e6a9a09a2c19540f4823ef6c22fa772c0a6db5e6"
 dependencies = [
  "blocking",
  "const_format",
