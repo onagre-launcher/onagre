@@ -27,9 +27,7 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity {
     }
 
     fn get_icon(&self) -> Option<IconPath> {
-        self.icon.as_deref()
-            .map(IconPath::from_path)
-            .flatten()
+        self.icon.as_deref().map(IconPath::from_path).flatten()
     }
 }
 

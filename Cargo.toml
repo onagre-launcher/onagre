@@ -6,9 +6,9 @@ edition = "2018"
 resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[profile.release]
-codegen-units = 1
-lto = true
+# [profile.release]
+# codegen-units = 1
+# lto = true
 
 [features]
 default = ["iced/wgpu", "iced/default_system_font", "iced/palette", "cli"]
@@ -36,7 +36,7 @@ glob = "0.3.0"
 palette = { version = "0.5.0", features = ["serializing"] }
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }
-pop-launcher = "1.0.1"
+pop-launcher = "1.1.0"
 skim = { version = "0.9.4", features = ["default"] }
 sled = "0.34.7"
 dirs = "4.0"
