@@ -101,7 +101,7 @@ Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.toml` and wil
 ![simple-theme-screenshot](docs/screenshots/simple.png)
 ---
 
-[*Nord rounded*](docs/theme_examples/simple-theme.toml)
+[*Nord rounded*](docs/theme_examples/nord-rounded.toml)
 ![screenshot](docs/screenshots/nord-rounded.png)
 
 
