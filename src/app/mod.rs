@@ -40,9 +40,14 @@ pub fn run() -> iced::Result {
         .flatten();
 
     Onagre::run(Settings {
+        id: Some("onagre".to_string()),
         window: window::Settings {
             transparent: true,
             size: THEME.size,
+            decorations: false,
+            always_on_top: true,
+            resizable: false,
+            position: window::Position::Centered,
             ..Default::default()
         },
         default_text_size: THEME.font_size,
