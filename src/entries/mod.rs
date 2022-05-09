@@ -4,19 +4,16 @@ use crate::app::Message;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::run::RunCommandEntity;
 use crate::db::web::WebEntity;
-use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
 use crate::THEME;
 use iced_native::alignment::Horizontal;
 
 pub(crate) mod db_entry;
-pub(crate) mod external_entry;
 pub(crate) mod pop_entry;
 
 #[derive(Debug)]
 pub struct EntryCache {
-    pub external: ExternalEntries,
     pub pop_search: Vec<PopSearchResult>,
     pub de_history: Vec<DesktopEntryEntity>,
     pub web_history: Vec<WebEntity>,
@@ -49,14 +46,14 @@ pub(crate) trait AsEntry<'a> {
             .map(|icon| match &icon.extension {
                 Extension::Svg => Row::new().push(
                     Svg::from_path(&icon.path)
-                        .height(Length::Units(24))
-                        .width(Length::Units(24)),
+                        .height(Length::Units(THEME.icon_size))
+                        .width(Length::Units(THEME.icon_size)),
                 ),
 
                 Extension::Png => Row::new().push(
                     Image::new(&icon.path)
-                        .height(Length::Units(24))
-                        .width(Length::Units(24)),
+                        .height(Length::Units(THEME.icon_size))
+                        .width(Length::Units(THEME.icon_size)),
                 ),
             })
             .unwrap_or_else(Row::new)
