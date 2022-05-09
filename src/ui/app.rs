@@ -32,6 +32,7 @@ pub enum Message {
     InputChanged(String),
     KeyboardEvent(KeyCode),
     SubscriptionResponse(SubscriptionMessage),
+    Unfocused,
 }
 
 impl Application for Onagre {
@@ -87,6 +88,7 @@ impl Application for Onagre {
             Message::InputChanged(input) => self.on_input_changed(input),
             Message::KeyboardEvent(event) => self.handle_input(event),
             Message::SubscriptionResponse(message) => self.on_pop_launcher_message(message),
+            Message::Unfocused => exit(0),
         }
     }
 
@@ -493,6 +495,9 @@ impl Onagre {
 
     fn keyboard_event() -> Subscription<Message> {
         iced_native::subscription::events_with(|event, _status| match event {
+            Event::Window(iced_native::window::Event::Unfocused) => {
+                Some(Message::Unfocused)
+            }
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
                 modifiers: _,
                 key_code,
