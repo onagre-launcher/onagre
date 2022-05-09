@@ -1,7 +1,7 @@
-use crate::style::color::OnagreColor;
-use crate::style::rows::RowContainerStyles;
-use crate::style::scrollable::ScrollableStyles;
-use crate::style::search::SearchContainerStyles;
+use crate::ui::style::color::OnagreColor;
+use crate::ui::style::rows::RowContainerStyles;
+use crate::ui::style::scrollable::ScrollableStyles;
+use crate::ui::style::search::SearchContainerStyles;
 use iced::container;
 use iced_native::Background;
 use serde::{Deserialize, Serialize};

@@ -4,10 +4,8 @@ use serde::Deserialize;
 pub(crate) static WEB_CONFIG: Lazy<Option<WebConfig>> = Lazy::new(|| {
     pop_launcher::config::find("web")
         .next()
-        .map(|path| std::fs::read_to_string(path).ok())
-        .flatten()
-        .map(|config| ron::from_str::<WebConfig>(&config).ok())
-        .flatten()
+        .and_then(|path| std::fs::read_to_string(path).ok())
+        .and_then(|config| ron::from_str::<WebConfig>(&config).ok())
 });
 
 #[derive(Debug, PartialEq)]
@@ -44,7 +42,7 @@ impl From<&str> for ActiveMode {
     fn from(value: &str) -> Self {
         // Split at first space or get the full str
         let mode = value
-            .split_once(" ")
+            .split_once(' ')
             .map(|mode| mode.0)
             .unwrap_or_else(|| value);
 

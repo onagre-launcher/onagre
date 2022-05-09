@@ -1,5 +1,5 @@
-use crate::style::color::OnagreColor;
-use crate::style::layout::Length;
+use crate::ui::style::color::OnagreColor;
+use crate::ui::style::layout::Length;
 use iced_style::{container, scrollable, Background};
 use serde::{Deserialize, Serialize};
 

@@ -1,16 +1,15 @@
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
-use pop_launcher;
-use pop_launcher::IconSource;
+use pop_launcher::{self, IconSource};
 use serde::Deserialize;
 
-use crate::app::active_mode::WEB_CONFIG;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::run::RunCommandEntity;
 use crate::db::web::WebEntity;
 use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
+use crate::ui::mode::WEB_CONFIG;
 
 static TERMINAL_ICON: Lazy<Option<IconSource>> =
     Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
@@ -27,7 +26,7 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity {
     }
 
     fn get_icon(&self) -> Option<IconPath> {
-        self.icon.as_deref().map(IconPath::from_path).flatten()
+        self.icon.as_deref().and_then(IconPath::from_path)
     }
 }
 
@@ -49,13 +48,12 @@ impl<'a> AsEntry<'a> for WebEntity {
     fn get_icon(&self) -> Option<IconPath> {
         WEB_CONFIG
             .as_ref()
-            .map(|config| {
+            .and_then(|config| {
                 config
                     .rules
                     .iter()
                     .find(|rule| rule.matches.contains(&self.kind))
             })
-            .flatten()
             // FIXME: see web/config.ron
             .map(|item| item.queries.first().unwrap().name.to_owned())
             .map(|web_query_kind| {
@@ -64,7 +62,7 @@ impl<'a> AsEntry<'a> for WebEntity {
                     web_query_kind,
                 )
             })
-            .map(|(path, filename)| {
+            .and_then(|(path, filename)| {
                 // Unfortunately we need to copy .ico files to png extension for iced
                 // To render the icon
                 let path = path.join(format!("{}.png", &filename));
@@ -83,7 +81,6 @@ impl<'a> AsEntry<'a> for WebEntity {
                     IconPath::from_icon_source(WEB_ICON.as_ref())
                 };
             })
-            .flatten()
     }
 }
 
@@ -93,11 +90,9 @@ fn get_plugin_icon(plugin: &str) -> Option<IconSource> {
         .find(|path| path.exists());
 
     path.map(std::fs::read_to_string)
-        .map(Result::ok)
-        .flatten()
+        .and_then(Result::ok)
         .map(|plugin| ron::from_str::<PluginConfig>(&plugin))
-        .map(Result::ok)
-        .flatten()
+        .and_then(Result::ok)
         .map(|plugin| plugin.icon)
 }
 

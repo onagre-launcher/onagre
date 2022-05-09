@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use iced_style::Color;
 
 #[derive(Debug, Clone, PartialEq, Copy)]
@@ -118,7 +118,7 @@ impl From<OnagreColor> for Color {
 
 #[cfg(test)]
 mod test {
-    use crate::style::color::OnagreColor;
+    use crate::ui::style::color::OnagreColor;
     use iced_style::Color;
 
     #[test]

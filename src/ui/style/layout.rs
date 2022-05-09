@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use iced::Length as Icedlength;
 use std::convert::TryFrom;
 
@@ -77,7 +78,7 @@ impl From<Length> for Icedlength {
 
 #[cfg(test)]
 mod test {
-    use crate::style::layout::Length;
+    use crate::ui::style::layout::Length;
     use iced::Length as Icedlength;
     use std::convert::TryFrom;
 

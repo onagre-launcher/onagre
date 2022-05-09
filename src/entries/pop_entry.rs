@@ -105,7 +105,7 @@ impl<'a> AsEntry<'a> for PopSearchResult {
     }
 
     fn get_icon(&self) -> Option<IconPath> {
-        let source = self.icon.as_ref().or_else(|| self.category_icon.as_ref());
+        let source = self.icon.as_ref().or(self.category_icon.as_ref());
 
         IconPath::from_icon_source(source)
     }

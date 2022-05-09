@@ -1,11 +1,11 @@
 use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 
-use crate::app::Message;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::run::RunCommandEntity;
 use crate::db::web::WebEntity;
 use crate::entries::pop_entry::PopSearchResult;
 use crate::freedesktop::{Extension, IconPath};
+use crate::ui::app::Message;
 use crate::THEME;
 use iced_native::alignment::Horizontal;
 
@@ -41,8 +41,7 @@ pub(crate) trait AsEntry<'a> {
         let icon = THEME
             .icon_theme
             .as_ref()
-            .map(|_| self.get_icon())
-            .flatten()
+            .and_then(|_| self.get_icon())
             .map(|icon| match &icon.extension {
                 Extension::Svg => Row::new().push(
                     Svg::from_path(&icon.path)
