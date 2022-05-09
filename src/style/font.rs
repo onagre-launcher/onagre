@@ -20,15 +20,21 @@ pub fn load(name: &str) -> Option<&'static [u8]> {
 
     let properties = Properties::default();
     let source = SystemSource::new();
-    let handle = source.select_best_match(&families, &properties).unwrap();
+    let handle = source.select_best_match(&families, &properties);
+    match handle {
+        Ok(handle) => match handle {
+            Handle::Path { ref path, .. } => {
+                let contents = std::fs::read(path).unwrap();
+                let contents = Box::new(contents);
+                let contents = Box::leak(contents);
 
-    if let Handle::Path { ref path, .. } = handle {
-        let contents = std::fs::read(path).unwrap();
-        let contents = Box::new(contents);
-        let contents = Box::leak(contents);
-
-        Some(contents.as_slice())
-    } else {
-        None
+                Some(contents.as_slice())
+            }
+            _ => None,
+        },
+        Err(err) => {
+            eprintln!("Failed to load fond {name}: {err}");
+            None
+        }
     }
 }
