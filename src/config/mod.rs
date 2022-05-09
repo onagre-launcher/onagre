@@ -50,13 +50,13 @@ impl Theme {
         let theme_path = THEME_PATH.lock().unwrap();
         if theme_path.exists() {
             let mut s = Config::new();
-            s.merge(File::from(theme_path.clone()))?;
+            s.merge(File::from(theme_path.as_path()))?;
             s.try_into()
                 .map_err(|err| anyhow!("{} : {}", "Theme format error", err))
         } else {
             Err(anyhow!(
                 "Unable to find theme settings file {}",
-                theme_path.display()
+                &theme_path.display()
             ))
         }
     }
