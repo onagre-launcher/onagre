@@ -1,9 +1,36 @@
 use std::path::PathBuf;
 
+use anyhow::anyhow;
+use freedesktop::IconFinder;
 use log::debug;
-use onagre::app;
-use onagre::THEME_PATH;
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 use structopt::StructOpt;
+use ui::style::theme::Theme;
+
+pub mod config;
+pub mod db;
+pub mod entries;
+pub mod freedesktop;
+pub mod ui;
+
+pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {
+    Mutex::new(
+        dirs::config_dir()
+            .ok_or_else(|| anyhow!("Theme config not found"))
+            .map(|path| path.join("onagre").join("theme.toml"))
+            .unwrap(),
+    )
+});
+
+pub static THEME: Lazy<Theme> = Lazy::new(Theme::load);
+
+pub static ICON_FINDER: Lazy<Option<IconFinder>> = Lazy::new(|| {
+    THEME
+        .icon_theme
+        .as_ref()
+        .and_then(|theme_name| IconFinder::build(theme_name).ok())
+});
 
 #[derive(StructOpt)]
 #[structopt(name = "onagre", author = "Paul D. <paul.delafosse@protonmail.com>")]
@@ -31,5 +58,5 @@ pub fn main() -> iced::Result {
         debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
-    app::run()
+    ui::run()
 }

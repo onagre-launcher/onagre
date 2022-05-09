@@ -1,8 +1,31 @@
-use crate::style::color::OnagreColor;
-use crate::style::layout::Length;
+use crate::ui::style::color::OnagreColor;
+use crate::ui::style::layout::Length;
+use crate::ui::style::theme::Theme;
+use crate::THEME_PATH;
+use anyhow::anyhow;
+use config::{Config, File};
 use serde::de::{Deserialize, Deserializer};
 use serde::{Serialize, Serializer};
 use std::convert::TryFrom;
+
+impl Theme {
+    /// Resolve onagre theme settings against its standard xdg path :
+    /// `$XDG_CONFIG_DIR/onagre/style.toml`
+    pub fn get() -> anyhow::Result<Self> {
+        let theme_path = THEME_PATH.lock().unwrap();
+        if theme_path.exists() {
+            let mut s = Config::new();
+            s.merge(File::from(theme_path.as_path()))?;
+            s.try_into()
+                .map_err(|err| anyhow!("{} : {}", "Theme format error", err))
+        } else {
+            Err(anyhow!(
+                "Unable to find theme settings file {}",
+                &theme_path.display()
+            ))
+        }
+    }
+}
 
 impl<'de> Deserialize<'de> for OnagreColor {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

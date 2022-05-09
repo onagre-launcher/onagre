@@ -1,93 +1,30 @@
-use std::path::Path;
-use std::process::exit;
-
-use iced::futures::channel::mpsc::{Sender, TrySendError};
-use iced::{
-    scrollable, text_input, window, Alignment, Application, Color, Column, Command, Container,
-    Element, Length, Row, Scrollable, Settings, Subscription, TextInput,
-};
-use iced_native::keyboard::KeyCode;
-use iced_native::{Event, Padding};
-use pop_launcher::Request;
-use pop_launcher::Request::Activate;
-
-use crate::app::active_mode::ActiveMode;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::run::RunCommandEntity;
 use crate::db::web::WebEntity;
-use crate::db::Database;
 use crate::entries::pop_entry::PopResponse;
-use crate::entries::{AsEntry, EntryCache};
+use crate::entries::AsEntry;
 use crate::freedesktop::desktop::DesktopEntry;
-use crate::style;
-use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
+use crate::ui::mode::ActiveMode;
+use crate::ui::state::State;
+use crate::ui::subscription::{PopLauncherSubscription, SubscriptionMessage};
 use crate::THEME;
-
-pub mod active_mode;
-
-pub fn run() -> iced::Result {
-    debug!("Starting Onagre in debug mode");
-
-    let default_font = THEME
-        .font
-        .as_ref()
-        .map(|font| style::font::load(font))
-        .flatten();
-
-    Onagre::run(Settings {
-        id: Some("onagre".to_string()),
-        window: window::Settings {
-            transparent: true,
-            size: THEME.size,
-            decorations: false,
-            always_on_top: true,
-            resizable: false,
-            position: window::Position::Centered,
-            ..Default::default()
-        },
-        default_text_size: THEME.font_size,
-        antialiasing: true,
-        default_font,
-        ..Default::default()
-    })
-}
+use iced::futures::channel::mpsc::{Sender, TrySendError};
+use iced::keyboard::KeyCode;
+use iced::{
+    Alignment, Application, Color, Column, Container, Element, Length, Padding, Row, Scrollable,
+    TextInput,
+};
+use iced_native::{Command, Event, Subscription};
+use log::debug;
+use pop_launcher::Request;
+use pop_launcher::Request::Activate;
+use std::path::Path;
+use std::process::exit;
 
 #[derive(Debug)]
-struct Onagre {
+pub struct Onagre {
     state: State,
     request_tx: Option<Sender<Request>>,
-}
-
-#[derive(Debug)]
-struct State {
-    mode: ActiveMode,
-    db: Database,
-    line_selected_idx: Option<usize>,
-    entries: EntryCache,
-    scroll: scrollable::State,
-    input: text_input::State,
-    input_value: String,
-    exec_on_next_search: bool,
-}
-
-impl Default for State {
-    fn default() -> Self {
-        State {
-            mode: ActiveMode::History,
-            db: Default::default(),
-            line_selected_idx: Some(0),
-            entries: EntryCache {
-                pop_search: vec![],
-                de_history: vec![],
-                web_history: vec![],
-                terminal: vec![],
-            },
-            scroll: Default::default(),
-            input: Default::default(),
-            input_value: "".to_string(),
-            exec_on_next_search: false,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -425,19 +362,18 @@ impl Onagre {
             }
             SubscriptionMessage::PopMessage(response) => match response {
                 PopResponse::Close => exit(0),
-                PopResponse::Context { .. } => {
-                    todo!("Discrete graphics is not implemented")
-                }
+                PopResponse::Context { .. } => todo!("Discrete graphics is not implemented"),
                 PopResponse::DesktopEntry { path, .. } => {
+                    debug!("Launch DesktopEntry {path:?} via run_command");
                     self.run_command(path);
                 }
                 PopResponse::Update(search_updates) => {
                     if self.state.exec_on_next_search {
-                        self.pop_request(Request::Activate(0))
+                        debug!("Launch entry 0 via PopRequest::Activate");
+                        self.pop_request(Activate(0))
                             .expect("Unable to send Activate request to pop-launcher");
                         return Command::none();
                     }
-
                     self.state.entries.pop_search = search_updates;
                 }
                 PopResponse::Fill(fill) => {
@@ -447,6 +383,7 @@ impl Onagre {
                 }
             },
         };
+
         Command::none()
     }
 
@@ -457,9 +394,12 @@ impl Onagre {
             | ActiveMode::Find
             | ActiveMode::Files
             | ActiveMode::Recent
-            | ActiveMode::Scripts => self
-                .pop_request(Activate(self.selected().unwrap() as u32))
-                .expect("Unable to send pop-launcher request"),
+            | ActiveMode::Scripts => {
+                let selected = self.selected().unwrap() as u32;
+                debug!("Activating pop entry at index {selected}");
+                self.pop_request(Activate(selected))
+                    .expect("Unable to send pop-launcher request")
+            }
             ActiveMode::Web(kind) => {
                 let query = self.state.input_value.strip_prefix(kind).unwrap();
                 WebEntity::persist(query, kind, &self.state.db);

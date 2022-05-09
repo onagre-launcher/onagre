@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use glob::{glob_with, MatchOptions};
+use log::debug;
 use pop_launcher::IconSource;
 use serde::{Deserialize, Serialize};
 
@@ -21,40 +22,35 @@ pub struct IconPath {
 
 impl IconPath {
     pub fn from_icon_source(source: Option<&IconSource>) -> Option<Self> {
-        source
-            .map(|icon| {
-                let path = match icon {
-                    IconSource::Name(icon) => icon,
-                    IconSource::Mime(icon) => icon,
-                };
+        source.and_then(|icon| {
+            let path = match icon {
+                IconSource::Name(icon) => icon,
+                IconSource::Mime(icon) => icon,
+            };
 
-                IconPath::from_path(path.as_ref())
-            })
-            .flatten()
+            IconPath::from_path(path.as_ref())
+        })
     }
 
     pub fn from_path(path: &str) -> Option<Self> {
-        ICON_FINDER
-            .as_ref()
-            .map(|finder| {
-                let pathbuf = PathBuf::from(path);
-                if pathbuf.is_absolute() && pathbuf.exists() {
-                    let extension = pathbuf.extension().unwrap().to_str().unwrap();
-                    let extension = match extension {
-                        "svg" => Some(Extension::Svg),
-                        "png" => Some(Extension::Png),
-                        _ => None,
-                    };
+        ICON_FINDER.as_ref().and_then(|finder| {
+            let pathbuf = PathBuf::from(path);
+            if pathbuf.is_absolute() && pathbuf.exists() {
+                let extension = pathbuf.extension().unwrap().to_str().unwrap();
+                let extension = match extension {
+                    "svg" => Some(Extension::Svg),
+                    "png" => Some(Extension::Png),
+                    _ => None,
+                };
 
-                    extension.map(|extension| IconPath {
-                        path: pathbuf,
-                        extension,
-                    })
-                } else {
-                    finder.lookup(path, THEME.icon_size)
-                }
-            })
-            .flatten()
+                extension.map(|extension| IconPath {
+                    path: pathbuf,
+                    extension,
+                })
+            } else {
+                finder.lookup(path, THEME.icon_size)
+            }
+        })
     }
 }
 
@@ -244,7 +240,7 @@ impl IconFinder {
             .entries
             .iter()
             // look for files indirection with a size matching our current target or marked as 'Scalable'
-            .filter(|(_, entry)| entry.size == size.to_string() || entry.scale == Scale::Scalable)
+            .filter(|(_, entry)| entry.size == size.to_string() && entry.scale == Scale::Scalable)
             // Filter out the metadata, we only need the path to the icon files
             .map(|(dir, _)| dir)
             // construct the absolute path to the icon subdir

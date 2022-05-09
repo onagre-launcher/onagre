@@ -1,4 +1,4 @@
-use crate::style::color::OnagreColor;
+use crate::ui::style::color::OnagreColor;
 use iced_style::{container, Background};
 use serde::{Deserialize, Serialize};
 

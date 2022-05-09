@@ -1,5 +1,5 @@
-use crate::style::color::OnagreColor;
-use crate::style::layout::Length;
+use crate::ui::style::color::OnagreColor;
+use crate::ui::style::layout::Length;
 use iced_style::{container, text_input, Background, Color};
 use serde::{Deserialize, Serialize};
 
