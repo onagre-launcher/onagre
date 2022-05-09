@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use once_cell::sync::Lazy;
 use pop_launcher;
 use pop_launcher::IconSource;
 use serde::Deserialize;
@@ -11,10 +12,9 @@ use crate::db::web::WebEntity;
 use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
 
-lazy_static! {
-    static ref TERMINAL_ICON: Option<IconSource> = get_plugin_icon("terminal/plugin.ron");
-    static ref WEB_ICON: Option<IconSource> = get_plugin_icon("web/plugin.ron");
-}
+static TERMINAL_ICON: Lazy<Option<IconSource>> =
+    Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
+static WEB_ICON: Lazy<Option<IconSource>> = Lazy::new(|| get_plugin_icon("web/plugin.ron"));
 
 #[derive(Deserialize)]
 struct PluginConfig {

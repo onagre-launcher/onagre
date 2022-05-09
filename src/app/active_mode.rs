@@ -1,15 +1,14 @@
+use once_cell::sync::Lazy;
 use serde::Deserialize;
 
-lazy_static! {
-    pub static ref WEB_CONFIG: Option<WebConfig> = {
-        pop_launcher::config::find("web")
-            .next()
-            .map(|path| std::fs::read_to_string(path).ok())
-            .flatten()
-            .map(|config| ron::from_str::<WebConfig>(&config).ok())
-            .flatten()
-    };
-}
+pub(crate) static WEB_CONFIG: Lazy<Option<WebConfig>> = Lazy::new(|| {
+    pop_launcher::config::find("web")
+        .next()
+        .map(|path| std::fs::read_to_string(path).ok())
+        .flatten()
+        .map(|config| ron::from_str::<WebConfig>(&config).ok())
+        .flatten()
+});
 
 #[derive(Debug, PartialEq)]
 pub enum ActiveMode {
