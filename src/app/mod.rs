@@ -1,7 +1,6 @@
 use std::path::Path;
 use std::process::exit;
 
-use fuzzy_matcher::skim::SkimMatcherV2;
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::{
     scrollable, text_input, window, Alignment, Application, Color, Column, Command, Container,
@@ -13,25 +12,21 @@ use pop_launcher::Request;
 use pop_launcher::Request::Activate;
 
 use crate::app::active_mode::ActiveMode;
-use crate::config::ModeSettings;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::run::RunCommandEntity;
 use crate::db::web::WebEntity;
 use crate::db::Database;
-use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopResponse;
 use crate::entries::{AsEntry, EntryCache};
 use crate::freedesktop::desktop::DesktopEntry;
-use crate::subscriptions::external::ExternalCommandSubscription;
+use crate::style;
 use crate::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::THEME;
-use crate::{style, SETTINGS};
 
 pub mod active_mode;
 
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
-    debug!("{:?}", SETTINGS.modes);
 
     let default_font = THEME
         .font
@@ -69,7 +64,6 @@ struct State {
     db: Database,
     line_selected_idx: Option<usize>,
     entries: EntryCache,
-    external_entries_match: ExternalEntries,
     scroll: scrollable::State,
     input: text_input::State,
     input_value: String,
@@ -83,13 +77,11 @@ impl Default for State {
             db: Default::default(),
             line_selected_idx: Some(0),
             entries: EntryCache {
-                external: Default::default(),
                 pop_search: vec![],
                 de_history: vec![],
                 web_history: vec![],
                 terminal: vec![],
             },
-            external_entries_match: Default::default(),
             scroll: Default::default(),
             input: Default::default(),
             input_value: "".to_string(),
@@ -147,8 +139,6 @@ impl Application for Onagre {
                     .filter(|e| &e.kind == kind)
                     .collect();
             }
-
-            ActiveMode::External(_) => {}
             ActiveMode::History => {
                 if self.state.entries.de_history.is_empty() {
                     self.state.entries.de_history = self.state.db.get_all();
@@ -165,25 +155,8 @@ impl Application for Onagre {
 
     fn subscription(&self) -> Subscription<Message> {
         let keyboard_event = Onagre::keyboard_event();
-
         let pop_launcher = PopLauncherSubscription::create().map(Message::SubscriptionResponse);
-        let sub = match &self.state.mode {
-            ActiveMode::External(key) => {
-                let command = SETTINGS.modes.get(key).unwrap();
-                Some(
-                    ExternalCommandSubscription::create(command.source.as_ref().unwrap())
-                        .map(Message::SubscriptionResponse),
-                )
-            }
-            _ => None,
-        };
-
-        let mut subs = vec![keyboard_event, pop_launcher];
-
-        if let Some(external) = sub {
-            subs.push(external)
-        };
-
+        let subs = vec![keyboard_event, pop_launcher];
         Subscription::batch(subs)
     }
 
@@ -229,14 +202,6 @@ impl Application for Onagre {
                     Vec::with_capacity(0)
                 }
             }
-            ActiveMode::External(_) => self
-                .state
-                .external_entries_match
-                .get()
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx).into())
-                .collect(),
             ActiveMode::History => self
                 .state
                 .entries
@@ -322,12 +287,6 @@ impl Onagre {
                 .de_history
                 .get(selected.unwrap())
                 .map(|entry| entry.path.to_string_lossy().to_string()),
-            ActiveMode::External(_custom) => self
-                .state
-                .external_entries_match
-                .get()
-                .get(selected.unwrap())
-                .map(|entry| entry.value.clone()),
             ActiveMode::Terminal => {
                 // Get user input as pop-entry
                 match selected {
@@ -381,26 +340,6 @@ impl Onagre {
         self.state.scroll.snap_to(0.0);
 
         match &self.state.mode {
-            ActiveMode::External(mode) => {
-                let term = self
-                    .state
-                    .input_value
-                    .strip_prefix(mode)
-                    .map(str::trim_start);
-
-                match term {
-                    Some(term) if !term.is_empty() => {
-                        let entries = self
-                            .state
-                            .entries
-                            .external
-                            .match_external(term, &SkimMatcherV2::default().ignore_case());
-                        let entries = ExternalEntries::new(entries);
-                        self.state.external_entries_match = entries;
-                    }
-                    _ => self.state.external_entries_match = self.state.entries.external.clone(),
-                }
-            }
             ActiveMode::Calc
             | ActiveMode::DesktopEntry
             | ActiveMode::Find
@@ -507,9 +446,6 @@ impl Onagre {
                     self.on_input_changed(self.state.input_value.clone());
                 }
             },
-            SubscriptionMessage::ExternalMessage(entries) => {
-                self.state.entries.external.extend_from_slice(&entries);
-            }
         };
         Command::none()
     }
@@ -522,7 +458,7 @@ impl Onagre {
             | ActiveMode::Files
             | ActiveMode::Recent
             | ActiveMode::Scripts => self
-                .pop_request(Request::Activate(self.selected().unwrap() as u32))
+                .pop_request(Activate(self.selected().unwrap() as u32))
                 .expect("Unable to send pop-launcher request"),
             ActiveMode::Web(kind) => {
                 let query = self.state.input_value.strip_prefix(kind).unwrap();
@@ -556,11 +492,6 @@ impl Onagre {
                         .expect("Unable to send pop-launcher request");
                 }
             }
-            ActiveMode::External(mode) => {
-                let mode_settings = SETTINGS.modes.get(mode).unwrap();
-                let entry = self.current_entry().unwrap();
-                mode_settings.execute(entry);
-            }
             ActiveMode::History => {
                 let path = self.current_entry();
                 let path = path.unwrap();
@@ -581,7 +512,6 @@ impl Onagre {
             | ActiveMode::Scripts => self.state.entries.pop_search.len(),
             ActiveMode::Web(_) => self.state.entries.web_history.len(),
             ActiveMode::Terminal => self.state.entries.terminal.len(),
-            ActiveMode::External(_) => self.state.external_entries_match.len(),
             ActiveMode::History => self.state.entries.de_history.len(),
         }
     }
@@ -629,20 +559,5 @@ impl Onagre {
             }) => Some(Message::KeyboardEvent(key_code)),
             _ => None,
         })
-    }
-}
-
-impl ModeSettings {
-    fn execute(&self, entry: String) {
-        let command = self.target.replace("%", &entry);
-        let args = shell_words::split(&command).unwrap();
-        let args = args.iter().collect::<Vec<&String>>();
-
-        std::process::Command::new(&args[0])
-            .args(&args[1..])
-            .spawn()
-            .expect("Command failure");
-
-        exit(0);
     }
 }

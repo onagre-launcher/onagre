@@ -1,7 +1,5 @@
 use serde::Deserialize;
 
-use crate::SETTINGS;
-
 lazy_static! {
     pub static ref WEB_CONFIG: Option<WebConfig> = {
         pop_launcher::config::find("web")
@@ -11,7 +9,6 @@ lazy_static! {
             .map(|config| ron::from_str::<WebConfig>(&config).ok())
             .flatten()
     };
-    static ref EXTERNAL_MODES: Vec<String> = SETTINGS.modes.keys().cloned().collect();
 }
 
 #[derive(Debug, PartialEq)]
@@ -24,7 +21,6 @@ pub enum ActiveMode {
     Scripts,
     Terminal,
     Web(String),
-    External(String),
     History,
 }
 
@@ -71,8 +67,6 @@ impl From<&str> for ActiveMode {
                         .any(|matches| matches.contains(&other));
                     if is_web_config {
                         ActiveMode::Web(other)
-                    } else if EXTERNAL_MODES.contains(&other) {
-                        ActiveMode::External(other)
                     } else {
                         ActiveMode::DesktopEntry
                     }

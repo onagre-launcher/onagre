@@ -1,43 +1,5 @@
-use crate::SETTINGS_PATH;
-use anyhow::Result;
-use config::Config;
-use config::File;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-
-pub mod theme_settings;
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct ModeSettings {
-    pub source: Option<String>,
-    pub target: String,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct OnagreSettings {
-    #[serde(default)]
-    pub modes: HashMap<String, ModeSettings>,
-}
-
-impl OnagreSettings {
-    /// Resolve onagre theme settings against its standard xdg path :
-    /// `$XDG_CONFIG_DIR/onagre/style.toml`
-    pub fn get() -> Result<Self> {
-        let settings_path = SETTINGS_PATH.lock().unwrap();
-        if settings_path.exists() {
-            let mut s = Config::new();
-            s.merge(File::from(settings_path.clone()))?;
-            s.try_into()
-                .map_err(|err| anyhow!("{} : {}", "Config format error", err))
-        } else {
-            Err(anyhow!(
-                "Unable to find settings file {}",
-                settings_path.display()
-            ))
-        }
-    }
-}
+use crate::{Theme, THEME_PATH};
+use config::{Config, File};
 
 #[cfg(test)]
 mod tests {
@@ -78,5 +40,24 @@ mod tests {
         )?;
 
         Ok(())
+    }
+}
+
+impl Theme {
+    /// Resolve onagre theme settings against its standard xdg path :
+    /// `$XDG_CONFIG_DIR/onagre/style.toml`
+    pub fn get() -> anyhow::Result<Self> {
+        let theme_path = THEME_PATH.lock().unwrap();
+        if theme_path.exists() {
+            let mut s = Config::new();
+            s.merge(File::from(theme_path.clone()))?;
+            s.try_into()
+                .map_err(|err| anyhow!("{} : {}", "Theme format error", err))
+        } else {
+            Err(anyhow!(
+                "Unable to find theme settings file {}",
+                theme_path.display()
+            ))
+        }
     }
 }

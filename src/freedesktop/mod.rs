@@ -7,7 +7,7 @@ use glob::{glob_with, MatchOptions};
 use pop_launcher::IconSource;
 use serde::{Deserialize, Serialize};
 
-use crate::ICON_FINDER;
+use crate::{ICON_FINDER, THEME};
 
 pub mod desktop;
 
@@ -51,7 +51,7 @@ impl IconPath {
                         extension,
                     })
                 } else {
-                    finder.lookup(path, 48)
+                    finder.lookup(path, THEME.icon_size)
                 }
             })
             .flatten()
@@ -199,7 +199,7 @@ impl IconFinder {
 }
 
 impl IconFinder {
-    pub fn lookup(&self, icon_name: &str, size: u32) -> Option<IconPath> {
+    pub fn lookup(&self, icon_name: &str, size: u16) -> Option<IconPath> {
         // Search icon in user theme
         for (theme_path, theme) in &self.theme_paths {
             for glob in IconFinder::globs_patterns(size, theme_path.to_owned(), theme, icon_name) {
@@ -235,7 +235,7 @@ impl IconFinder {
     }
 
     fn globs_patterns(
-        size: u32,
+        size: u16,
         theme_path: PathBuf,
         theme: &IconTheme,
         icon_name: &str,

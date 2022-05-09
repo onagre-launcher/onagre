@@ -2,21 +2,12 @@ use std::path::PathBuf;
 
 use log::debug;
 use onagre::app;
-use onagre::{SETTINGS_PATH, THEME_PATH};
+use onagre::THEME_PATH;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
 #[structopt(name = "onagre", author = "Paul D. <paul.delafosse@protonmail.com>")]
 struct Cli {
-    #[structopt(
-        name = "config",
-        short = "c",
-        long = "config",
-        takes_value = true,
-        help = "Path to an alternate onagre config file"
-    )]
-    config: Option<PathBuf>,
-
     #[structopt(
         name = "theme",
         short = "t",
@@ -38,19 +29,6 @@ pub fn main() -> iced::Result {
         }
 
         debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
-    }
-
-    // User defined config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise
-    if let Some(config_path) = cli.config {
-        let path = config_path.canonicalize();
-        if let Ok(path) = path {
-            *SETTINGS_PATH.lock().unwrap() = path;
-        }
-
-        debug!(
-            "Using alternate config : {:?}",
-            SETTINGS_PATH.lock().unwrap()
-        );
     }
 
     app::run()

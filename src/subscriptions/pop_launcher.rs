@@ -1,4 +1,3 @@
-use crate::entries::external_entry::ExternalEntries;
 use crate::entries::pop_entry::PopResponse;
 use crate::subscriptions::pop_launcher::futures::join;
 use async_process::{ChildStderr, ChildStdin, ChildStdout, Command};
@@ -57,7 +56,6 @@ pub struct PopLauncherSubscription {
 pub enum SubscriptionMessage {
     Ready(Sender<Request>),
     PopMessage(PopResponse),
-    ExternalMessage(ExternalEntries),
 }
 
 impl PopLauncherSubscription {
