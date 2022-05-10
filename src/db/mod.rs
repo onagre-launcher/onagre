@@ -1,13 +1,17 @@
 use log::{debug, trace};
 use std::cmp::Reverse;
 use std::fmt::Debug;
+use once_cell::sync::{Lazy};
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 pub mod desktop_entry;
-pub mod run;
+pub mod plugin;
 pub mod web;
+
+
+pub static DB: Lazy<Database> = Lazy::new(|| Database::default());
 
 #[derive(Clone, Debug)]
 pub struct Database {
@@ -29,7 +33,7 @@ impl Default for Database {
 }
 
 impl Database {
-    pub fn insert<T>(&self, entity: &T) -> sled::Result<()>
+    pub fn insert<T>(&self, collection: &str, entity: &T) -> sled::Result<()>
     where
         T: Sized + Entity + Serialize,
     {
@@ -37,7 +41,7 @@ impl Database {
 
         let result = self
             .inner
-            .open_tree(T::COLLECTION)?
+            .open_tree(collection)?
             .insert(entity.get_key(), json.as_bytes())
             .map(|_res| ());
 
@@ -45,12 +49,12 @@ impl Database {
         result
     }
 
-    pub fn get_by_key<T>(&self, key: &str) -> Option<T>
+    pub fn get_by_key<T>(&self, collection: &str, key: &str) -> Option<T>
     where
         T: Entity + DeserializeOwned,
     {
         self.inner
-            .open_tree(T::COLLECTION)
+            .open_tree(collection)
             .unwrap()
             .get(key.as_bytes())
             .ok()
@@ -62,13 +66,13 @@ impl Database {
             .map(Result::unwrap)
     }
 
-    pub fn get_all<T>(&self) -> Vec<T>
+    pub fn get_all<T>(&self, collection: &str) -> Vec<T>
     where
         T: Entity + DeserializeOwned + Debug,
     {
         let mut results: Vec<T> = self
             .inner
-            .open_tree(T::COLLECTION)
+            .open_tree(collection)
             .unwrap()
             .iter()
             .map(|res| res.expect("Database error"))
@@ -78,7 +82,7 @@ impl Database {
             .collect();
 
         results.sort_by_key(|b| Reverse(b.get_weight()));
-        debug!("Fetching {} history from database", T::COLLECTION);
+        debug!("Got {} database entries from for '{collection}'", results.len());
         trace!("{:?}", results);
         results
     }
@@ -87,5 +91,4 @@ impl Database {
 pub trait Entity {
     fn get_key(&self) -> Vec<u8>;
     fn get_weight(&self) -> u8;
-    const COLLECTION: &'static str;
 }

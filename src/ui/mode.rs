@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 use serde::Deserialize;
+use crate::ui::plugin_matchers::PluginMode;
 
 pub(crate) static WEB_CONFIG: Lazy<Option<WebConfig>> = Lazy::new(|| {
     pop_launcher::config::find("web")
@@ -8,17 +9,36 @@ pub(crate) static WEB_CONFIG: Lazy<Option<WebConfig>> = Lazy::new(|| {
         .and_then(|config| ron::from_str::<WebConfig>(&config).ok())
 });
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ActiveMode {
-    Calc,
-    DesktopEntry,
-    Find,
-    Files,
-    Recent,
-    Scripts,
-    Terminal,
-    Web(String),
     History,
+    DesktopEntry,
+    Web(String),
+    Plugin {
+        plugin_name: String,
+        modifier: String,
+        history: bool,
+    },
+}
+
+impl From<PluginMode> for ActiveMode {
+    fn from(plugin_mode: PluginMode) -> Self {
+        let mode = plugin_mode.plugin_name.as_str();
+        match mode {
+            "web" => ActiveMode::Web(plugin_mode.modifier),
+            _other => ActiveMode::Plugin {
+                plugin_name: plugin_mode.plugin_name,
+                modifier: plugin_mode.modifier,
+                history: plugin_mode.history
+            }
+        }
+    }
+}
+
+impl Default for ActiveMode {
+    fn default() -> Self {
+        ActiveMode::History
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -36,40 +56,4 @@ pub struct Rule {
 pub struct WebQuery {
     pub name: String,
     pub query: String,
-}
-
-impl From<&str> for ActiveMode {
-    fn from(value: &str) -> Self {
-        // Split at first space or get the full str
-        let mode = value
-            .split_once(' ')
-            .map(|mode| mode.0)
-            .unwrap_or_else(|| value);
-
-        match mode {
-            "" => ActiveMode::History,
-            "calc" => ActiveMode::Calc,
-            "find" => ActiveMode::Find,
-            "files" => ActiveMode::Files,
-            "recent" => ActiveMode::Recent,
-            "scripts" => ActiveMode::Scripts,
-            "run" => ActiveMode::Terminal,
-            other => match WEB_CONFIG.as_ref() {
-                Some(config) => {
-                    let other = other.to_string();
-                    let is_web_config = config
-                        .rules
-                        .iter()
-                        .map(|rule| rule.matches.as_slice())
-                        .any(|matches| matches.contains(&other));
-                    if is_web_config {
-                        ActiveMode::Web(other)
-                    } else {
-                        ActiveMode::DesktopEntry
-                    }
-                }
-                None => ActiveMode::DesktopEntry,
-            },
-        }
-    }
 }

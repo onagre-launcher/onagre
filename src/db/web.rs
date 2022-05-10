@@ -1,3 +1,4 @@
+use log::debug;
 use crate::db::{Database, Entity};
 use serde::{Deserialize, Serialize};
 
@@ -9,8 +10,8 @@ pub struct WebEntity {
 }
 
 impl WebEntity {
-    pub fn persist(value: &str, kind: &str, db: &Database) {
-        let command = db.get_by_key::<WebEntity>(value);
+    pub fn persist(query: &str, kind: &str, db: &Database) {
+        let command = db.get_by_key::<WebEntity>(kind, query);
         let weight = match command {
             None => 0,
             Some(command) => command.weight + 1,
@@ -18,11 +19,12 @@ impl WebEntity {
 
         let entity = WebEntity {
             kind: kind.to_string(),
-            query: value.to_string(),
+            query: query.to_string(),
             weight,
         };
 
-        db.insert(&entity)
+        debug!("Inserting {entity:?} into '{kind}'");
+        db.insert(&entity.kind, &entity)
             .expect("Unable to insert terminal cache entry");
     }
 
@@ -39,6 +41,4 @@ impl Entity for WebEntity {
     fn get_weight(&self) -> u8 {
         self.weight
     }
-
-    const COLLECTION: &'static str = "web";
 }
