@@ -5,14 +5,14 @@ use pop_launcher::{self, IconSource};
 use serde::Deserialize;
 
 use crate::db::desktop_entry::DesktopEntryEntity;
-use crate::db::run::RunCommandEntity;
+use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
 use crate::ui::mode::WEB_CONFIG;
 
-static TERMINAL_ICON: Lazy<Option<IconSource>> =
-    Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
+static TERMINAL_ICON: Lazy<Option<IconSource>> = Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
+
 static WEB_ICON: Lazy<Option<IconSource>> = Lazy::new(|| get_plugin_icon("web/plugin.ron"));
 
 #[derive(Deserialize)]
@@ -30,9 +30,9 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity {
     }
 }
 
-impl<'a> AsEntry<'a> for RunCommandEntity {
+impl<'a> AsEntry<'a> for PluginCommandEntity {
     fn get_display_name(&self) -> &str {
-        self.command.as_str()
+        self.query.as_str()
     }
 
     fn get_icon(&self) -> Option<IconPath> {

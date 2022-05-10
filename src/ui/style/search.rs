@@ -1,6 +1,7 @@
 use crate::ui::style::color::OnagreColor;
 use crate::ui::style::layout::Length;
 use iced_style::{container, text_input, Background, Color};
+use iced_style::container::Style;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -113,6 +114,21 @@ impl text_input::StyleSheet for &SearchBarStyles {
             border_radius: self.border_radius,
             border_width: self.border_width,
             border_color: self.border_color.into(),
+        }
+    }
+}
+
+// TODO
+pub struct ModeHint;
+
+impl container::StyleSheet for ModeHint {
+    fn style(&self) -> Style {
+        Style {
+            text_color: Some(Color::new(1.0, 0.0, 0.0, 1.0)),
+            background: Some(Background::Color(Color::new(1.0, 1.0, 1.0, 1.0))),
+            border_radius: 0.0,
+            border_width: 0.0,
+            border_color: Default::default(),
         }
     }
 }

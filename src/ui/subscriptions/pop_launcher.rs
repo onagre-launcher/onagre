@@ -44,9 +44,7 @@ async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: mpsc::Receiver<Requ
     }
 }
 
-pub struct PopLauncherSubscription {
-    id: u8,
-}
+pub struct PopLauncherSubscription;
 
 #[derive(Debug, Clone)]
 pub enum SubscriptionMessage {
@@ -56,7 +54,7 @@ pub enum SubscriptionMessage {
 
 impl PopLauncherSubscription {
     pub fn create() -> Subscription<SubscriptionMessage> {
-        Subscription::from_recipe(PopLauncherSubscription { id: 0 })
+        Subscription::from_recipe(PopLauncherSubscription)
     }
 }
 
@@ -68,7 +66,7 @@ where
 
     fn hash(&self, state: &mut H) {
         std::any::TypeId::of::<Self>().hash(state);
-        self.id.hash(state)
+        "PopLauncherSubscription".hash(state)
     }
 
     fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
