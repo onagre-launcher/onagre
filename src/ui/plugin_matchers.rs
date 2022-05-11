@@ -1,7 +1,6 @@
-use regex::{Regex};
-use pop_launcher_service::PluginConfig;
-use crate::ui::mode::{WEB_CONFIG};
-
+use crate::ui::mode::WEB_CONFIG;
+use pop_launcher_toolkit::service::config::PluginConfig;
+use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Plugin {
@@ -27,7 +26,6 @@ impl PluginMode {
         }
     }
 }
-
 
 impl Plugin {
     pub fn from_subscription(name: String, config: PluginConfig, regex: Option<Regex>) -> Self {
@@ -91,19 +89,21 @@ impl Plugin {
             return None;
         };
 
-        let is_match = self.regex.as_ref()
+        let is_match = self
+            .regex
+            .as_ref()
             .map(|regex| regex.is_match(text))
             .unwrap_or(false);
 
         if is_match {
             self.help.as_ref().and_then(|mode| {
-                let query = text.strip_prefix(mode)
+                let query = text
+                    .strip_prefix(mode)
                     .or(text.strip_prefix(&self.name))
                     .unwrap_or("");
                 let mode = self.new_mode(mode);
 
-                Some((mode, query.to_string()))
-                    .filter(|(mode, _query)| !mode.modifier.is_empty())
+                Some((mode, query.to_string())).filter(|(mode, _query)| !mode.modifier.is_empty())
             })
         } else {
             None
@@ -111,18 +111,17 @@ impl Plugin {
     }
 
     fn match_plugin_help(&self, text: &str) -> Option<(PluginMode, String)> {
-        text.split_once(&self.name)
-            .map(|(_, query)| {
-                let mode = self.to_mode();
-                (mode, query.to_string())
-            })
+        text.split_once(&self.name).map(|(_, query)| {
+            let mode = self.to_mode();
+            (mode, query.to_string())
+        })
     }
 }
 
 #[cfg(test)]
 mod test {
-    use regex::Regex;
     use crate::ui::plugin_matchers::Plugin;
+    use regex::Regex;
 
     #[test]
     fn should_split_entry() {
@@ -133,7 +132,6 @@ mod test {
         };
 
         let match_ = plugin.try_match("find some text");
-
 
         assert_eq!(match_, Some(("find ".to_string(), "some text".to_string())));
     }

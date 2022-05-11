@@ -1,9 +1,9 @@
+use crate::ui::plugin_matchers::PluginMode;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
-use crate::ui::plugin_matchers::PluginMode;
 
 pub(crate) static WEB_CONFIG: Lazy<Option<WebConfig>> = Lazy::new(|| {
-    pop_launcher::config::find("web")
+    pop_launcher_toolkit::launcher::config::find("web")
         .next()
         .and_then(|path| std::fs::read_to_string(path).ok())
         .and_then(|config| ron::from_str::<WebConfig>(&config).ok())
@@ -29,8 +29,8 @@ impl From<PluginMode> for ActiveMode {
             _other => ActiveMode::Plugin {
                 plugin_name: plugin_mode.plugin_name,
                 modifier: plugin_mode.modifier,
-                history: plugin_mode.history
-            }
+                history: plugin_mode.history,
+            },
         }
     }
 }

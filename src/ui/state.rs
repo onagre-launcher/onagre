@@ -1,11 +1,11 @@
-use std::collections::HashMap;
 use crate::entries::Cache;
 use crate::ui::mode::ActiveMode;
+use crate::ui::plugin_matchers::{match_web_plugins, Plugin};
 use iced_native::widget::{scrollable, text_input};
 use log::debug;
-use crate::entries::pop_entry::PopSearchResult;
-use crate::ui::plugin_matchers::{match_web_plugins, Plugin};
+use pop_launcher_toolkit::launcher::SearchResult;
 
+use std::collections::HashMap;
 
 // TODO: make this accessible for state binding only in ui via pub(super)
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub struct State {
     pub input_value: SearchInput,
     pub selected: Selection,
     pub cache: Cache,
-    pub pop_search: Vec<PopSearchResult>,
+    pub pop_search: Vec<SearchResult>,
     pub scroll: scrollable::State,
     pub input: text_input::State,
     pub exec_on_next_search: bool,
@@ -57,10 +57,11 @@ impl State {
             };
         } else {
             let terms = &format!("{}{}", previous_modi, input);
-            let plugin_split =
-                match_web_plugins(terms).or(self.plugin_matchers.values()
-                    .map(|matcher| matcher.try_match(terms))
-                    .find_map(|match_| match_));
+            let plugin_split = match_web_plugins(terms).or(self
+                .plugin_matchers
+                .values()
+                .map(|matcher| matcher.try_match(terms))
+                .find_map(|match_| match_));
 
             if let Some((modi, query)) = plugin_split {
                 self.input_value.modifier_display = modi.modifier.clone();
@@ -78,13 +79,20 @@ impl State {
         };
 
         let pop_query = match &self.input_value.mode {
-            ActiveMode::History | ActiveMode::DesktopEntry => self.input_value.input_display.clone(),
+            ActiveMode::History | ActiveMode::DesktopEntry => {
+                self.input_value.input_display.clone()
+            }
             ActiveMode::Web(modifier) => format!("{modifier} {}", self.input_value.input_display),
-            ActiveMode::Plugin { modifier, .. } => format!("{modifier}{}", self.input_value.input_display),
+            ActiveMode::Plugin { modifier, .. } => {
+                format!("{modifier}{}", self.input_value.input_display)
+            }
         };
 
         self.input_value.pop_query = pop_query;
-        debug!("State: mode={:?}, input={}", self.input_value.mode, self.input_value.input_display);
+        debug!(
+            "State: mode={:?}, input={}",
+            self.input_value.mode, self.input_value.input_display
+        );
     }
 }
 
@@ -95,7 +103,6 @@ pub struct SearchInput {
     pub input_display: String,
     pub pop_query: String,
 }
-
 
 impl Default for State {
     fn default() -> Self {

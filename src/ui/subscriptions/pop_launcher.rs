@@ -1,4 +1,3 @@
-use crate::entries::pop_entry::PopResponse;
 use iced::futures::channel::mpsc;
 use iced::futures::channel::mpsc::{channel, Sender};
 use iced::futures::{join, SinkExt, StreamExt};
@@ -6,7 +5,7 @@ use iced_native::futures::stream;
 use iced_native::futures::stream::BoxStream;
 use iced_native::Subscription;
 use log::debug;
-use pop_launcher::{json_input_stream, Request, Response};
+use pop_launcher_toolkit::launcher::{json_input_stream, Request, Response};
 use std::hash::Hash;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
@@ -49,7 +48,7 @@ pub struct PopLauncherSubscription;
 #[derive(Debug, Clone)]
 pub enum SubscriptionMessage {
     Ready(Sender<Request>),
-    PopMessage(PopResponse),
+    PopMessage(Response),
 }
 
 impl PopLauncherSubscription {
@@ -93,9 +92,7 @@ where
             join!(stdout_handle, stderr_handle, stdin_handle);
         });
 
-        let pop_response_rx = response_rx
-            .map(PopResponse::from)
-            .map(SubscriptionMessage::PopMessage);
+        let pop_response_rx = response_rx.map(SubscriptionMessage::PopMessage);
 
         Box::pin(stream::iter(vec![SubscriptionMessage::Ready(request_tx)]).chain(pop_response_rx))
     }

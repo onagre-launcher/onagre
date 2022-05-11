@@ -1,14 +1,14 @@
 use crate::ui::app::Onagre;
 use crate::THEME;
-use iced::{Application, Settings, window};
+use iced::{window, Application, Settings};
 use log::debug;
 
 pub mod app;
 pub mod mode;
+pub mod plugin_matchers;
 pub mod state;
 pub mod style;
 pub mod subscriptions;
-pub mod plugin_matchers;
 
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");

@@ -1,8 +1,11 @@
+use crate::ui::plugin_matchers::Plugin;
 use iced::futures::StreamExt;
 use iced_native::futures::stream::BoxStream;
 use iced_native::Subscription;
+
+
+
 use std::hash::Hash;
-use crate::ui::plugin_matchers::Plugin;
 
 pub struct PluginMatcherSubscription;
 
@@ -13,8 +16,8 @@ impl PluginMatcherSubscription {
 }
 
 impl<H, I> iced_native::subscription::Recipe<H, I> for PluginMatcherSubscription
-    where
-        H: std::hash::Hasher,
+where
+    H: std::hash::Hasher,
 {
     type Output = Plugin;
 
@@ -24,13 +27,13 @@ impl<H, I> iced_native::subscription::Recipe<H, I> for PluginMatcherSubscription
     }
 
     fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
-        Box::pin(pop_launcher_service::plugins_from_paths()
-            .map(|(path, config, regex)| Plugin::from_subscription(path.file_name()
-                                                                       .unwrap()
-                                                                       .to_string_lossy()
-                                                                       .to_string(),
-                                                                   config,
-                                                                   regex))
+        Box::pin(
+            pop_launcher_toolkit::service::load::from_paths().map(|(_path, config, regex)| Plugin {
+                name: config.name.to_string(),
+                history: config.history,
+                help: config.query.help.map(|h| h.to_string()),
+                regex,
+            }),
         )
     }
 }

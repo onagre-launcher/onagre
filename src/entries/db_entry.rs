@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
-use pop_launcher::{self, IconSource};
+use pop_launcher_toolkit::launcher::IconSource;
 use serde::Deserialize;
 
 use crate::db::desktop_entry::DesktopEntryEntity;
@@ -11,7 +11,8 @@ use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
 use crate::ui::mode::WEB_CONFIG;
 
-static TERMINAL_ICON: Lazy<Option<IconSource>> = Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
+static TERMINAL_ICON: Lazy<Option<IconSource>> =
+    Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
 
 static WEB_ICON: Lazy<Option<IconSource>> = Lazy::new(|| get_plugin_icon("web/plugin.ron"));
 
@@ -85,7 +86,7 @@ impl<'a> AsEntry<'a> for WebEntity {
 }
 
 fn get_plugin_icon(plugin: &str) -> Option<IconSource> {
-    let path = pop_launcher::plugin_paths()
+    let path = pop_launcher_toolkit::launcher::plugin_paths()
         .map(|path| path.as_ref().join(plugin))
         .find(|path| path.exists());
 

@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use glob::{glob_with, MatchOptions};
 use log::debug;
-use pop_launcher::IconSource;
+use pop_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};
 
 use crate::{ICON_FINDER, THEME};

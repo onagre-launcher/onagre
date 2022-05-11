@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::db::{Database, Entity};
 use crate::freedesktop::desktop::DesktopEntry;
 
-pub const COLLECTION: &'static str = "desktop-entries";
+pub const COLLECTION: &str = "desktop-entries";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DesktopEntryEntity {
@@ -24,7 +24,6 @@ impl Entity for DesktopEntryEntity {
     }
 }
 
-
 impl DesktopEntryEntity {
     pub fn persist(entry: &DesktopEntry, path: &Path, db: &Database) {
         let weight = match db.get_by_key::<DesktopEntryEntity>(COLLECTION, &entry.name) {
@@ -39,6 +38,7 @@ impl DesktopEntryEntity {
             weight,
         };
 
-        db.insert(COLLECTION, &entity).expect("Unable to insert history entry");
+        db.insert(COLLECTION, &entity)
+            .expect("Unable to insert history entry");
     }
 }

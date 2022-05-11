@@ -22,9 +22,7 @@ palette = { version = "0.5.0", features = ["serializing"] }
 tokio = { version = "1.18.2", features = ["process", "macros", "io-util"] }
 sled = "0.34.7"
 
-pop-launcher = { path = "../launcher" }
-pop-launcher-service = { path = "../launcher/service" }
-
+pop-launcher-toolkit = { git = "https://github.com/oknozor/launcher/" }
 structopt = { version = "^0", default-features = false, optional = true }
 
 log = { version = "0.4.11" }
