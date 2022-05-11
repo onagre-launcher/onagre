@@ -1,7 +1,7 @@
 use log::{debug, trace};
+use once_cell::sync::Lazy;
 use std::cmp::Reverse;
 use std::fmt::Debug;
-use once_cell::sync::{Lazy};
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -10,8 +10,7 @@ pub mod desktop_entry;
 pub mod plugin;
 pub mod web;
 
-
-pub static DB: Lazy<Database> = Lazy::new(|| Database::default());
+pub static DB: Lazy<Database> = Lazy::new(Database::default);
 
 #[derive(Clone, Debug)]
 pub struct Database {
@@ -82,7 +81,10 @@ impl Database {
             .collect();
 
         results.sort_by_key(|b| Reverse(b.get_weight()));
-        debug!("Got {} database entries from for '{collection}'", results.len());
+        debug!(
+            "Got {} database entries from for '{collection}'",
+            results.len()
+        );
         trace!("{:?}", results);
         results
     }

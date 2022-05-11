@@ -1,17 +1,17 @@
+use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
-use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
+use crate::db::web::WebEntity;
+use crate::db::Database;
 use crate::freedesktop::{Extension, IconPath};
 use crate::ui::app::Message;
 use crate::{db, THEME};
 use iced_native::alignment::Horizontal;
 use once_cell::sync::OnceCell;
-use crate::db::Database;
-use crate::db::web::WebEntity;
 
 pub(crate) mod db_entry;
 pub(crate) mod pop_entry;
@@ -32,14 +32,17 @@ impl Default for Cache {
             db: Database::default(),
             de_history: OnceCell::new(),
             web_history: Mutex::new(Default::default()),
-            plugin_history: Mutex::new(Default::default())
+            plugin_history: Mutex::new(Default::default()),
         }
     }
 }
 
 impl Cache {
     pub fn de_history(&self) -> &Vec<DesktopEntryEntity> {
-        self.de_history.get_or_init(|| self.db.get_all::<DesktopEntryEntity>(db::desktop_entry::COLLECTION))
+        self.de_history.get_or_init(|| {
+            self.db
+                .get_all::<DesktopEntryEntity>(db::desktop_entry::COLLECTION)
+        })
     }
 
     pub fn de_len(&self) -> usize {
@@ -136,8 +139,8 @@ pub(crate) trait AsEntry<'a> {
                     .width(Length::Fill)
                     .horizontal_alignment(Horizontal::Left),
             )
-                .spacing(10)
-                .align_items(Alignment::Center),
+            .spacing(10)
+            .align_items(Alignment::Center),
         )
     }
 

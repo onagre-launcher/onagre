@@ -1,5 +1,5 @@
-use log::debug;
 use crate::db::{Database, Entity};
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
