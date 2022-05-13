@@ -7,7 +7,6 @@ use crate::freedesktop::desktop::DesktopEntry;
 use crate::ui::mode::ActiveMode;
 use crate::ui::plugin_matchers::Plugin;
 use crate::ui::state::{Selection, State};
-use crate::ui::style::search::ModeHint;
 use crate::ui::subscriptions::plugin_configs::PluginMatcherSubscription;
 use crate::ui::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::THEME;
@@ -24,6 +23,7 @@ use pop_launcher_toolkit::launcher::{Request, Response};
 
 use std::path::Path;
 use std::process::exit;
+use iced_native::alignment::Horizontal;
 
 #[derive(Debug)]
 pub struct Onagre {
@@ -148,7 +148,9 @@ impl Application for Onagre {
 
         let mode_hint =
             Container::new(Row::new().push(Text::new(&self.state.input_value.modifier_display)))
-                .style(ModeHint);
+                .style(&THEME.search.bar.plugin_hint)
+                .align_x(Horizontal::Right);
+
 
         let search_input = TextInput::new(
             &mut self.state.input,
@@ -161,15 +163,15 @@ impl Application for Onagre {
             top: 0,
             right: 0,
             bottom: 0,
-            left: 10,
+            left: 0,
         })
         .width(THEME.search.bar.text_width.into());
 
         let search_bar = Container::new(
             Row::new()
-                .spacing(20)
-                .align_items(Alignment::Center)
-                .padding(2)
+                .spacing(0)
+                .align_items(Alignment::Fill)
+                .padding(0)
                 .push(mode_hint)
                 .push(search_input)
                 .width(THEME.search.width.into())

@@ -47,9 +47,11 @@ pub struct SearchBarStyles {
     pub border_radius: f32,
     pub border_width: f32,
     pub text_width: Length,
+    pub plugin_hint: PluginHintStyle,
 }
 
 impl Eq for SearchBarStyles {}
+
 impl Default for SearchBarStyles {
     fn default() -> Self {
         SearchBarStyles {
@@ -61,13 +63,14 @@ impl Default for SearchBarStyles {
             value_color: OnagreColor::RED,
             selection_color: OnagreColor::BLACK,
             text_width: Length::fill(),
+            plugin_hint: Default::default()
         }
     }
 }
 
 impl container::StyleSheet for &SearchContainerStyles {
-    fn style(&self) -> container::Style {
-        container::Style {
+    fn style(&self) -> Style {
+        Style {
             background: Some(Background::Color(self.background.into())),
             border_radius: self.border_radius,
             border_width: self.border_radius,
@@ -118,17 +121,38 @@ impl text_input::StyleSheet for &SearchBarStyles {
     }
 }
 
-// TODO
-pub struct ModeHint;
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct PluginHintStyle {
+    text_color: OnagreColor,
+    background: OnagreColor,
+    border_radius: f32,
+    border_width: f32,
+    border_color: OnagreColor,
+}
 
-impl container::StyleSheet for ModeHint {
+impl Eq for PluginHintStyle {}
+
+impl Default for PluginHintStyle {
+    fn default() -> Self {
+        Self {
+            text_color: OnagreColor::BLACK,
+            background: OnagreColor::BLUE,
+            border_radius: 1.0,
+            border_width: 1.0,
+            border_color: OnagreColor::RED,
+        }
+    }
+}
+
+impl container::StyleSheet for &PluginHintStyle {
     fn style(&self) -> Style {
         Style {
-            text_color: Some(Color::new(1.0, 0.0, 0.0, 1.0)),
-            background: Some(Background::Color(Color::new(1.0, 1.0, 1.0, 1.0))),
-            border_radius: 0.0,
-            border_width: 0.0,
-            border_color: Default::default(),
+            text_color: Some(self.text_color.into()),
+            background: Some(Background::Color(self.background.into())),
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+            border_color: self.border_color.into(),
         }
     }
 }
