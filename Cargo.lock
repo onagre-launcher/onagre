@@ -493,7 +493,7 @@ checksum = "19b076e143e1d9538dde65da30f8481c2a6c44040edb8e02b9bf1351edb92ce3"
 dependencies = [
  "lazy_static",
  "nom 5.1.2",
- "rust-ini",
+ "rust-ini 0.13.0",
  "serde 1.0.137",
  "serde-hjson",
  "serde_json",
@@ -900,6 +900,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dlv-list"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0688c2a7f92e427f44895cd63841bff7b29f8d7a1648b9e7e07a4a365b2e1257"
+
+[[package]]
 name = "downcast-rs"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1149,6 +1155,18 @@ dependencies = [
  "memchr",
  "thiserror",
  "xdg",
+]
+
+[[package]]
+name = "freedesktop-icons"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e1a51f4eb76bb59562731bff0038aecb4bf9ccac687244bb94d3141a83f7145"
+dependencies = [
+ "dirs 4.0.0",
+ "once_cell",
+ "rust-ini 0.18.0",
+ "thiserror",
 ]
 
 [[package]]
@@ -1498,7 +1516,7 @@ checksum = "a538f217be4d405ff4719a283ca68323cc2384003eca5baaa87501e821c81dda"
 dependencies = [
  "bitflags",
  "gpu-descriptor-types",
- "hashbrown",
+ "hashbrown 0.11.2",
 ]
 
 [[package]]
@@ -1550,6 +1568,15 @@ name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
+dependencies = [
+ "ahash",
+]
+
+[[package]]
+name = "hashbrown"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
 dependencies = [
  "ahash",
 ]
@@ -1834,7 +1861,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f647032dfaa1f8b6dc29bd3edb7bbef4861b8b8007ebb118d6db284fd59f6ee"
 dependencies = [
  "autocfg",
- "hashbrown",
+ "hashbrown 0.11.2",
 ]
 
 [[package]]
@@ -2421,6 +2448,7 @@ dependencies = [
  "dirs 4.0.0",
  "env_logger",
  "font-kit",
+ "freedesktop-icons",
  "fuzzy-matcher",
  "glob",
  "iced",
@@ -2464,6 +2492,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96bcbab4bfea7a59c2c0fe47211a1ac4e3e96bea6eb446d704f310bc5c732ae2"
 dependencies = [
  "num-traits 0.2.15",
+]
+
+[[package]]
+name = "ordered-multimap"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccd746e37177e1711c20dd619a1620f34f5c8b569c53590a72dedd5344d8924a"
+dependencies = [
+ "dlv-list",
+ "hashbrown 0.12.1",
 ]
 
 [[package]]
@@ -2825,7 +2863,7 @@ dependencies = [
 [[package]]
 name = "pop-launcher"
 version = "1.2.1"
-source = "git+https://github.com/oknozor/launcher/#568c77f2db1a58a292ab29c6a469755f50aeea51"
+source = "git+https://github.com/pop-os/launcher/#47852e53cb6f637003ed6bdb178fe76cb90dff24"
 dependencies = [
  "const_format",
  "dirs 4.0.0",
@@ -2840,7 +2878,7 @@ dependencies = [
 [[package]]
 name = "pop-launcher-plugins"
 version = "1.2.1"
-source = "git+https://github.com/oknozor/launcher/#568c77f2db1a58a292ab29c6a469755f50aeea51"
+source = "git+https://github.com/pop-os/launcher/#47852e53cb6f637003ed6bdb178fe76cb90dff24"
 dependencies = [
  "anyhow",
  "async-pidfd",
@@ -2875,7 +2913,7 @@ dependencies = [
 [[package]]
 name = "pop-launcher-service"
 version = "1.2.1"
-source = "git+https://github.com/oknozor/launcher/#568c77f2db1a58a292ab29c6a469755f50aeea51"
+source = "git+https://github.com/pop-os/launcher/#47852e53cb6f637003ed6bdb178fe76cb90dff24"
 dependencies = [
  "anyhow",
  "async-oneshot",
@@ -2903,7 +2941,7 @@ dependencies = [
 [[package]]
 name = "pop-launcher-toolkit"
 version = "0.1.0"
-source = "git+https://github.com/oknozor/launcher/#568c77f2db1a58a292ab29c6a469755f50aeea51"
+source = "git+https://github.com/pop-os/launcher/#47852e53cb6f637003ed6bdb178fe76cb90dff24"
 dependencies = [
  "pop-launcher",
  "pop-launcher-plugins",
@@ -3346,6 +3384,16 @@ name = "rust-ini"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e52c148ef37f8c375d49d5a73aa70713125b7f19095948a923f80afdeb22ec2"
+
+[[package]]
+name = "rust-ini"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6d5f2436026b4f6e79dc829837d467cc7e9a55ee40e750d716713540715a2df"
+dependencies = [
+ "cfg-if 1.0.0",
+ "ordered-multimap",
+]
 
 [[package]]
 name = "rustc-hash"

@@ -9,6 +9,7 @@ use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
+use crate::THEME;
 use crate::ui::mode::WEB_CONFIG;
 
 static TERMINAL_ICON: Lazy<Option<IconSource>> =
@@ -27,7 +28,10 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity {
     }
 
     fn get_icon(&self) -> Option<IconPath> {
-        self.icon.as_deref().and_then(IconPath::from_path)
+        match &THEME.icon_theme {
+            Some(theme) => self.icon.as_deref().and_then(|name| IconPath::lookup(name, &theme, THEME.icon_size)),
+            _ => None,
+        }
     }
 }
 

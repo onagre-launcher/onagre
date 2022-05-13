@@ -22,8 +22,9 @@ palette = { version = "0.5.0", features = ["serializing"] }
 tokio = { version = "1.18.2", features = ["process", "macros", "io-util"] }
 sled = "0.34.7"
 
-pop-launcher-toolkit = { git = "https://github.com/oknozor/launcher/" }
+pop-launcher-toolkit = { git = "https://github.com/pop-os/launcher/" }
 structopt = { version = "^0", default-features = false, optional = true }
+freedesktop-icons = "0.1.0"
 
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }

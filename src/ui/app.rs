@@ -65,7 +65,11 @@ impl Application for Onagre {
             Message::InputChanged(input) => self.on_input_changed(input),
             Message::KeyboardEvent(event) => self.handle_input(event),
             Message::SubscriptionResponse(message) => self.on_pop_launcher_message(message),
-            Message::Unfocused => exit(0),
+            Message::Unfocused => if THEME.exit_unfocused {
+                exit(0);
+            } else {
+                Command::none()
+            },
             Message::PluginConfig(plugin) => {
                 self.state
                     .plugin_matchers
