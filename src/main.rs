@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use anyhow::anyhow;
-use freedesktop::IconFinder;
 use log::debug;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
@@ -24,13 +23,6 @@ pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {
 });
 
 pub static THEME: Lazy<Theme> = Lazy::new(Theme::load);
-
-pub static ICON_FINDER: Lazy<Option<IconFinder>> = Lazy::new(|| {
-    THEME
-        .icon_theme
-        .as_ref()
-        .and_then(|theme_name| IconFinder::build(theme_name).ok())
-});
 
 #[derive(StructOpt)]
 #[structopt(name = "onagre", author = "Paul D. <paul.delafosse@protonmail.com>")]

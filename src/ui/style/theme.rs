@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default, deny_unknown_fields)]
 pub struct Theme {
+    pub exit_unfocused: bool,
     pub size: (u32, u32),
     pub font: Option<String>,
     pub font_size: u16,
@@ -39,6 +40,7 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
+            exit_unfocused: false,
             size: (800, 300),
             font: None,
             font_size: 22,
