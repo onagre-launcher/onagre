@@ -10,8 +10,8 @@ use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::entries::AsEntry;
 use crate::freedesktop::{Extension, IconPath};
-use crate::THEME;
 use crate::ui::mode::WEB_CONFIG;
+use crate::THEME;
 
 static TERMINAL_ICON: Lazy<Option<IconSource>> =
     Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
@@ -25,24 +25,27 @@ struct PluginConfig {
 
 impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
     fn get_display_name(&self) -> &str {
-        self.name.as_str()
+        self.name.as_ref()
     }
 
     fn get_icon(&self) -> Option<IconPath> {
         match &THEME.icon_theme {
-            Some(theme) => self.icon.as_deref().and_then(|name| IconPath::lookup(name, &theme, THEME.icon_size)),
+            Some(theme) => self
+                .icon
+                .as_deref()
+                .and_then(|name| IconPath::lookup(name, &theme, THEME.icon_size)),
             _ => None,
         }
     }
 
     fn get_description(&self) -> Option<Cow<'_, str>> {
-        self.description.as_ref().map(|desc|desc.clone())
+        self.description.as_ref().map(|desc| desc.clone())
     }
 }
 
-impl<'a> AsEntry<'a> for PluginCommandEntity {
+impl<'a> AsEntry<'a> for PluginCommandEntity<'a> {
     fn get_display_name(&self) -> &str {
-        self.query.as_str()
+        self.query.as_ref()
     }
 
     fn get_icon(&self) -> Option<IconPath> {
@@ -54,9 +57,9 @@ impl<'a> AsEntry<'a> for PluginCommandEntity {
     }
 }
 
-impl<'a> AsEntry<'a> for WebEntity {
+impl<'a> AsEntry<'a> for WebEntity<'a> {
     fn get_display_name(&self) -> &str {
-        self.query.as_str()
+        self.query.as_ref()
     }
 
     fn get_icon(&self) -> Option<IconPath> {
@@ -66,7 +69,7 @@ impl<'a> AsEntry<'a> for WebEntity {
                 config
                     .rules
                     .iter()
-                    .find(|rule| rule.matches.contains(&self.kind))
+                    .find(|rule| rule.matches.contains(&self.kind.to_string()))
             })
             // FIXME: see web/config.ron
             .map(|item| item.queries.first().unwrap().name.to_owned())
@@ -97,7 +100,7 @@ impl<'a> AsEntry<'a> for WebEntity {
             })
     }
 
-    fn get_description(&self) -> Option<Cow<'_,str>> {
+    fn get_description(&self) -> Option<Cow<'_, str>> {
         None
     }
 }

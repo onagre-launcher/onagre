@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
@@ -24,8 +24,8 @@ type History<T> = Mutex<HashMap<String, Rc<Vec<T>>>>;
 pub struct Cache<'a> {
     pub db: Database,
     de_history: OnceCell<Vec<DesktopEntryEntity<'a>>>,
-    web_history: History<WebEntity>,
-    plugin_history: History<PluginCommandEntity>,
+    web_history: History<WebEntity<'a>>,
+    plugin_history: History<PluginCommandEntity<'a>>,
 }
 
 impl Default for Cache<'_> {
@@ -141,15 +141,13 @@ pub(crate) trait AsEntry<'a> {
                     .width(Length::Fill)
                     .horizontal_alignment(Horizontal::Left),
             )
-                .spacing(10)
-                .align_items(Alignment::Center),
+            .spacing(10)
+            .align_items(Alignment::Center),
         );
-
 
         let column = match self.get_description() {
             Some(description) => {
-                let description_row = Row::new()
-                    .push(Text::new(description.as_ref()).size(15));
+                let description_row = Row::new().push(Text::new(description.as_ref()).size(15));
 
                 Column::with_children(vec![entry_row.into(), description_row.into()])
             }

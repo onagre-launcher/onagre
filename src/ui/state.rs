@@ -42,7 +42,7 @@ impl State<'_> {
         self.input_value.pop_query.clone()
     }
 
-    // TODO : TEST ME
+    // TODO : add some test and provide a configuration to deactivate this
     pub fn set_input(&mut self, input: &str) {
         let previous_modi = self.input_value.modifier_display.clone();
 

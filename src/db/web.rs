@@ -1,15 +1,16 @@
 use crate::db::{Database, Entity};
 use log::debug;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct WebEntity {
-    pub query: String,
-    pub kind: String,
+pub struct WebEntity<'a> {
+    pub query: Cow<'a, str>,
+    pub kind: Cow<'a, str>,
     pub weight: u8,
 }
 
-impl WebEntity {
+impl WebEntity<'_> {
     pub fn persist(query: &str, kind: &str, db: &Database) {
         let command = db.get_by_key::<WebEntity>(kind, query);
         let weight = match command {
@@ -18,8 +19,8 @@ impl WebEntity {
         };
 
         let entity = WebEntity {
-            kind: kind.to_string(),
-            query: query.to_string(),
+            kind: Cow::Borrowed(kind),
+            query: Cow::Borrowed(query),
             weight,
         };
 
@@ -33,7 +34,7 @@ impl WebEntity {
     }
 }
 
-impl Entity for WebEntity {
+impl Entity for WebEntity<'_> {
     fn get_key(&self) -> Vec<u8> {
         self.query().as_bytes().to_vec()
     }

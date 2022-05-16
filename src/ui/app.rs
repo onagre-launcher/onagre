@@ -20,10 +20,9 @@ use iced_native::{Command, Event, Subscription};
 use log::debug;
 use pop_launcher_toolkit::launcher::{Request, Response};
 
-
+use iced_native::alignment::Horizontal;
 use std::path::Path;
 use std::process::exit;
-use iced_native::alignment::Horizontal;
 
 #[derive(Debug)]
 pub struct Onagre<'a> {
@@ -65,11 +64,13 @@ impl Application for Onagre<'_> {
             Message::InputChanged(input) => self.on_input_changed(input),
             Message::KeyboardEvent(event) => self.handle_input(event),
             Message::SubscriptionResponse(message) => self.on_pop_launcher_message(message),
-            Message::Unfocused => if THEME.exit_unfocused {
-                exit(0);
-            } else {
-                Command::none()
-            },
+            Message::Unfocused => {
+                if THEME.exit_unfocused {
+                    exit(0);
+                } else {
+                    Command::none()
+                }
+            }
             Message::PluginConfig(plugin) => {
                 self.state
                     .plugin_matchers
@@ -150,7 +151,6 @@ impl Application for Onagre<'_> {
             Container::new(Row::new().push(Text::new(&self.state.input_value.modifier_display)))
                 .style(&THEME.search.bar.plugin_hint)
                 .align_x(Horizontal::Right);
-
 
         let search_input = TextInput::new(
             &mut self.state.input,

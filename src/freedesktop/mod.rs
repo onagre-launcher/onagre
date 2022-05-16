@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow};
+use anyhow::anyhow;
 use pop_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};
 

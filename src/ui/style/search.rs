@@ -63,7 +63,7 @@ impl Default for SearchBarStyles {
             value_color: OnagreColor::RED,
             selection_color: OnagreColor::BLACK,
             text_width: Length::fill(),
-            plugin_hint: Default::default()
+            plugin_hint: Default::default(),
         }
     }
 }
