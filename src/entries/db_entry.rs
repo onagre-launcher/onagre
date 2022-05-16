@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
@@ -22,7 +23,7 @@ struct PluginConfig {
     icon: IconSource,
 }
 
-impl<'a> AsEntry<'a> for DesktopEntryEntity {
+impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
     fn get_display_name(&self) -> &str {
         self.name.as_str()
     }
@@ -33,6 +34,10 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity {
             _ => None,
         }
     }
+
+    fn get_description(&self) -> Option<Cow<'_, str>> {
+        self.description.as_ref().map(|desc|desc.clone())
+    }
 }
 
 impl<'a> AsEntry<'a> for PluginCommandEntity {
@@ -42,6 +47,10 @@ impl<'a> AsEntry<'a> for PluginCommandEntity {
 
     fn get_icon(&self) -> Option<IconPath> {
         IconPath::from_icon_source(TERMINAL_ICON.as_ref())
+    }
+
+    fn get_description(&self) -> Option<Cow<'_, str>> {
+        None
     }
 }
 
@@ -86,6 +95,10 @@ impl<'a> AsEntry<'a> for WebEntity {
                     IconPath::from_icon_source(WEB_ICON.as_ref())
                 };
             })
+    }
+
+    fn get_description(&self) -> Option<Cow<'_,str>> {
+        None
     }
 }
 

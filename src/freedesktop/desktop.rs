@@ -1,23 +1,26 @@
+use std::borrow::Cow;
 use serde::Deserialize;
 use std::path::Path;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct DesktopEntryIni {
+pub struct DesktopEntryIni<'a> {
     #[serde(rename = "Desktop Entry")]
-    pub content: DesktopEntry,
+    pub content: DesktopEntry<'a>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct DesktopEntry {
+pub struct DesktopEntry<'a> {
     pub name: String,
     pub exec: String,
     pub icon: Option<String>,
+    pub actions: Option<String>,
+    pub comment: Option<Cow<'a,str>>,
     pub keywords: Option<String>,
 }
 
-impl DesktopEntry {
+impl DesktopEntry<'_> {
     pub fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {
         std::fs::read_to_string(path)
             .map(|content| serde_ini::from_str::<DesktopEntryIni>(&content))

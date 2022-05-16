@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -11,6 +12,7 @@ use crate::freedesktop::{Extension, IconPath};
 use crate::ui::app::Message;
 use crate::{db, THEME};
 use iced_native::alignment::Horizontal;
+use iced_native::widget::Column;
 use once_cell::sync::OnceCell;
 
 pub(crate) mod db_entry;
@@ -19,14 +21,14 @@ pub(crate) mod pop_entry;
 type History<T> = Mutex<HashMap<String, Rc<Vec<T>>>>;
 
 #[derive(Debug)]
-pub struct Cache {
+pub struct Cache<'a> {
     pub db: Database,
-    de_history: OnceCell<Vec<DesktopEntryEntity>>,
+    de_history: OnceCell<Vec<DesktopEntryEntity<'a>>>,
     web_history: History<WebEntity>,
     plugin_history: History<PluginCommandEntity>,
 }
 
-impl Default for Cache {
+impl Default for Cache<'_> {
     fn default() -> Self {
         Self {
             db: Database::default(),
@@ -37,7 +39,7 @@ impl Default for Cache {
     }
 }
 
-impl Cache {
+impl Cache<'_> {
     pub fn de_history(&self) -> &Vec<DesktopEntryEntity> {
         self.de_history.get_or_init(|| {
             self.db
@@ -133,17 +135,31 @@ pub(crate) trait AsEntry<'a> {
     }
 
     fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
-        Container::new(
+        let entry_row = Container::new(
             row.push(
                 Text::new(self.get_display_name())
                     .width(Length::Fill)
                     .horizontal_alignment(Horizontal::Left),
             )
-            .spacing(10)
-            .align_items(Alignment::Center),
-        )
+                .spacing(10)
+                .align_items(Alignment::Center),
+        );
+
+
+        let column = match self.get_description() {
+            Some(description) => {
+                let description_row = Row::new()
+                    .push(Text::new(description.as_ref()).size(15));
+
+                Column::with_children(vec![entry_row.into(), description_row.into()])
+            }
+            None => Column::with_children(vec![entry_row.into()]),
+        };
+
+        Container::new(column)
     }
 
     fn get_display_name(&self) -> &str;
     fn get_icon(&self) -> Option<IconPath>;
+    fn get_description(&self) -> Option<Cow<'_, str>>;
 }

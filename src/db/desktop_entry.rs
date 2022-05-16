@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -8,14 +9,15 @@ use crate::freedesktop::desktop::DesktopEntry;
 pub const COLLECTION: &str = "desktop-entries";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct DesktopEntryEntity {
+pub struct DesktopEntryEntity<'a> {
     pub name: String,
     pub icon: Option<String>,
+    pub description: Option<Cow<'a ,str>>,
     pub path: PathBuf,
     pub weight: u8,
 }
 
-impl Entity for DesktopEntryEntity {
+impl Entity for DesktopEntryEntity<'_> {
     fn get_key(&self) -> Vec<u8> {
         self.name.as_bytes().to_vec()
     }
@@ -24,8 +26,8 @@ impl Entity for DesktopEntryEntity {
     }
 }
 
-impl DesktopEntryEntity {
-    pub fn persist(entry: &DesktopEntry, path: &Path, db: &Database) {
+impl <'a> DesktopEntryEntity<'a> {
+    pub fn persist(entry: &'a DesktopEntry, path: &Path, db: &Database) {
         let weight = match db.get_by_key::<DesktopEntryEntity>(COLLECTION, &entry.name) {
             Some(de_entry) => de_entry.weight + 1,
             None => 0,
@@ -34,6 +36,7 @@ impl DesktopEntryEntity {
         let entity = Self {
             name: entry.name.clone(),
             icon: entry.icon.clone(),
+            description: entry.comment.as_ref().map(|comment | comment.clone()),
             path: path.into(),
             weight,
         };

@@ -9,10 +9,10 @@ use std::collections::HashMap;
 
 // TODO: make this accessible for state binding only in ui via pub(super)
 #[derive(Debug)]
-pub struct State {
+pub struct State<'a> {
     pub input_value: SearchInput,
     pub selected: Selection,
-    pub cache: Cache,
+    pub cache: Cache<'a>,
     pub pop_search: Vec<SearchResult>,
     pub scroll: scrollable::State,
     pub input: text_input::State,
@@ -33,7 +33,7 @@ pub enum Selection {
     PopLauncher(usize),
 }
 
-impl State {
+impl State<'_> {
     pub fn get_active_mode(&self) -> &ActiveMode {
         &self.input_value.mode
     }
@@ -104,7 +104,7 @@ pub struct SearchInput {
     pub pop_query: String,
 }
 
-impl Default for State {
+impl Default for State<'_> {
     fn default() -> Self {
         State {
             selected: Selection::History(0),
