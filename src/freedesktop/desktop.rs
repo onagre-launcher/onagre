@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use serde::Deserialize;
+use std::borrow::Cow;
 use std::path::Path;
 
 #[derive(Debug, Deserialize)]
@@ -12,12 +12,12 @@ pub struct DesktopEntryIni<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct DesktopEntry<'a> {
-    pub name: String,
-    pub exec: String,
-    pub icon: Option<String>,
-    pub actions: Option<String>,
-    pub comment: Option<Cow<'a,str>>,
-    pub keywords: Option<String>,
+    pub name: Cow<'a, str>,
+    pub exec: Cow<'a, str>,
+    pub icon: Option<Cow<'a, str>>,
+    pub actions: Option<Cow<'a, str>>,
+    pub comment: Option<Cow<'a, str>>,
+    pub keywords: Option<Cow<'a, str>>,
 }
 
 impl DesktopEntry<'_> {

@@ -1,13 +1,14 @@
 use crate::db::{Database, Entity};
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct PluginCommandEntity {
-    pub(crate) query: String,
+pub struct PluginCommandEntity<'a> {
+    pub(crate) query: Cow<'a, str>,
     pub weight: u8,
 }
 
-impl PluginCommandEntity {
+impl PluginCommandEntity<'_> {
     pub fn persist(collection: &str, query: &str, db: &Database) {
         let command = db.get_by_key::<PluginCommandEntity>(collection, query);
         let weight = match command {
@@ -16,7 +17,7 @@ impl PluginCommandEntity {
         };
 
         let entity = PluginCommandEntity {
-            query: query.to_string(),
+            query: Cow::Borrowed(query),
             weight,
         };
 
@@ -25,7 +26,7 @@ impl PluginCommandEntity {
     }
 }
 
-impl Entity for PluginCommandEntity {
+impl Entity for PluginCommandEntity<'_> {
     fn get_key(&self) -> Vec<u8> {
         self.query.as_bytes().to_vec()
     }
