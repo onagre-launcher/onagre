@@ -26,8 +26,8 @@ use std::process::exit;
 use iced_native::alignment::Horizontal;
 
 #[derive(Debug)]
-pub struct Onagre {
-    state: State,
+pub struct Onagre<'a> {
+    state: State<'a>,
     request_tx: Option<Sender<Request>>,
 }
 
@@ -40,7 +40,7 @@ pub enum Message {
     Unfocused,
 }
 
-impl Application for Onagre {
+impl Application for Onagre<'_> {
     type Executor = iced::executor::Default;
     type Message = Message;
     type Flags = ();
@@ -201,7 +201,7 @@ impl Application for Onagre {
     }
 }
 
-impl Onagre {
+impl Onagre<'_> {
     // Only call this if we are using entries from the database
     // in order to re-ask pop-launcher for the exact same entry
     fn current_entry(&self) -> Option<String> {

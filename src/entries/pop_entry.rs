@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use pop_launcher_toolkit::launcher::{IconSource, SearchResult};
 
 use crate::entries::AsEntry;
@@ -20,5 +21,9 @@ impl<'a> AsEntry<'a> for PopSearchResult<'a> {
                 }),
             _ => None,
         }
+    }
+
+    fn get_description(&self) -> Option<Cow<'_, str>> {
+        Some(Cow::Borrowed(self.0.description.as_str()))
     }
 }
