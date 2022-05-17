@@ -1,8 +1,9 @@
-use iced::{Alignment, Container, Image, Length, Row, Svg, Text};
+use iced::{Container, Image, Length, Row, Svg, Text};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
+use iced_native::Alignment;
 
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
@@ -11,9 +12,9 @@ use crate::db::Database;
 use crate::freedesktop::{Extension, IconPath};
 use crate::ui::app::Message;
 use crate::{db, THEME};
-use iced_native::alignment::Horizontal;
 use iced_native::widget::Column;
 use once_cell::sync::OnceCell;
+use crate::ui::style::rows::RowStyles;
 
 pub(crate) mod db_entry;
 pub(crate) mod pop_entry;
@@ -91,70 +92,85 @@ impl Cache<'_> {
 }
 
 pub(crate) trait AsEntry<'a> {
-    fn to_row_selected(&self, row: Row<'a, Message>) -> Container<'a, Message> {
-        self.as_row(row)
-            .width(Length::Fill)
-            .height(Length::Shrink)
-            .style(&THEME.rows.lines.selected)
-            .padding(THEME.rows.lines.selected.padding)
-    }
-
-    fn to_row_unselected(&self, row: Row<'a, Message>) -> Container<'a, Message> {
-        self.as_row(row)
-            .width(Length::Fill)
-            .height(Length::Shrink)
-            .style(&THEME.rows.lines.default)
-            .padding(THEME.rows.lines.default.padding)
-    }
-
     fn to_row(&self, selected: Option<usize>, idx: usize) -> Container<'a, Message> {
-        let icon = THEME
-            .icon_theme
-            .as_ref()
-            .and_then(|_| self.get_icon())
-            .map(|icon| match &icon.extension {
-                Extension::Svg => Row::new().push(
-                    Svg::from_path(&icon.path)
-                        .height(Length::Units(THEME.icon_size))
-                        .width(Length::Units(THEME.icon_size)),
-                ),
-
-                Extension::Png => Row::new().push(
-                    Image::new(&icon.path)
-                        .height(Length::Units(THEME.icon_size))
-                        .width(Length::Units(THEME.icon_size)),
-                ),
-            })
-            .unwrap_or_else(Row::new)
-            .spacing(0);
-
-        match selected {
-            Some(selected) if idx == selected => self.to_row_selected(icon),
-            _ => self.to_row_unselected(icon),
-        }
-    }
-
-    fn as_row(&self, row: Row<'a, Message>) -> Container<'a, Message> {
-        let entry_row = Container::new(
-            row.push(
-                Text::new(self.get_display_name())
-                    .width(Length::Fill)
-                    .horizontal_alignment(Horizontal::Left),
-            )
-            .spacing(10)
-            .align_items(Alignment::Center),
-        );
-
-        let column = match self.get_description() {
-            Some(description) => {
-                let description_row = Row::new().push(Text::new(description.as_ref()).size(15));
-
-                Column::with_children(vec![entry_row.into(), description_row.into()])
-            }
-            None => Column::with_children(vec![entry_row.into()]),
+        let selected = selected.map(|selected| selected == idx).unwrap_or(false);
+        let theme = if selected {
+            &THEME.app_container.rows.row_selected
+        } else {
+            &THEME.app_container.rows.row
         };
 
-        Container::new(column)
+        let icon = THEME.icon_theme.as_ref().and_then(|_| self.get_icon());
+        let row = match icon {
+            Some(icon) => {
+                let icon = match &icon.extension {
+                    Extension::Svg => Container::new(Svg::from_path(&icon.path)
+                        .height(Length::Units(THEME.icon_size))
+                        .width(Length::Units(THEME.icon_size))
+                    ),
+                    Extension::Png => Container::new(Image::new(&icon.path)
+                        .height(Length::Units(THEME.icon_size))
+                        .width(Length::Units(THEME.icon_size))
+                    ),
+                };
+
+                let icon = icon
+                    .style(&theme.icon)
+                    .align_y(theme.icon.align_y)
+                    .align_x(theme.icon.align_x)
+                    .width(theme.icon.width)
+                    .height(theme.icon.height)
+                    .padding(theme.icon.padding.to_iced_padding());
+
+                Row::new().push(icon)
+            },
+            None => Row::new()
+        };
+
+        let row = row
+            .height(Length::Fill)
+            .width(Length::Fill)
+            // See : https://github.com/iced-rs/iced/pull/1044
+            .align_items(Alignment::Fill);
+
+        self.as_row(row, theme)
+    }
+
+    fn as_row(&self, row: Row<'a, Message>, theme: &'a RowStyles) -> Container<'a, Message> {
+        let title_row = Container::new(Row::new().push(Text::new(self.get_display_name())))
+            .style(&theme.title)
+            .padding(theme.title.padding.to_iced_padding())
+            .width(theme.title.width)
+            .height(theme.title.height)
+            .align_x(theme.title.align_x)
+            .align_y(theme.title.align_y);
+
+        let description_row = self
+            .get_description()
+            .map(|description| Container::new(Row::new().push(Text::new(description.as_ref())))
+                .style(&theme.description)
+                .padding(theme.description.padding.to_iced_padding())
+                .width(theme.description.width)
+                .height(theme.description.height)
+                .align_x(theme.description.align_x)
+                .align_y(theme.description.align_y)
+            );
+
+        let column = Column::new()
+            .push(title_row);
+
+        let column = match description_row {
+            Some(description) => column.push(description),
+            None => column
+        };
+
+        Container::new(row.push(column))
+            .style(theme)
+            .padding(theme.padding.to_iced_padding())
+            .width(theme.width)
+            .height(theme.height)
+            .align_x(theme.align_x)
+            .align_y(theme.align_y)
     }
 
     fn get_display_name(&self) -> &str;

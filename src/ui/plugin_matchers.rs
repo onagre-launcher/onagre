@@ -10,7 +10,7 @@ pub struct Plugin {
     pub regex: Option<Regex>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PluginMode {
     pub plugin_name: String,
     pub modifier: String,
@@ -120,26 +120,38 @@ impl Plugin {
 
 #[cfg(test)]
 mod test {
-    use crate::ui::plugin_matchers::Plugin;
+    use crate::ui::plugin_matchers::{Plugin, PluginMode};
     use regex::Regex;
 
     #[test]
     fn should_split_entry() {
         let plugin = Plugin {
             name: "find".to_string(),
+            history: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
 
         let match_ = plugin.try_match("find some text");
 
-        assert_eq!(match_, Some(("find ".to_string(), "some text".to_string())));
+        assert_eq!(
+            match_,
+            Some((
+                PluginMode {
+                    plugin_name: "find".to_string(),
+                    modifier: "find ".to_string(),
+                    history: false
+                },
+                "some text".to_string()
+            ))
+        );
     }
 
     #[test]
     fn should_not_split_entry_with_only_plugin_name() {
         let plugin = Plugin {
             name: "find".to_string(),
+            history: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
@@ -153,12 +165,23 @@ mod test {
     fn should_split_entry_with_plugin_name_followed_by_white_space() {
         let plugin = Plugin {
             name: "find".to_string(),
+            history: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
 
         let match_ = plugin.try_match("find ");
 
-        assert_eq!(match_, Some(("find ".to_string(), "".to_string())));
+        assert_eq!(
+            match_,
+            Some((
+                PluginMode {
+                    plugin_name: "find".to_string(),
+                    modifier: "find ".to_string(),
+                    history: false
+                },
+                "".to_string()
+            ))
+        );
     }
 }

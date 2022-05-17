@@ -1,5 +1,6 @@
-use anyhow::{anyhow, Result};
-use iced_style::Color;
+use crate::config::error::ConfigError;
+use iced::Color;
+use std::num::ParseIntError;
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct OnagreColor {
@@ -35,6 +36,33 @@ impl OnagreColor {
         },
     };
 
+    pub(crate) const GREEN: OnagreColor = OnagreColor {
+        color: Color {
+            r: 0.0,
+            g: 1.0,
+            b: 0.0,
+            a: 1.0,
+        },
+    };
+
+    pub(crate) const YELLOW: OnagreColor = OnagreColor {
+        color: Color {
+            r: 0.0,
+            g: 0.0,
+            b: 1.5,
+            a: 1.0,
+        },
+    };
+
+        pub(crate) const WHITE: OnagreColor = OnagreColor {
+        color: Color {
+            r: 1.0,
+            g: 1.0,
+            b: 1.0,
+            a: 1.0,
+        },
+    };
+
     pub(crate) const BLUE: OnagreColor = OnagreColor {
         color: Color {
             r: 0.0,
@@ -44,27 +72,31 @@ impl OnagreColor {
         },
     };
 
-    pub(crate) fn from(hex_color: &str) -> Result<Self> {
+    pub(crate) fn from(hex_color: &str) -> Result<Self, ConfigError> {
         let r = if let Some(red) = hex_color.get(1..3) {
-            OnagreColor::f32_from_str_hex(red)?
+            OnagreColor::f32_from_str_hex(red)
+                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
         } else {
             0.0
         };
 
         let g = if let Some(green) = hex_color.get(3..5) {
-            OnagreColor::f32_from_str_hex(green)?
+            OnagreColor::f32_from_str_hex(green)
+                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
         } else {
             0.0
         };
 
         let b = if let Some(blue) = hex_color.get(5..7) {
-            OnagreColor::f32_from_str_hex(blue)?
+            OnagreColor::f32_from_str_hex(blue)
+                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
         } else {
             0.0
         };
 
         let a = if let Some(opacity) = hex_color.get(7..9) {
-            OnagreColor::f32_from_str_hex(opacity)?
+            OnagreColor::f32_from_str_hex(opacity)
+                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
         } else {
             1.0
         };
@@ -74,10 +106,8 @@ impl OnagreColor {
         })
     }
 
-    fn f32_from_str_hex(hex_color: &str) -> Result<f32> {
-        u32::from_str_radix(hex_color, 16)
-            .map_err(|err| anyhow!("{} Is not a valid hex color : {}", hex_color, err))
-            .map(|value| value as f32 / 255.0)
+    fn f32_from_str_hex(hex_color: &str) -> Result<f32, ParseIntError> {
+        u32::from_str_radix(hex_color, 16).map(|value| value as f32 / 255.0)
     }
 }
 
@@ -118,7 +148,7 @@ impl From<OnagreColor> for Color {
 
 #[cfg(test)]
 mod test {
-    use crate::ui::style::color::OnagreColor;
+    use crate::config::color::OnagreColor;
     use iced_style::Color;
 
     #[test]

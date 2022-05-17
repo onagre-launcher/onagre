@@ -12,15 +12,11 @@ use crate::ui::subscriptions::pop_launcher::{PopLauncherSubscription, Subscripti
 use crate::THEME;
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
-use iced::{
-    Alignment, Application, Color, Column, Container, Element, Length, Padding, Row, Scrollable,
-    Text, TextInput,
-};
+use iced::{Alignment, Application, Color, Column, Container, Element, Length, Row, Scrollable, Text, TextInput};
 use iced_native::{Command, Event, Subscription};
 use log::debug;
 use pop_launcher_toolkit::launcher::{Request, Response};
 
-use iced_native::alignment::Horizontal;
 use std::path::Path;
 use std::process::exit;
 
@@ -132,68 +128,79 @@ impl Application for Onagre<'_> {
                 .collect(),
         };
 
-        let entries_column = Column::with_children(rows);
-
         // Scrollable element containing the rows
-        let scrollable = Container::new(
-            Scrollable::new(&mut self.state.scroll)
-                .push(entries_column)
-                .height(THEME.scrollable.height.into())
-                .width(THEME.scrollable.width.into())
-                .scrollbar_width(THEME.scrollable.scroller_width)
-                .scroller_width(THEME.scrollable.scrollbar_width)
-                .style(&THEME.scrollable),
-        )
-        .style(&THEME.scrollable)
-        .padding(THEME.scrollable.padding);
+        let scrollable = Scrollable::new(&mut self.state.scroll)
+            .push(Column::with_children(rows))
+            .style(THEME.scrollable())
+            .scrollbar_margin(THEME.scrollable().scrollbar_margin)
+            .scrollbar_width(THEME.scrollable().scrollbar_width)
+            .scroller_width(THEME.scrollable().scroller_width)
+            .width(Length::Fill)
+            .height(Length::Fill);
 
-        let mode_hint =
-            Container::new(Row::new().push(Text::new(&self.state.input_value.modifier_display)))
-                .style(&THEME.search.bar.plugin_hint)
-                .align_x(Horizontal::Right);
+        let scrollable = Container::new(scrollable)
+            .style(&THEME.app_container.rows)
+            .width(Length::Fill)
+            .height(Length::Fill);
 
-        let search_input = TextInput::new(
-            &mut self.state.input,
-            "Search",
-            &self.state.input_value.input_display,
-            Message::InputChanged,
+        let search_input = Container::new(
+            TextInput::new(
+                &mut self.state.input,
+                "Search",
+                &self.state.input_value.input_display,
+                Message::InputChanged,
+            )
+                .width(THEME.search_input().text_width)
+                .size(THEME.search_input().size)
+                .style(THEME.search_input())
         )
-        .style(&THEME.search.bar)
-        .padding(Padding {
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-        })
-        .width(THEME.search.bar.text_width.into());
+            .width(THEME.search_input().width)
+            .height(THEME.search_input().height)
+            .padding(THEME.search_input().padding.to_iced_padding())
+            .align_x(THEME.search_input().align_x)
+            .align_y(THEME.search_input().align_y);
+
+        let plugin_hint = Container::new(
+            Text::new(&self.state.input_value.modifier_display)
+        )
+            .style(THEME.plugin_hint())
+            .width(THEME.plugin_hint().width)
+            .height(THEME.plugin_hint().height)
+            .align_y(THEME.plugin_hint().align_y)
+            .align_x(THEME.plugin_hint().align_x)
+            .padding(THEME.plugin_hint().padding.to_iced_padding());
 
         let search_bar = Container::new(
             Row::new()
-                .spacing(0)
-                .align_items(Alignment::Fill)
-                .padding(0)
-                .push(mode_hint)
+                .push(plugin_hint)
                 .push(search_input)
-                .width(THEME.search.width.into())
-                .height(THEME.search.height.into()),
+                .align_items(Alignment::Fill)
         )
-        .padding(THEME.search.padding)
-        .style(&THEME.search);
+            .style(THEME.search())
+            .align_x(THEME.search().align_x)
+            .align_y(THEME.search().align_y)
+            .width(THEME.search().width)
+            .height(THEME.search().height);
 
         let app_container = Container::new(
             Column::new()
                 .push(search_bar)
                 .push(scrollable)
-                .align_items(Alignment::Start)
-                .height(Length::Fill)
-                .width(Length::Fill)
-                .padding(20),
         )
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .style(THEME.as_ref());
+            .padding(THEME.app().padding.to_iced_padding())
+            .style(THEME.app())
+            .center_y()
+            .center_x();
 
-        app_container.into()
+        let app_wrapper = Container::new(app_container)
+            .center_y()
+            .center_x()
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .padding(THEME.padding.to_iced_padding())
+            .style(&*THEME);
+
+        app_wrapper.into()
     }
 
     fn background_color(&self) -> Color {
@@ -514,9 +521,9 @@ impl Onagre<'_> {
         iced_native::subscription::events_with(|event, _status| match event {
             Event::Window(iced_native::window::Event::Unfocused) => Some(Message::Unfocused),
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
-                modifiers: _,
-                key_code,
-            }) => Some(Message::KeyboardEvent(key_code)),
+                                modifiers: _,
+                                key_code,
+                            }) => Some(Message::KeyboardEvent(key_code)),
             _ => None,
         })
     }
