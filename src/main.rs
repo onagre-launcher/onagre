@@ -5,7 +5,7 @@ use log::debug;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use structopt::StructOpt;
-use ui::style::theme::Theme;
+use ui::style::Theme;
 
 pub mod config;
 pub mod db;

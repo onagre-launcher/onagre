@@ -13,6 +13,7 @@ resolver = "2"
 [features]
 default = ["iced/wgpu", "iced/default_system_font", "iced/palette", "cli"]
 cli = ["structopt"]
+debug = [ "iced/debug" ]
 
 [dependencies]
 iced = { git = "https://github.com/hecrj/iced", features = ["wgpu", "default_system_font", "palette", "svg", "image", "tokio"] }
@@ -24,13 +25,14 @@ sled = "0.34.7"
 
 pop-launcher-toolkit = { git = "https://github.com/pop-os/launcher/" }
 structopt = { version = "^0", default-features = false, optional = true }
-freedesktop-icons = "0.1.0"
+freedesktop-icons = "0.1.1"
 
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }
 once_cell = "1.10.0"
 anyhow = "1.0.34"
 dirs = "4.0"
+thiserror = "1.0.31"
 
 serde = { version = "^1", features = ["derive"] }
 serde_ini = "0.2.0"
@@ -39,6 +41,8 @@ serde_with = "1.13.0"
 ron = "0.6.5"
 toml = "0.5.7"
 config = "0.10.1"
+pest = "2.1.3"
+pest_derive = "2.1.0"
 font-kit = "0.10.1"
 ico = "0.1.0"
 itertools = "0.10.3"
@@ -50,6 +54,8 @@ shell-words = "^1"
 
 [dev-dependencies]
 criterion = "0.3"
+speculoos = "0.9.0"
+pretty_assertions = "1.2.1"
 
 [[bench]]
 name = "icon"

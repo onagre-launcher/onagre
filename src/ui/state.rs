@@ -7,7 +7,6 @@ use pop_launcher_toolkit::launcher::SearchResult;
 
 use std::collections::HashMap;
 
-// TODO: make this accessible for state binding only in ui via pub(super)
 #[derive(Debug)]
 pub struct State<'a> {
     pub input_value: SearchInput,
