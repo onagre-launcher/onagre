@@ -160,22 +160,28 @@ impl Application for Onagre<'_> {
             .align_x(THEME.search_input().align_x)
             .align_y(THEME.search_input().align_y);
 
-        let plugin_hint = Container::new(
-            Text::new(&self.state.input_value.modifier_display)
-        )
-            .style(THEME.plugin_hint())
-            .width(THEME.plugin_hint().width)
-            .height(THEME.plugin_hint().height)
-            .align_y(THEME.plugin_hint().align_y)
-            .align_x(THEME.plugin_hint().align_x)
-            .padding(THEME.plugin_hint().padding.to_iced_padding());
 
-        let search_bar = Container::new(
-            Row::new()
-                .push(plugin_hint)
-                .push(search_input)
-                .align_items(Alignment::Fill)
-        )
+
+        let search_bar = Row::new();
+
+        if !self.state.input_value.modifier_display.is_empty() {
+            let plugin_hint = Container::new(
+                Text::new(&self.state.input_value.modifier_display)
+            )
+                .style(THEME.plugin_hint())
+                .width(THEME.plugin_hint().width)
+                .height(THEME.plugin_hint().height)
+                .align_y(THEME.plugin_hint().align_y)
+                .align_x(THEME.plugin_hint().align_x)
+                .padding(THEME.plugin_hint().padding.to_iced_padding());
+
+            search_bar.push(plugin_hint);
+        }
+
+        let search_bar = search_bar.push(search_input)
+            .align_items(Alignment::Fill);
+
+        let search_bar = Container::new(search_bar)
             .style(THEME.search())
             .align_x(THEME.search().align_x)
             .align_y(THEME.search().align_y)
