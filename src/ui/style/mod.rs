@@ -69,8 +69,8 @@ impl Theme {
         &self.app_container.search.input
     }
 
-    pub fn plugin_hint(&self) -> &GenericContainerStyle {
-        &self.app_container.search.plugin_hint
+    pub fn plugin_hint(&self) -> Option<&GenericContainerStyle> {
+        self.app_container.search.plugin_hint.as_ref()
     }
 
     pub fn scrollable(&self) -> &ScrollerStyles {

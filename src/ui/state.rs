@@ -1,4 +1,4 @@
-use crate::entries::Cache;
+    use crate::entries::Cache;
 use crate::ui::mode::ActiveMode;
 use crate::ui::plugin_matchers::{match_web_plugins, Plugin};
 use iced_native::widget::{scrollable, text_input};
@@ -6,8 +6,9 @@ use log::debug;
 use pop_launcher_toolkit::launcher::SearchResult;
 
 use std::collections::HashMap;
+    use crate::THEME;
 
-#[derive(Debug)]
+    #[derive(Debug)]
 pub struct State<'a> {
     pub input_value: SearchInput,
     pub selected: Selection,
@@ -38,10 +39,14 @@ impl State<'_> {
     }
 
     pub fn get_input(&self) -> String {
-        self.input_value.pop_query.clone()
+        if THEME.plugin_hint().is_none() {
+            self.input_value.input_display.clone()
+        } else {
+            self.input_value.pop_query.clone()
+        }
+
     }
 
-    // TODO : add some test and provide a configuration to deactivate this
     pub fn set_input(&mut self, input: &str) {
         let previous_modi = self.input_value.modifier_display.clone();
 
@@ -65,7 +70,13 @@ impl State<'_> {
             if let Some((modi, query)) = plugin_split {
                 self.input_value.modifier_display = modi.modifier.clone();
                 self.input_value.mode = ActiveMode::from(modi);
-                self.input_value.input_display = query;
+                // If plugin-hint is disabled use the full input,
+                // otherwise use the split value
+                self.input_value.input_display = if THEME.plugin_hint().is_none() {
+                    input.to_string()
+                } else {
+                    query
+                }
             } else {
                 self.input_value.input_display = input.to_string();
 

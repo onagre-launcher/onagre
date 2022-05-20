@@ -171,7 +171,7 @@ impl TryFrom<Pair<'_, Rule>> for SearchContainerStyles {
 
                 // Children
                 Rule::bar => search_bar.input = SearchInputStyles::try_from(pair)?,
-                Rule::plugin_hint => search_bar.plugin_hint = GenericContainerStyle::try_from(pair)?,
+                Rule::plugin_hint => search_bar.plugin_hint = Some(GenericContainerStyle::try_from(pair)?),
 
                 _ => unreachable!(),
             }
