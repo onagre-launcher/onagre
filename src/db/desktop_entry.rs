@@ -36,7 +36,7 @@ impl<'a> DesktopEntryEntity<'a> {
         let entity = Self {
             name: Cow::Borrowed(entry.name.as_ref()),
             icon: entry.icon.as_deref().map(Cow::Borrowed),
-            description: entry.comment.as_ref().map(|comment| comment.clone()),
+            description: entry.comment.as_ref().cloned(),
             path: path.into(),
             weight,
         };

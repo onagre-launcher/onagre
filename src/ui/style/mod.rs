@@ -28,7 +28,7 @@ impl Theme {
             eprintln!("Failing back to default theme");
         };
 
-        theme.unwrap_or(Theme::default())
+        theme.unwrap_or_default()
     }
 }
 

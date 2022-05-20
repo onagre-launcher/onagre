@@ -20,7 +20,7 @@ impl<'a> AsEntry<'a> for PopSearchResult<'a> {
                 .as_ref()
                 .or(self.0.category_icon.as_ref())
                 .and_then(|source| match source {
-                    IconSource::Name(name) => IconPath::lookup(name, &theme, THEME.icon_size),
+                    IconSource::Name(name) => IconPath::lookup(name, theme, THEME.icon_size),
                     IconSource::Mime(_) => None, // TODO: MRS Mimes
                 }),
             _ => None,
