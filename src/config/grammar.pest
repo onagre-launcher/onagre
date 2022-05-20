@@ -52,7 +52,7 @@ FONT_SIZE     = _{ "font-size"          ~ ":" }
 ICON_THEME    = _{ "--icon-theme"       ~ ":" }
 ICON_SIZE     = _{ "--icon-size"        ~ ":" }
 WINDOW_WIDTH  = _{ "width"              ~ ":" }
-WINDOW_HEIGTH = _{ "height"             ~ ":" }
+WINDOW_HEIGHT = _{ "height"             ~ ":" }
 WIDTH         = _{ "--width"            ~ ":" }
 _WIDTH        = _{ "width"              ~ ":" }
 MARGIN        = _{ "margin"             ~ ":" }
@@ -83,7 +83,7 @@ font_size           = { FONT_SIZE        ~ px_value      ~ SEMICOLON ~ NEWLINE* 
 icon_theme          = { ICON_THEME       ~ string        ~ SEMICOLON ~ NEWLINE* }
 height              = { HEIGHT           ~ length_value  ~ SEMICOLON ~ NEWLINE* }
 width               = { WIDTH            ~ length_value  ~ SEMICOLON ~ NEWLINE* }
-window_height       = { WINDOW_HEIGTH    ~ px_value      ~ SEMICOLON ~ NEWLINE* }
+window_height       = { WINDOW_HEIGHT    ~ px_value      ~ SEMICOLON ~ NEWLINE* }
 window_width        = { WINDOW_WIDTH     ~ px_value      ~ SEMICOLON ~ NEWLINE* }
 icon_size           = { ICON_SIZE        ~ px_value      ~ SEMICOLON ~ NEWLINE* }
 background          = { BACKGROUND       ~ hex_color     ~ SEMICOLON ~ NEWLINE* }
@@ -120,7 +120,6 @@ onagre_style = {
         | padding | padding_left | padding_top | padding_right | padding_bottom | container)*
     ~ DELIMITER_END
 }
-
 container = {
     ".container"
     ~ NEWLINE*
@@ -132,22 +131,40 @@ container = {
     ~ NEWLINE*
 }
 
-scrollable =  {
-    ".scrollable"
+// Search
+search = {
+    ".search"
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ ( background | border_color | border_width | border_radius | scrollbar_width | scroller | scrollbar_margin)*
+    ~ (background | color | border_color | border_radius | border_width | padding
+    | padding_left | padding_right | padding_bottom | padding_top
+    | width | height |  align_x | align_y | plugin_hint | bar )*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
-
-scroller =  {
-    ".scroller"
+plugin_hint = {
+    ".plugin-hint"
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ ( color | border_color | border_width | border_radius | scroller_width )*
+    ~ (background | color | border_color | border_radius | border_width | padding
+    | padding_left | padding_right | padding_bottom | padding_top
+    | width | height | spacing | align_y | align_x)*
+    ~ DELIMITER_END
+    ~ NEWLINE*
+}
+bar = {
+    ".input"
+    ~ NEWLINE*
+    ~ DELIMITER_START
+    ~ NEWLINE*
+    ~ (background | color | border_color | border_radius | border_width
+        | text_width | selection_color | placeholder_color | font_size
+        | padding | padding_left | padding_right | padding_bottom | padding_top
+        | align_y | align_x
+        | width | height
+    )*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
@@ -221,42 +238,22 @@ icon = {
     ~ NEWLINE*
 }
 
-// Search
-search = {
-    ".search"
+// Scrollbar
+scrollable =  {
+    ".scrollable"
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height |  align_x | align_y | plugin_hint | bar )*
+    ~ ( background | border_color | border_width | border_radius | scrollbar_width | scroller | scrollbar_margin)*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
-plugin_hint = {
-    ".plugin-hint"
+scroller =  {
+    ".scroller"
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | spacing | align_y | align_x)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
-}
-
-
-bar = {
-    ".input"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width
-        | text_width | selection_color | placeholder_color | font_size
-        | padding | padding_left | padding_right | padding_bottom | padding_top
-        | align_y | align_x
-        | width | height
-    )*
+    ~ ( color | border_color | border_width | border_radius | scroller_width )*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
