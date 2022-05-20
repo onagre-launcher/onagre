@@ -87,8 +87,7 @@ impl Default for Theme {
         Self {
             exit_unfocused: false,
             size: (450, 300),
-            // TODO Embed default font
-            font: Some("Jetbrains Mono".to_string()),
+            font: None,
             font_size: 18,
             // TODO: A nice default icno theme
             icon_theme: Some("Papirus".to_string()),

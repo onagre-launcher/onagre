@@ -391,7 +391,6 @@ impl Onagre<'_> {
                     self.state.pop_search = search_updates;
                 }
                 Response::Fill(fill) => {
-                    // Fixme: we can probably avoid cloning here
                     let mode_prefix = &self.state.input_value.modifier_display;
                     let fill = fill
                         .strip_prefix(mode_prefix)

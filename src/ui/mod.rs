@@ -2,6 +2,7 @@ use crate::ui::app::Onagre;
 use crate::THEME;
 use iced::{window, Application, Settings};
 use log::debug;
+use style::font;
 
 pub mod app;
 pub mod mode;
@@ -10,10 +11,16 @@ pub mod state;
 pub mod style;
 pub mod subscriptions;
 
+const DEFAULT_FONT: &[u8] = include_bytes!("style/font/JetBrainsMonoNL-Regular.ttf");
+
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");
 
-    let default_font = THEME.font.as_ref().and_then(|font| style::font::load(font));
+    let default_font = THEME
+        .font
+        .as_ref()
+        .and_then(|font| font::load(font))
+        .unwrap_or(DEFAULT_FONT);
 
     Onagre::run(Settings {
         id: Some("onagre".to_string()),
@@ -32,7 +39,7 @@ pub fn run() -> iced::Result {
         text_multithreading: false,
         antialiasing: true,
         exit_on_close_request: false,
-        default_font,
+        default_font: Some(default_font),
         flags: (),
         try_opengles_first: false,
     })
