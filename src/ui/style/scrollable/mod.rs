@@ -1,7 +1,7 @@
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::ui::style::rows::RowStyles;
-use iced::Background;
+use iced::{Background, Length};
 use iced_style::container;
 
 pub mod scroller;
@@ -17,6 +17,8 @@ pub struct RowContainerStyle {
 
     // Layout
     pub padding: OnagrePadding,
+    pub width: Length,
+    pub height: Length,
 
     // Iced Scrollable
     pub row: RowStyles,
@@ -34,11 +36,13 @@ impl Default for RowContainerStyle {
             border_radius: 0.0,
             border_width: 0.0,
             padding: OnagrePadding {
-                top: 5,
-                right: 5,
-                bottom: 5,
+                top: 10,
+                right: 0,
+                bottom: 0,
                 left: 0,
             },
+            width: Length::Fill,
+            height: Length::FillPortion(8),
             row: RowStyles::default(),
             row_selected: RowStyles::default_selected(),
         }
