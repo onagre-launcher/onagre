@@ -1,9 +1,9 @@
+use crate::config::color::OnagreColor;
+use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::{Background, Length};
 use iced_style::container;
 use iced_style::container::Style;
-use crate::config::color::OnagreColor;
-use crate::config::padding::OnagrePadding;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct GenericContainerStyle {
@@ -26,17 +26,26 @@ pub struct GenericContainerStyle {
 impl Default for GenericContainerStyle {
     fn default() -> Self {
         GenericContainerStyle {
+            background: OnagreColor::DEFAULT_BACKGROUND,
+            color: OnagreColor::DEFAULT_TEXT,
             width: Length::Fill,
             height: Length::Shrink,
-            background: OnagreColor::GREEN,
-            border_radius: 1.0,
-            border_width: 1.0,
-            color: OnagreColor::BLUE,
-            padding: OnagrePadding::from(5),
-            align_x: Horizontal::Left,
             border_color: OnagreColor::RED,
+            border_radius: 0.0,
+            border_width: 0.0,
+            padding: OnagrePadding::ZERO,
+            align_x: Horizontal::Left,
             align_y: Vertical::Center,
-            font_size: 14
+            font_size: 14,
+        }
+    }
+}
+
+impl GenericContainerStyle {
+    pub fn description_default() -> Self {
+        Self {
+            font_size: 11,
+            ..Default::default()
         }
     }
 }

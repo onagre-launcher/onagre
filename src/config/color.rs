@@ -12,19 +12,55 @@ impl Eq for OnagreColor {}
 impl OnagreColor {
     pub(crate) const DEFAULT_BACKGROUND: OnagreColor = OnagreColor {
         color: Color {
-            r: 0.9098039,
-            g: 0.94509804,
-            b: 0.9764706,
-            a: 0.8117647,
+            r: 0.08235294,
+            g: 0.08235294,
+            b: 0.08235294,
+            a: 1.0,
         },
     };
 
-    pub(crate) const BLACK: OnagreColor = OnagreColor {
-        color: Color::BLACK,
+    pub(crate) const DEFAULT_SCROLL: OnagreColor = OnagreColor {
+        color: Color {
+            r: 1.0,
+            g: 1.0,
+            b: 1.0,
+            a: 0.2,
+        },
+    };
+
+    pub(crate) const DEFAULT_SCROLLER: OnagreColor = OnagreColor {
+        color: Color {
+            r: 1.0,
+            g: 1.0,
+            b: 1.0,
+            a: 0.4,
+        },
+    };
+
+    pub(crate) const DEFAULT_BORDER: OnagreColor = OnagreColor {
+        color: Color {
+            r: 0.3647059,
+            g: 0.36862746,
+            b: 0.44705883,
+            a: 1.0,
+        },
+    };
+
+    pub(crate) const DEFAULT_TEXT: OnagreColor = OnagreColor {
+        color: Color {
+            r: 0.25490198,
+            g: 0.25490198,
+            b: 0.25490198,
+            a: 1.0,
+        },
     };
 
     pub(crate) const TRANSPARENT: OnagreColor = OnagreColor {
         color: Color::TRANSPARENT,
+    };
+
+    pub(crate) const WHITE: OnagreColor = OnagreColor {
+        color: Color::WHITE,
     };
 
     pub(crate) const RED: OnagreColor = OnagreColor {
@@ -32,42 +68,6 @@ impl OnagreColor {
             r: 1.0,
             g: 0.0,
             b: 0.0,
-            a: 1.0,
-        },
-    };
-
-    pub(crate) const GREEN: OnagreColor = OnagreColor {
-        color: Color {
-            r: 0.0,
-            g: 1.0,
-            b: 0.0,
-            a: 1.0,
-        },
-    };
-
-    pub(crate) const YELLOW: OnagreColor = OnagreColor {
-        color: Color {
-            r: 0.0,
-            g: 0.0,
-            b: 1.5,
-            a: 1.0,
-        },
-    };
-
-        pub(crate) const WHITE: OnagreColor = OnagreColor {
-        color: Color {
-            r: 1.0,
-            g: 1.0,
-            b: 1.0,
-            a: 1.0,
-        },
-    };
-
-    pub(crate) const BLUE: OnagreColor = OnagreColor {
-        color: Color {
-            r: 0.0,
-            g: 0.0,
-            b: 1.0,
             a: 1.0,
         },
     };
@@ -215,5 +215,10 @@ mod test {
         let color = OnagreColor::from(hex_color);
 
         assert!(color.is_err());
+    }
+
+    #[test]
+    fn debug() {
+        println!("{:?}", OnagreColor::from("#414141"));
     }
 }

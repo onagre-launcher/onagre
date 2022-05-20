@@ -1,12 +1,12 @@
-use iced::{Background, Length};
-use iced::alignment::{Horizontal, Vertical};
-use iced_style::container;
-use generic::GenericContainerStyle;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
+use generic::GenericContainerStyle;
+use iced::alignment::{Horizontal, Vertical};
+use iced::{Background, Length};
+use iced_style::container;
 use icon::IconStyle;
-pub mod icon;
 pub mod generic;
+pub mod icon;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct RowStyles {
@@ -17,14 +17,13 @@ pub struct RowStyles {
     pub align_x: Horizontal,
     pub align_y: Vertical,
 
-
     // Style
     pub background: OnagreColor,
     pub border_radius: f32,
     pub border_width: f32,
     pub color: OnagreColor,
     pub border_color: OnagreColor,
-
+    pub hide_description: bool,
     // Children
     pub title: GenericContainerStyle,
     pub description: GenericContainerStyle,
@@ -36,21 +35,38 @@ impl Default for RowStyles {
         RowStyles {
             width: Length::Fill,
             height: Length::Shrink,
-            background: OnagreColor::GREEN,
-            border_radius: 1.0,
-            border_width: 1.0,
-            color: OnagreColor::BLUE,
+            background: OnagreColor::DEFAULT_BACKGROUND,
+            color: OnagreColor::WHITE,
+            border_radius: 0.0,
+            border_width: 0.0,
             padding: OnagrePadding::from(5),
             align_x: Horizontal::Right,
             align_y: Vertical::Bottom,
             border_color: OnagreColor::RED,
+            hide_description: false,
             title: GenericContainerStyle::default(),
-            description: GenericContainerStyle::default(),
-            icon: Default::default()
+            description: GenericContainerStyle::description_default(),
+            icon: Default::default(),
         }
     }
 }
 
+impl RowStyles {
+    pub fn default_selected() -> Self {
+        Self {
+            color: OnagreColor::WHITE,
+            title: GenericContainerStyle {
+                color: OnagreColor::WHITE,
+                ..Default::default()
+            },
+            description: GenericContainerStyle {
+                color: OnagreColor::WHITE,
+                ..GenericContainerStyle::description_default()
+            },
+            ..Default::default()
+        }
+    }
+}
 impl Eq for RowStyles {}
 
 impl container::StyleSheet for &RowStyles {

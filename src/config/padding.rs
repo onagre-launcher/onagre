@@ -9,6 +9,13 @@ pub struct OnagrePadding {
 }
 
 impl OnagrePadding {
+    pub const ZERO: OnagrePadding = OnagrePadding {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+    };
+
     pub fn to_iced_padding(&self) -> Padding {
         Padding {
             top: self.top,

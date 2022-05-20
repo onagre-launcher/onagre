@@ -8,7 +8,7 @@ use tokio::io;
 pub enum ConfigError {
     #[error("Failed to open config file")]
     IOError(#[from] io::Error),
-    #[error("Failed to open config file: {0}")]
+    #[error("Failed to parse config file:\n{0}")]
     ParseError(#[from] PestError<Rule>),
     #[error("Failed to parse number")]
     ParseIntError(#[from] ParseIntError),

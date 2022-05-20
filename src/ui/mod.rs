@@ -26,7 +26,7 @@ pub fn run() -> iced::Result {
             position: window::Position::Centered,
             min_size: None,
             max_size: None,
-            icon: None
+            icon: None,
         },
         default_text_size: THEME.font_size,
         text_multithreading: false,
@@ -34,6 +34,6 @@ pub fn run() -> iced::Result {
         exit_on_close_request: false,
         default_font,
         flags: (),
-        try_opengles_first: false
+        try_opengles_first: false,
     })
 }

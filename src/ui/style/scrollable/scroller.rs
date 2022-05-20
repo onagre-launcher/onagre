@@ -1,6 +1,6 @@
+use crate::config::color::OnagreColor;
 use iced::Background;
 use iced_style::scrollable::{Scrollbar, Scroller};
-use crate::config::color::OnagreColor;
 
 #[derive(Debug, PartialEq)]
 pub struct ScrollerStyles {
@@ -22,17 +22,17 @@ impl Eq for ScrollerStyles {}
 impl Default for ScrollerStyles {
     fn default() -> Self {
         ScrollerStyles {
-            background: OnagreColor::RED,
-            border_radius: 0.0,
-            border_width: 1.0,
-            border_color: OnagreColor::from("#314c84bf").unwrap(),
-            scroller_color: OnagreColor::from("#314c84").unwrap(),
-            scroller_border_radius: 0.0,
+            background: OnagreColor::DEFAULT_SCROLL,
+            border_radius: 0.3,
+            border_width: 0.0,
+            border_color: OnagreColor::TRANSPARENT,
+            scroller_color: OnagreColor::DEFAULT_SCROLLER,
+            scroller_border_radius: 3.0,
             scroller_border_width: 0.0,
-            scroller_border_color: OnagreColor::BLACK,
+            scroller_border_color: OnagreColor::DEFAULT_BORDER,
             scrollbar_margin: 0,
-            scrollbar_width: 0,
-            scroller_width: 0,
+            scrollbar_width: 4,
+            scroller_width: 6,
         }
     }
 }
@@ -48,8 +48,8 @@ impl iced::scrollable::StyleSheet for &ScrollerStyles {
                 color: self.scroller_color.into(),
                 border_radius: self.scroller_border_radius,
                 border_width: self.scroller_border_width,
-                border_color: self.scroller_border_color.into()
-            }
+                border_color: self.scroller_border_color.into(),
+            },
         }
     }
 

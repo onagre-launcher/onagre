@@ -1,8 +1,8 @@
-use iced_style::container;
-use iced::Background;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::ui::style::rows::RowStyles;
+use iced::Background;
+use iced_style::container;
 
 pub mod scroller;
 
@@ -28,14 +28,19 @@ impl Eq for RowContainerStyle {}
 impl Default for RowContainerStyle {
     fn default() -> Self {
         Self {
-            color: OnagreColor::RED,
-            background: OnagreColor::YELLOW,
+            color: OnagreColor::DEFAULT_TEXT,
+            background: OnagreColor::DEFAULT_BACKGROUND,
             border_color: OnagreColor::RED,
             border_radius: 0.0,
-            border_width: 1.0,
-            padding: OnagrePadding::from(0),
-            row: Default::default(),
-            row_selected: Default::default(),
+            border_width: 0.0,
+            padding: OnagrePadding {
+                top: 5,
+                right: 5,
+                bottom: 5,
+                left: 0,
+            },
+            row: RowStyles::default(),
+            row_selected: RowStyles::default_selected(),
         }
     }
 }
