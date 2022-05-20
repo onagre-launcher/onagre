@@ -33,11 +33,9 @@ impl Inherit for Theme {
     fn propagate_font_size(&mut self) {
         let font_size = self.font_size;
         self.app_container.search.input.size = font_size;
-        self.app_container
-            .search
-            .plugin_hint
-            .as_mut()
-            .map(|hint| hint.font_size = font_size);
+        if let Some(hint) = &mut self.app_container.search.plugin_hint {
+            hint.font_size = font_size
+        }
     }
 
     fn propagate_icon_size(&mut self) {
@@ -105,16 +103,16 @@ impl Inherit for SearchContainerStyles {
     fn propagate_background(&mut self) {
         let background = self.background;
         self.input.background = background;
-        self.plugin_hint.as_mut().map(|mut hint| {
+        if let Some(hint) = &mut self.plugin_hint {
             hint.background = background;
-        });
+        }
     }
 
     fn propagate_color(&mut self) {
         let color = self.color;
         self.input.value_color = color;
-        self.plugin_hint.as_mut().map(|mut hint| {
+        if let Some(hint) = &mut self.plugin_hint {
             hint.color = color;
-        });
+        }
     }
 }

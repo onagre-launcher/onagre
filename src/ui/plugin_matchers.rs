@@ -79,7 +79,7 @@ pub fn match_web_plugins(text: &str) -> Option<(PluginMode, String)> {
 impl Plugin {
     pub fn try_match(&self, text: &str) -> Option<(PluginMode, String)> {
         self.match_plugin_help(text)
-            .or(self.match_plugin_regex(text))
+            .or_else(|| self.match_plugin_regex(text))
     }
 
     fn match_plugin_regex(&self, text: &str) -> Option<(PluginMode, String)> {
@@ -99,7 +99,7 @@ impl Plugin {
             self.help.as_ref().and_then(|mode| {
                 let query = text
                     .strip_prefix(mode)
-                    .or(text.strip_prefix(&self.name))
+                    .or_else(|| text.strip_prefix(&self.name))
                     .unwrap_or("");
                 let mode = self.new_mode(mode);
 

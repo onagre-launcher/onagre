@@ -60,11 +60,12 @@ impl State<'_> {
             };
         } else {
             let terms = &format!("{}{}", previous_modi, input);
-            let plugin_split = match_web_plugins(terms).or(self
-                .plugin_matchers
-                .values()
-                .map(|matcher| matcher.try_match(terms))
-                .find_map(|match_| match_));
+            let plugin_split = match_web_plugins(terms).or_else(|| {
+                self.plugin_matchers
+                    .values()
+                    .map(|matcher| matcher.try_match(terms))
+                    .find_map(|match_| match_)
+            });
 
             if let Some((modi, query)) = plugin_split {
                 self.input_value.modifier_display = modi.modifier.clone();

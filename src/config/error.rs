@@ -7,13 +7,13 @@ use tokio::io;
 #[derive(Debug, Error)]
 pub enum ConfigError {
     #[error("Failed to open config file")]
-    IOError(#[from] io::Error),
+    IO(#[from] io::Error),
     #[error("Failed to parse config file:\n{0}")]
-    ParseError(#[from] PestError<Rule>),
+    Parse(#[from] PestError<Rule>),
     #[error("Failed to parse number")]
-    ParseIntError(#[from] ParseIntError),
+    ParseInt(#[from] ParseIntError),
     #[error("Failed to parse number")]
-    ParseFloatError(#[from] ParseFloatError),
+    ParseFloat(#[from] ParseFloatError),
     #[error("Failed to parse '{0}' as hex color")]
-    ParseColorError(String),
+    ParseColor(String),
 }

@@ -75,28 +75,28 @@ impl OnagreColor {
     pub(crate) fn from(hex_color: &str) -> Result<Self, ConfigError> {
         let r = if let Some(red) = hex_color.get(1..3) {
             OnagreColor::f32_from_str_hex(red)
-                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
+                .map_err(|_err| ConfigError::ParseColor(hex_color.to_string()))?
         } else {
             0.0
         };
 
         let g = if let Some(green) = hex_color.get(3..5) {
             OnagreColor::f32_from_str_hex(green)
-                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
+                .map_err(|_err| ConfigError::ParseColor(hex_color.to_string()))?
         } else {
             0.0
         };
 
         let b = if let Some(blue) = hex_color.get(5..7) {
             OnagreColor::f32_from_str_hex(blue)
-                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
+                .map_err(|_err| ConfigError::ParseColor(hex_color.to_string()))?
         } else {
             0.0
         };
 
         let a = if let Some(opacity) = hex_color.get(7..9) {
             OnagreColor::f32_from_str_hex(opacity)
-                .map_err(|_err| ConfigError::ParseColorError(hex_color.to_string()))?
+                .map_err(|_err| ConfigError::ParseColor(hex_color.to_string()))?
         } else {
             1.0
         };
@@ -215,10 +215,5 @@ mod test {
         let color = OnagreColor::from(hex_color);
 
         assert!(color.is_err());
-    }
-
-    #[test]
-    fn debug() {
-        println!("{:?}", OnagreColor::from("#414141"));
     }
 }

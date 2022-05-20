@@ -33,13 +33,13 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
             Some(theme) => self
                 .icon
                 .as_deref()
-                .and_then(|name| IconPath::lookup(name, &theme, THEME.icon_size)),
+                .and_then(|name| IconPath::lookup(name, theme, THEME.icon_size)),
             _ => None,
         }
     }
 
     fn get_description(&self) -> Option<Cow<'_, str>> {
-        self.description.as_ref().map(|desc| desc.clone())
+        self.description.as_ref().cloned()
     }
 }
 
