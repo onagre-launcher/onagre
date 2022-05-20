@@ -19,6 +19,7 @@ use pop_launcher_toolkit::launcher::{Request, Response};
 
 use std::path::Path;
 use std::process::exit;
+use iced::alignment::{Horizontal, Vertical};
 
 #[derive(Debug)]
 pub struct Onagre<'a> {
@@ -161,25 +162,34 @@ impl Application for Onagre<'_> {
             .align_y(THEME.search_input().align_y);
 
 
-
         let search_bar = Row::new();
 
-        if !self.state.input_value.modifier_display.is_empty() {
-            let plugin_hint = Container::new(
-                Text::new(&self.state.input_value.modifier_display)
-            )
-                .style(THEME.plugin_hint())
-                .width(THEME.plugin_hint().width)
-                .height(THEME.plugin_hint().height)
-                .align_y(THEME.plugin_hint().align_y)
-                .align_x(THEME.plugin_hint().align_x)
-                .padding(THEME.plugin_hint().padding.to_iced_padding());
+        // Either plugin_hint is enabled and we try to display it
+        // Or we display the normal search input
+        let search_bar = match THEME.plugin_hint() {
+            None => search_bar.push(search_input),
+            Some(plugin_hint_style) => {
+                if !self.state.input_value.modifier_display.is_empty() {
+                    let plugin_hint = Container::new(
+                        Text::new(&self.state.input_value.modifier_display)
+                            .vertical_alignment(Vertical::Center)
+                            .horizontal_alignment(Horizontal::Center)
+                    )
+                        .style(plugin_hint_style)
+                        .width(plugin_hint_style.width)
+                        .height(plugin_hint_style.height)
+                        .align_y(plugin_hint_style.align_y)
+                        .align_x(plugin_hint_style.align_x)
+                        .padding(plugin_hint_style.padding.to_iced_padding());
 
-            search_bar.push(plugin_hint);
-        }
-
-        let search_bar = search_bar.push(search_input)
-            .align_items(Alignment::Fill);
+                    search_bar
+                        .push(plugin_hint)
+                        .push(search_input)
+                } else {
+                    search_bar.push(search_input)
+                }.align_items(Alignment::Fill)
+            }
+        };
 
         let search_bar = Container::new(search_bar)
             .style(THEME.search())
@@ -279,6 +289,7 @@ impl Onagre<'_> {
             ActiveMode::History => {}
             _ => {
                 let value = self.state.get_input();
+
                 self.pop_request(Request::Search(value))
                     .expect("Unable to send search request to pop-launcher")
             }

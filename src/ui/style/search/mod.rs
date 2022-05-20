@@ -28,7 +28,7 @@ pub struct SearchContainerStyles {
 
     // Children
     pub input: SearchInputStyles,
-    pub plugin_hint: GenericContainerStyle,
+    pub plugin_hint: Option<GenericContainerStyle>,
 }
 
 impl Eq for SearchContainerStyles {}
@@ -47,7 +47,7 @@ impl Default for SearchContainerStyles {
             input: Default::default(),
             width: Length::Fill,
             padding: OnagrePadding::from(0),
-            plugin_hint: Default::default()
+            plugin_hint: None
         }
     }
 }
