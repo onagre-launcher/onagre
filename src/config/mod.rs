@@ -284,6 +284,8 @@ impl ApplyConfig for RowContainerStyle {
                 Rule::padding_bottom => self.padding.bottom = helpers::unwrap_attr_u16(pair)?,
                 Rule::padding_right => self.padding.right = helpers::unwrap_attr_u16(pair)?,
                 Rule::padding_left => self.padding.left = helpers::unwrap_attr_u16(pair)?,
+                Rule::width => self.width = helpers::unwrap_length(pair)?,
+                Rule::height => self.height = helpers::unwrap_length(pair)?,
 
                 // Children
                 Rule::default_row => self.row.apply(pair)?,

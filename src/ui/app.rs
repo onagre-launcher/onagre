@@ -13,8 +13,8 @@ use crate::THEME;
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
 use iced::{
-    Alignment, Application, Color, Column, Container, Element, Length, Padding, Row, Scrollable,
-    Text, TextInput,
+    Alignment, Application, Color, Column, Container, Element, Length, Row, Scrollable, Text,
+    TextInput,
 };
 use iced_native::{Command, Event, Subscription};
 use log::{debug, trace};
@@ -144,14 +144,9 @@ impl Application for Onagre<'_> {
 
         let scrollable = Container::new(scrollable)
             .style(&THEME.app_container.rows)
-            .padding(Padding {
-                top: 10,
-                right: 0,
-                bottom: 0,
-                left: 0,
-            })
-            .width(Length::Fill)
-            .height(Length::FillPortion(8)); // TODO: add this to stylesheet
+            .padding(THEME.app_container.rows.padding.to_iced_padding())
+            .width(THEME.app_container.rows.width)
+            .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
 
         let search_input = Container::new(
             TextInput::new(

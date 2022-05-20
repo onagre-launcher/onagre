@@ -160,6 +160,7 @@ rows = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
+    | width | height
     | selected_row | default_row)*
     ~ DELIMITER_END
     ~ NEWLINE*
