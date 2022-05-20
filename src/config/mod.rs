@@ -351,10 +351,8 @@ impl TryFrom<Pair<'_, Rule>> for GenericContainerStyle {
                 Rule::align_y => inner_row_style.align_y = helpers::unwrap_y(pair)?,
                 Rule::width => inner_row_style.width = helpers::unwrap_length(pair)?,
                 Rule::height => inner_row_style.height = helpers::unwrap_length(pair)?,
-                rule => {
-                    println!("{rule:?}");
-                    unreachable!()
-                },
+                Rule::font_size => inner_row_style.font_size = helpers::unwrap_attr_u16(pair)?,
+                _ => unreachable!(),
             }
         }
 

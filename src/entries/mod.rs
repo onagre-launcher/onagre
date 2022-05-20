@@ -137,7 +137,10 @@ pub(crate) trait AsEntry<'a> {
     }
 
     fn as_row(&self, row: Row<'a, Message>, theme: &'a RowStyles) -> Container<'a, Message> {
-        let title_row = Container::new(Row::new().push(Text::new(self.get_display_name())))
+        let title_row = Container::new(Row::new().push(
+            Text::new(self.get_display_name())
+                .size(theme.title.font_size)
+        ))
             .style(&theme.title)
             .padding(theme.title.padding.to_iced_padding())
             .width(theme.title.width)
@@ -147,7 +150,10 @@ pub(crate) trait AsEntry<'a> {
 
         let description_row = self
             .get_description()
-            .map(|description| Container::new(Row::new().push(Text::new(description.as_ref())))
+            .map(|description| Container::new(Row::new().push(
+                Text::new(description.as_ref())
+                    .size(theme.description.font_size)
+            ))
                 .style(&theme.description)
                 .padding(theme.description.padding.to_iced_padding())
                 .width(theme.description.width)

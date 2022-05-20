@@ -15,6 +15,7 @@ pub struct GenericContainerStyle {
     pub border_color: OnagreColor,
 
     // Layout
+    pub font_size: u16,
     pub padding: OnagrePadding,
     pub align_x: Horizontal,
     pub align_y: Vertical,
@@ -34,7 +35,8 @@ impl Default for GenericContainerStyle {
             padding: OnagrePadding::from(5),
             align_x: Horizontal::Left,
             border_color: OnagreColor::RED,
-            align_y: Vertical::Center
+            align_y: Vertical::Center,
+            font_size: 14
         }
     }
 }

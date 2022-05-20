@@ -193,7 +193,7 @@ description_row = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | spacing | align_y | align_x)*
+    | width | height | spacing | align_y | align_x | font_size)*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
@@ -204,7 +204,7 @@ title_row = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | spacing |  align_x | align_y)*
+    | width | height | spacing |  align_x | align_y | font_size)*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
