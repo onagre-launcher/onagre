@@ -12,14 +12,17 @@ use crate::ui::subscriptions::pop_launcher::{PopLauncherSubscription, Subscripti
 use crate::THEME;
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
-use iced::{Alignment, Application, Color, Column, Container, Element, Length, Row, Scrollable, Text, TextInput};
+use iced::{
+    Alignment, Application, Color, Column, Container, Element, Length, Padding, Row, Scrollable,
+    Text, TextInput,
+};
 use iced_native::{Command, Event, Subscription};
-use log::debug;
+use log::{debug, trace};
 use pop_launcher_toolkit::launcher::{Request, Response};
 
+use iced::alignment::{Horizontal, Vertical};
 use std::path::Path;
 use std::process::exit;
-use iced::alignment::{Horizontal, Vertical};
 
 #[derive(Debug)]
 pub struct Onagre<'a> {
@@ -141,8 +144,14 @@ impl Application for Onagre<'_> {
 
         let scrollable = Container::new(scrollable)
             .style(&THEME.app_container.rows)
+            .padding(Padding {
+                top: 10,
+                right: 0,
+                bottom: 0,
+                left: 0,
+            })
             .width(Length::Fill)
-            .height(Length::Fill);
+            .height(Length::FillPortion(8)); // TODO: add this to stylesheet
 
         let search_input = Container::new(
             TextInput::new(
@@ -151,19 +160,17 @@ impl Application for Onagre<'_> {
                 &self.state.input_value.input_display,
                 Message::InputChanged,
             )
-                .width(THEME.search_input().text_width)
-                .size(THEME.search_input().size)
-                .style(THEME.search_input())
-        )
-            .width(THEME.search_input().width)
-            .height(THEME.search_input().height)
             .padding(THEME.search_input().padding.to_iced_padding())
-            .align_x(THEME.search_input().align_x)
-            .align_y(THEME.search_input().align_y);
+            .width(THEME.search_input().text_width)
+            .size(THEME.search_input().size)
+            .style(THEME.search_input()),
+        )
+        .width(THEME.search_input().width)
+        .height(THEME.search_input().height)
+        .align_x(THEME.search_input().align_x)
+        .align_y(THEME.search_input().align_y);
 
-
-        let search_bar = Row::new();
-
+        let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
         // Either plugin_hint is enabled and we try to display it
         // Or we display the normal search input
         let search_bar = match THEME.plugin_hint() {
@@ -173,21 +180,19 @@ impl Application for Onagre<'_> {
                     let plugin_hint = Container::new(
                         Text::new(&self.state.input_value.modifier_display)
                             .vertical_alignment(Vertical::Center)
-                            .horizontal_alignment(Horizontal::Center)
+                            .horizontal_alignment(Horizontal::Center),
                     )
-                        .style(plugin_hint_style)
-                        .width(plugin_hint_style.width)
-                        .height(plugin_hint_style.height)
-                        .align_y(plugin_hint_style.align_y)
-                        .align_x(plugin_hint_style.align_x)
-                        .padding(plugin_hint_style.padding.to_iced_padding());
+                    .style(plugin_hint_style)
+                    .width(plugin_hint_style.width)
+                    .height(plugin_hint_style.height)
+                    .align_y(plugin_hint_style.align_y)
+                    .align_x(plugin_hint_style.align_x)
+                    .padding(plugin_hint_style.padding.to_iced_padding());
 
-                    search_bar
-                        .push(plugin_hint)
-                        .push(search_input)
+                    search_bar.push(plugin_hint).push(search_input)
                 } else {
                     search_bar.push(search_input)
-                }.align_items(Alignment::Fill)
+                }
             }
         };
 
@@ -202,11 +207,12 @@ impl Application for Onagre<'_> {
             Column::new()
                 .push(search_bar)
                 .push(scrollable)
+                .align_items(Alignment::Start),
         )
-            .padding(THEME.app().padding.to_iced_padding())
-            .style(THEME.app())
-            .center_y()
-            .center_x();
+        .padding(THEME.app().padding.to_iced_padding())
+        .style(THEME.app())
+        .center_y()
+        .center_x();
 
         let app_wrapper = Container::new(app_container)
             .center_y()
@@ -328,11 +334,11 @@ impl Onagre<'_> {
             KeyCode::Up => {
                 self.dec_selected();
                 self.snap();
-                debug!("Selected line : {:?}", self.selected());
+                trace!("Selected line : {:?}", self.selected());
             }
             KeyCode::Down => {
                 self.inc_selected();
-                debug!("Selected line : {:?}", self.selected());
+                trace!("Selected line : {:?}", self.selected());
             }
             KeyCode::Enter => return self.on_execute(),
             KeyCode::Tab => {
@@ -538,9 +544,9 @@ impl Onagre<'_> {
         iced_native::subscription::events_with(|event, _status| match event {
             Event::Window(iced_native::window::Event::Unfocused) => Some(Message::Unfocused),
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
-                                modifiers: _,
-                                key_code,
-                            }) => Some(Message::KeyboardEvent(key_code)),
+                modifiers: _,
+                key_code,
+            }) => Some(Message::KeyboardEvent(key_code)),
             _ => None,
         })
     }

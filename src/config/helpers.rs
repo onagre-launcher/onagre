@@ -1,9 +1,9 @@
-use pest::iterators::Pair;
-use iced::{Length};
-use iced::alignment::{Horizontal, Vertical};
 use crate::config::color::OnagreColor;
 use crate::config::error::ConfigError;
 use crate::config::Rule;
+use iced::alignment::{Horizontal, Vertical};
+use iced::Length;
+use pest::iterators::Pair;
 
 // Helper functions to get values from the css like theme config file.
 // We don't mind unwrapping here since pest
@@ -62,7 +62,7 @@ pub fn unwrap_x(pair: Pair<'_, Rule>) -> Result<Horizontal, ConfigError> {
         Rule::left => Ok(Horizontal::Left),
         Rule::center => Ok(Horizontal::Center),
         Rule::right => Ok(Horizontal::Right),
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 
@@ -74,7 +74,7 @@ pub fn unwrap_y(pair: Pair<'_, Rule>) -> Result<Vertical, ConfigError> {
         Rule::top => Ok(Vertical::Top),
         Rule::center => Ok(Vertical::Center),
         Rule::bottom => Ok(Vertical::Bottom),
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 
@@ -94,21 +94,23 @@ pub fn unwrap_length(pair: Pair<'_, Rule>) -> Result<Length, ConfigError> {
             let value = pair.as_str();
             let value = value.parse::<u16>()?;
             Length::Units(value)
-        },
-        _ => unreachable!()
+        }
+        _ => unreachable!(),
     })
 }
 
 #[cfg(test)]
 mod test {
-    use iced::{Alignment, Length};
-    use iced::alignment::{Horizontal, Vertical};
     use crate::config::color::OnagreColor;
-    use crate::config::{ThemeParser};
-    use speculoos::prelude::*;
-    use crate::config::Rule;
+    use crate::config::helpers::{
+        unwrap_attr_bool, unwrap_attr_f32, unwrap_attr_str, unwrap_attr_u16, unwrap_hex_color,
+        unwrap_length, unwrap_x, unwrap_y,
+    };
+    use crate::config::{Rule, ThemeParser};
+    use iced::alignment::{Horizontal, Vertical};
+    use iced::Length;
     use pest::Parser;
-    use crate::config::helpers::{unwrap_align, unwrap_attr_bool, unwrap_attr_f32, unwrap_attr_str, unwrap_attr_u16, unwrap_hex_color, unwrap_length, unwrap_x, unwrap_y};
+    use speculoos::prelude::*;
 
     #[test]
     fn should_parse_align_x() {
@@ -245,7 +247,6 @@ mod test {
             .is_equal_to(100);
     }
 
-
     #[test]
     fn should_parse_window_height() {
         let pair = ThemeParser::parse(Rule::window_height, "height: 100px;")
@@ -334,66 +335,6 @@ mod test {
             .that(&padding)
             .is_ok()
             .is_equal_to(10);
-    }
-
-    #[test]
-    fn should_parse_alignment_fill() {
-        let pair = ThemeParser::parse(Rule::align_items, r#"--align-items: fill;"#)
-            .unwrap()
-            .next()
-            .unwrap();
-
-        let align_items = unwrap_align(pair);
-
-        asserting!("Should parse 'align_items' 'fill' attribute")
-            .that(&align_items)
-            .is_ok()
-            .is_equal_to(Alignment::Fill);
-    }
-
-    #[test]
-    fn should_parse_alignment_start() {
-        let pair = ThemeParser::parse(Rule::align_items, r#"--align-items: start;"#)
-            .unwrap()
-            .next()
-            .unwrap();
-
-        let align_items = unwrap_align(pair);
-
-        asserting!("Should parse 'align_items' 'start' attribute")
-            .that(&align_items)
-            .is_ok()
-            .is_equal_to(Alignment::Start);
-    }
-
-    #[test]
-    fn should_parse_alignment_center() {
-        let pair = ThemeParser::parse(Rule::align_items, r#"--align-items: center;"#)
-            .unwrap()
-            .next()
-            .unwrap();
-
-        let align_items = unwrap_align(pair);
-
-        asserting!("Should parse 'align_items' 'center' attribute")
-            .that(&align_items)
-            .is_ok()
-            .is_equal_to(Alignment::Center);
-    }
-
-    #[test]
-    fn should_parse_alignment_end() {
-        let pair = ThemeParser::parse(Rule::align_items, r#"--align-items: end;"#)
-            .unwrap()
-            .next()
-            .unwrap();
-
-        let align_items = unwrap_align(pair);
-
-        asserting!("Should parse 'align_items' 'end' attribute")
-            .that(&align_items)
-            .is_ok()
-            .is_equal_to(Alignment::End);
     }
 
     #[test]
@@ -488,7 +429,6 @@ mod test {
 
     #[test]
     fn should_parse_height_units() {
-
         let pair = ThemeParser::parse(Rule::height, r#"--height: 24px;"#)
             .unwrap()
             .next()
@@ -527,7 +467,8 @@ mod test {
         let icon_theme = unwrap_attr_str(pair);
 
         asserting!("Should parse 'icon_theme' attribute")
-            .that(&icon_theme).is_equal_to("Arc");
+            .that(&icon_theme)
+            .is_equal_to("Arc");
     }
 
     #[test]
@@ -555,7 +496,8 @@ mod test {
         let font_family = unwrap_attr_str(pair);
 
         asserting!("Should parse 'font_family' attribute")
-            .that(&font_family).is_equal_to("Monospace");
+            .that(&font_family)
+            .is_equal_to("Monospace");
     }
 
     #[test]
@@ -568,6 +510,7 @@ mod test {
         let exit_unfocused = unwrap_attr_bool(pair);
 
         asserting!("Should parse 'exit_unfocused' attribute")
-            .that(&exit_unfocused).is_true();
+            .that(&exit_unfocused)
+            .is_true();
     }
 }

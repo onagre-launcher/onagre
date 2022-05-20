@@ -1,14 +1,14 @@
-    use crate::entries::Cache;
+use crate::entries::Cache;
 use crate::ui::mode::ActiveMode;
 use crate::ui::plugin_matchers::{match_web_plugins, Plugin};
 use iced_native::widget::{scrollable, text_input};
 use log::debug;
 use pop_launcher_toolkit::launcher::SearchResult;
 
+use crate::THEME;
 use std::collections::HashMap;
-    use crate::THEME;
 
-    #[derive(Debug)]
+#[derive(Debug)]
 pub struct State<'a> {
     pub input_value: SearchInput,
     pub selected: Selection,
@@ -44,7 +44,6 @@ impl State<'_> {
         } else {
             self.input_value.pop_query.clone()
         }
-
     }
 
     pub fn set_input(&mut self, input: &str) {

@@ -1,14 +1,14 @@
-use iced::{Background, Length};
-use iced::alignment::{Horizontal, Vertical};
-use iced_style::container;
-use iced_style::container::Style;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::ui::style::rows::generic::GenericContainerStyle;
+use iced::alignment::{Horizontal, Vertical};
+use iced::{Background, Length};
+use iced_style::container;
+use iced_style::container::Style;
 use input::SearchInputStyles;
 
-pub mod input;
 pub mod hint;
+pub mod input;
 
 #[derive(Debug, PartialEq)]
 pub struct SearchContainerStyles {
@@ -36,18 +36,18 @@ impl Eq for SearchContainerStyles {}
 impl Default for SearchContainerStyles {
     fn default() -> Self {
         Self {
-            border_radius: 0.0,
+            background: OnagreColor::WHITE,
+            color: OnagreColor::DEFAULT_TEXT,
+            border_radius: 4.0,
             border_width: 0.0,
-            color: OnagreColor::BLACK,
             border_color: OnagreColor::TRANSPARENT,
-            background: OnagreColor::TRANSPARENT,
-            height: Length::Units(40),
             align_x: Horizontal::Left,
             align_y: Vertical::Center,
-            input: Default::default(),
+            height: Length::FillPortion(1),
             width: Length::Fill,
-            padding: OnagrePadding::from(0),
-            plugin_hint: None
+            padding: OnagrePadding::ZERO,
+            input: Default::default(),
+            plugin_hint: None,
         }
     }
 }

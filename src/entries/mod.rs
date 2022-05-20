@@ -1,9 +1,9 @@
 use iced::{Container, Image, Length, Row, Svg, Text};
+use iced_native::Alignment;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
-use iced_native::Alignment;
 
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
@@ -11,10 +11,10 @@ use crate::db::web::WebEntity;
 use crate::db::Database;
 use crate::freedesktop::{Extension, IconPath};
 use crate::ui::app::Message;
+use crate::ui::style::rows::RowStyles;
 use crate::{db, THEME};
 use iced_native::widget::Column;
 use once_cell::sync::OnceCell;
-use crate::ui::style::rows::RowStyles;
 
 pub(crate) mod db_entry;
 pub(crate) mod pop_entry;
@@ -104,13 +104,15 @@ pub(crate) trait AsEntry<'a> {
         let row = match icon {
             Some(icon) => {
                 let icon = match &icon.extension {
-                    Extension::Svg => Container::new(Svg::from_path(&icon.path)
-                        .height(Length::Units(THEME.icon_size))
-                        .width(Length::Units(THEME.icon_size))
+                    Extension::Svg => Container::new(
+                        Svg::from_path(&icon.path)
+                            .height(Length::Units(THEME.icon_size))
+                            .width(Length::Units(THEME.icon_size)),
                     ),
-                    Extension::Png => Container::new(Image::new(&icon.path)
-                        .height(Length::Units(THEME.icon_size))
-                        .width(Length::Units(THEME.icon_size))
+                    Extension::Png => Container::new(
+                        Image::new(&icon.path)
+                            .height(Length::Units(THEME.icon_size))
+                            .width(Length::Units(THEME.icon_size)),
                     ),
                 };
 
@@ -123,8 +125,8 @@ pub(crate) trait AsEntry<'a> {
                     .padding(theme.icon.padding.to_iced_padding());
 
                 Row::new().push(icon)
-            },
-            None => Row::new()
+            }
+            None => Row::new(),
         };
 
         let row = row
@@ -137,37 +139,33 @@ pub(crate) trait AsEntry<'a> {
     }
 
     fn as_row(&self, row: Row<'a, Message>, theme: &'a RowStyles) -> Container<'a, Message> {
-        let title_row = Container::new(Row::new().push(
-            Text::new(self.get_display_name())
-                .size(theme.title.font_size)
-        ))
-            .style(&theme.title)
-            .padding(theme.title.padding.to_iced_padding())
-            .width(theme.title.width)
-            .height(theme.title.height)
-            .align_x(theme.title.align_x)
-            .align_y(theme.title.align_y);
+        let title_row = Container::new(
+            Row::new().push(Text::new(self.get_display_name()).size(theme.title.font_size)),
+        )
+        .style(&theme.title)
+        .padding(theme.title.padding.to_iced_padding())
+        .width(theme.title.width)
+        .height(theme.title.height)
+        .align_x(theme.title.align_x)
+        .align_y(theme.title.align_y);
 
-        let description_row = self
-            .get_description()
-            .map(|description| Container::new(Row::new().push(
-                Text::new(description.as_ref())
-                    .size(theme.description.font_size)
-            ))
-                .style(&theme.description)
-                .padding(theme.description.padding.to_iced_padding())
-                .width(theme.description.width)
-                .height(theme.description.height)
-                .align_x(theme.description.align_x)
-                .align_y(theme.description.align_y)
-            );
+        let description_row = self.get_description().map(|description| {
+            Container::new(
+                Row::new().push(Text::new(description.as_ref()).size(theme.description.font_size)),
+            )
+            .style(&theme.description)
+            .padding(theme.description.padding.to_iced_padding())
+            .width(theme.description.width)
+            .height(theme.description.height)
+            .align_x(theme.description.align_x)
+            .align_y(theme.description.align_y)
+        });
 
-        let column = Column::new()
-            .push(title_row);
+        let column = Column::new().push(title_row);
 
         let column = match description_row {
-            Some(description) => column.push(description),
-            None => column
+            Some(description) if !theme.hide_description => column.push(description),
+            _ => column,
         };
 
         Container::new(row.push(column))

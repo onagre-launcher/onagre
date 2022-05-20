@@ -1,8 +1,8 @@
-use crate::Theme;
 use crate::ui::style::app::AppContainerStyles;
 use crate::ui::style::rows::RowStyles;
 use crate::ui::style::scrollable::RowContainerStyle;
 use crate::ui::style::search::SearchContainerStyles;
+use crate::Theme;
 
 // Propagate style from parent to children
 // Unless implemented this should never be called
@@ -32,10 +32,12 @@ impl Inherit for Theme {
 
     fn propagate_font_size(&mut self) {
         let font_size = self.font_size;
-        self.app_container.search.plugin_hint.as_mut().map(|hint| {
-            hint.font_size = font_size
-        });
         self.app_container.search.input.size = font_size;
+        self.app_container
+            .search
+            .plugin_hint
+            .as_mut()
+            .map(|hint| hint.font_size = font_size);
     }
 
     fn propagate_icon_size(&mut self) {
@@ -102,19 +104,17 @@ impl Inherit for RowStyles {
 impl Inherit for SearchContainerStyles {
     fn propagate_background(&mut self) {
         let background = self.background;
+        self.input.background = background;
         self.plugin_hint.as_mut().map(|mut hint| {
             hint.background = background;
         });
-
-        self.input.background = background;
     }
 
     fn propagate_color(&mut self) {
         let color = self.color;
+        self.input.value_color = color;
         self.plugin_hint.as_mut().map(|mut hint| {
             hint.color = color;
         });
-
-        self.input.value_color = color;
     }
 }

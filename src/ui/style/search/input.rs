@@ -1,8 +1,8 @@
-use iced::{Background, Color, Length};
-use iced::alignment::{Horizontal, Vertical};
-use iced_style::text_input;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
+use iced::alignment::{Horizontal, Vertical};
+use iced::{Background, Color, Length};
+use iced_style::text_input;
 
 #[derive(Debug, PartialEq)]
 pub struct SearchInputStyles {
@@ -23,7 +23,6 @@ pub struct SearchInputStyles {
     pub align_x: Horizontal,
     pub align_y: Vertical,
     pub padding: OnagrePadding,
-
 }
 
 impl Eq for SearchInputStyles {}
@@ -34,17 +33,22 @@ impl Default for SearchInputStyles {
             border_radius: 0.0,
             border_width: 0.0,
             border_color: OnagreColor::TRANSPARENT,
-            background: OnagreColor::TRANSPARENT,
-            placeholder_color: OnagreColor::BLUE,
-            value_color: OnagreColor::RED,
-            selection_color: OnagreColor::BLACK,
+            background: OnagreColor::WHITE,
+            placeholder_color: OnagreColor::DEFAULT_TEXT,
+            value_color: OnagreColor::DEFAULT_TEXT,
+            selection_color: OnagreColor::DEFAULT_BORDER,
             text_width: Length::Fill,
-            size: 24,
+            size: 14,
             width: Length::Fill,
             height: Length::Fill,
             align_x: Horizontal::Left,
-            align_y: Vertical::Top,
-            padding: OnagrePadding::from(0)
+            align_y: Vertical::Center,
+            padding: OnagrePadding {
+                top: 0,
+                right: 5,
+                bottom: 0,
+                left: 5,
+            },
         }
     }
 }

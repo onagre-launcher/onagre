@@ -1,18 +1,18 @@
-use iced_style::container;
-use iced::Background;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
+use crate::ui::style::app::AppContainerStyles;
 use crate::ui::style::rows::generic::GenericContainerStyle;
+use crate::ui::style::scrollable::scroller::ScrollerStyles;
 use crate::ui::style::search::input::SearchInputStyles;
 use crate::ui::style::search::SearchContainerStyles;
-use crate::ui::style::app::AppContainerStyles;
-use crate::ui::style::scrollable::scroller::ScrollerStyles;
+use iced::Background;
+use iced_style::container;
 
+pub mod app;
 pub mod font;
+pub mod rows;
 pub mod scrollable;
 pub mod search;
-pub mod app;
-pub mod rows;
 
 impl Theme {
     pub fn load() -> Self {
@@ -86,17 +86,19 @@ impl Default for Theme {
     fn default() -> Self {
         Self {
             exit_unfocused: false,
-            size: (800, 300),
-            font: None,
-            font_size: 22,
+            size: (450, 300),
+            // TODO Embed default font
+            font: Some("Jetbrains Mono".to_string()),
+            font_size: 18,
+            // TODO: A nice default icno theme
             icon_theme: Some("Papirus".to_string()),
             icon_size: 24,
             background: OnagreColor::DEFAULT_BACKGROUND,
-            color: OnagreColor::DEFAULT_BACKGROUND,
-            border_color: OnagreColor::from("#00000000").unwrap(),
+            color: OnagreColor::DEFAULT_TEXT,
+            border_color: OnagreColor::TRANSPARENT,
             border_radius: 0.0,
             border_width: 0.0,
-            padding: OnagrePadding::from(50),
+            padding: OnagrePadding::ZERO,
             app_container: AppContainerStyles::default(),
         }
     }
