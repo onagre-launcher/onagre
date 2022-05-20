@@ -57,7 +57,7 @@ pub struct Theme {
     pub border_width: f32,
 
     // Children
-    pub app_container: AppContainerStyles
+    pub app_container: AppContainerStyles,
 }
 
 impl Theme {

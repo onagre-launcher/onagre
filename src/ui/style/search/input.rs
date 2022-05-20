@@ -30,7 +30,6 @@ impl Eq for SearchInputStyles {}
 
 impl Default for SearchInputStyles {
     fn default() -> Self {
-        // Todo: inherit default values via `new`
         SearchInputStyles {
             border_radius: 0.0,
             border_width: 0.0,

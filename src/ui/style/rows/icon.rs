@@ -20,6 +20,7 @@ pub struct IconStyle {
     pub height: Length,
     pub align_x: Horizontal,
     pub align_y: Vertical,
+    pub size: u16,
 }
 
 impl Eq for IconStyle {}
@@ -39,7 +40,8 @@ impl Default for IconStyle {
             width: Length::Shrink,
             height: Length::Shrink,
             align_x: Horizontal::Center,
-            align_y: Vertical::Center
+            align_y: Vertical::Center,
+            size: 24
         }
     }
 }
