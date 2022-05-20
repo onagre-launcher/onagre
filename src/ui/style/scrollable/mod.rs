@@ -1,4 +1,4 @@
-use iced_style::{container};
+use iced_style::container;
 use iced::Background;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;

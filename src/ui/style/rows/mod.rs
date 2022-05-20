@@ -5,7 +5,6 @@ use generic::GenericContainerStyle;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use icon::IconStyle;
-
 pub mod icon;
 pub mod generic;
 
