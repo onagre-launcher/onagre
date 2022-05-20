@@ -29,6 +29,7 @@ struct ThemeParser;
 
 pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<Theme, ConfigError> {
     let content = std::fs::read_to_string(path)?;
+
     let pairs = ThemeParser::parse(Rule::stylesheet, &content)?
         .next()
         .unwrap();
@@ -52,7 +53,8 @@ trait ApplyConfig {
 impl TryFrom<Pair<'_, Rule>> for Theme {
     type Error = ConfigError;
     fn try_from(pair: Pair<'_, Rule>) -> Result<Self, Self::Error> {
-        let mut theme = Theme::default();
+        let mut theme = Theme::base();
+
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::exit_unfocused => theme.exit_unfocused = helpers::unwrap_attr_bool(pair),
@@ -404,6 +406,29 @@ impl ApplyConfig for IconStyle {
         }
 
         Ok(())
+    }
+}
+
+impl Theme {
+    fn base() -> Self {
+        Theme {
+            icon_theme: None,
+            app_container: AppContainerStyles {
+                rows: RowContainerStyle {
+                    row: RowStyles {
+                        hide_description: true,
+                        ..Default::default()
+                    },
+                    row_selected: RowStyles {
+                        hide_description: true,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        }
     }
 }
 

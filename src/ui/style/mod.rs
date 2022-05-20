@@ -89,7 +89,7 @@ impl Default for Theme {
             size: (450, 300),
             font: None,
             font_size: 18,
-            // TODO: A nice default icno theme
+            // TODO: default icon theme ?
             icon_theme: Some("Papirus".to_string()),
             icon_size: 24,
             background: OnagreColor::DEFAULT_BACKGROUND,
