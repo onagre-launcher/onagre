@@ -1,0 +1,254 @@
+// This is the 'ugly' theme used to show all the available configuration attributes, expect your eyes to bleed.
+// It will be replaced with real theme example as soon as the configuration format as been tested and approved.
+// Copy this file to $HOME/.config/onagre/theme.scss and start tweaking !  
+//
+// ## Differences with SCSS
+//
+// Don't get confused, this is not a scss file, the format is used only to get some syntax highlighting and autocompletion
+// support in your IDE.
+//
+// ## Standard properties
+//
+// Standard SCSS attributes support only a subset of the possible attribute, for instance `height/width` can
+// have `px` values only (percentage or em values are not supported), color can only have hex values (rgba is not supported) etc.
+//
+// Until we have a config reference please refer to this example to know what value an attribute should have.
+//
+// ## Custom properties
+//
+// *Normal props values:**
+//
+// --icon-theme: {string}
+// --icon-size: {value}px
+// ... etc
+//
+// **Special props values:**
+// - `--height and --width` : fill, shrink, fill-portion {value}, {value}
+// - `--align-x` : left, right, center
+// - `--align-y` : top, bottom, center
+//
+// ## Classes
+//
+// Classes used in the theme file are not configurable they should be used in the exact same order as this file.
+// CSS selectors are not supported
+//
+// ## Default values
+//
+// You can see all the default value by running Onagre with no theme file.
+// Override only what you need to.
+//
+// ## Inheritance
+//
+// The following properties will propagate to their child: background, color, icon-size, font-size.
+// For instance you can set the background color once like this :
+// ```css
+//  .onagre {
+//    background: #4ba417;
+// }
+//
+// The `.row-selected` element will inherit all props from the `.row` class, so you can override only what you need
+// and omit properties already defined in `row`
+//
+// ## Hiding elements
+//
+// Certain elements can be hidden by omitting their css class. For instance removing `.plugin-hint` from this file
+// will disable the plugin highlight behavior.
+//
+// **Hidable elements** : `.plugin-hint`, `description`
+
+.onagre {
+  --exit-unfocused: false;
+  height: 300px;
+  width: 400px;
+  --icon-theme: "Adwaita";
+  --icon-size: 22px;
+  --font-family: "Fira Code SemiBold";
+  font-size: 24px;
+  background: #e52d2d;
+  color: #2c2525;
+  border-color: #ffffff;
+  border-radius: 0%;
+  border-width: 0px;
+  padding: 10px;
+
+  .container {
+    background: #4ba417;
+    color: #2c2525;
+    border-color: #ffffff;
+    border-radius: 0%;
+    border-width: 0px;
+    padding: 10;
+
+    .search {
+      background: #f1cd1a;
+      color: #2c2525;
+      border-color: #ffffff;
+      border-radius: 0%;
+      border-width: 0px;
+      padding: 0;
+      --width: fill;
+      --height: fill-portion 1;
+      --align-x: left;
+      --align-y: center;
+
+      .plugin-hint {
+        background: #3e6cce;
+        color: #2c2525;
+        border-color: #ffffff;
+        border-radius: 0%;
+        border-width: 0px;
+        padding: 0;
+        --width: shrink;
+        --height: fill;
+      }
+
+      .input {
+        background: #ffffff;
+        color: #2c2525;
+        border-color: #ffffff;
+        border-radius: 0%;
+        border-width: 0px;
+        padding: 0;
+        --width: fill;
+        --height: fill;
+        --text-width: fill;
+        --selection-color: #1664F5A3;
+        --placeholder-color: #37578FA3;
+        --align-x: left;
+        --align-y: center;
+      }
+    }
+
+    .rows {
+      background: #ffffff;
+      color: #2c2525;
+      border-color: #ffffff;
+      border-radius: 0%;
+      border-width: 3px;
+      padding: 0;
+      --width: fill;
+      --height: fill-portion 6;
+
+      .row {
+        background: #de5959;
+        color: #2c2525;
+        border-color: #9535c5;
+        border-radius: 0%;
+        border-width: 3px;
+        padding: 10px;
+        --width: fill;
+        --height: shrink;
+
+        .title {
+          font-size: 10px;
+          background: #eadc1d;
+          color: #2c2525;
+          border-color: #ffffff;
+          border-radius: 0%;
+          border-width: 0px;
+          padding: 0;
+          --width: fill;
+          --height: shrink;
+          --align-x: left;
+          --align-y: center;
+        }
+
+        .description {
+          font-size: 10px;
+          background: #77d541;
+          color: #2c2525;
+          border-color: #ffffff;
+          border-radius: 0%;
+          border-width: 0px;
+          padding: 0;
+          --width: fill;
+          --height: shrink;
+          --align-x: left;
+          --align-y: center;
+        }
+
+        .icon {
+          --icon-size: 22px;
+          background: #ffffff;
+          color: #2c2525;
+          border-color: #ffffff;
+          border-radius: 0%;
+          border-width: 0px;
+          padding: 0;
+          --width: shrink;
+          --height: shrink;
+          --align-x: center;
+          --align-y: center;
+        }
+      }
+      .row-selected {
+        background: #4abe1c;
+        color: #2c2525;
+        border-color: #ffffff;
+        border-radius: 0%;
+        border-width: 0px;
+        padding: 10px;
+        --width: fill;
+        --height: shrink;
+
+        .title {
+          font-size: 10px;
+          background: #cc3737;
+          color: #2c2525;
+          border-color: #ffffff;
+          border-radius: 0%;
+          border-width: 0px;
+          padding: 0;
+          --width: fill;
+          --height: shrink;
+          --align-x: left;
+          --align-y: center;
+        }
+
+        .description {
+          font-size: 10px;
+          background: #dad23e;
+          color: #2c2525;
+          border-color: #ffffff;
+          border-radius: 0%;
+          border-width: 0px;
+          padding: 0;
+          --width: fill;
+          --height: shrink;
+          --align-x: left;
+          --align-y: center;
+        }
+
+        .icon {
+          --icon-size: 20px;
+          background: #ffffff;
+          color: #2c2525;
+          border-color: #ffffff;
+          border-radius: 0%;
+          border-width: 0px;
+          padding: 0;
+          --width: shrink;
+          --height: shrink;
+          --align-x: left;
+          --align-y: center;
+        }
+      }
+    }
+
+    .scrollable {
+      background: #ffffff;
+      border-color: #ffffff;
+      border-radius: 0%;
+      border-width: 0px;
+      width: 10;
+      margin: 0;
+      .scroller {
+        color: #2c2525;
+        border-color: #ffffff;
+        border-radius: 0%;
+        border-width: 0px;
+        width: 10;
+      }
+    }
+  }
+}
