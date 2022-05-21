@@ -9,7 +9,7 @@ use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::entries::AsEntry;
-use crate::freedesktop::{Extension, IconPath};
+use crate::icons::{Extension, IconPath};
 use crate::ui::mode::WEB_CONFIG;
 use crate::THEME;
 

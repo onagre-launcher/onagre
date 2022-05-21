@@ -1,8 +1,8 @@
+use crate::font::DEFAULT_FONT;
 use crate::ui::app::Onagre;
-use crate::THEME;
+use crate::{font, THEME};
 use iced::{window, Application, Settings};
 use log::debug;
-use style::font;
 
 pub mod app;
 pub mod mode;
@@ -10,8 +10,6 @@ pub mod plugin_matchers;
 pub mod state;
 pub mod style;
 pub mod subscriptions;
-
-const DEFAULT_FONT: &[u8] = include_bytes!("style/font/JetBrainsMonoNL-Regular.ttf");
 
 pub fn run() -> iced::Result {
     debug!("Starting Onagre in debug mode");

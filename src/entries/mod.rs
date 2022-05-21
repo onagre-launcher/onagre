@@ -9,7 +9,7 @@ use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::db::Database;
-use crate::freedesktop::{Extension, IconPath};
+use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::ui::app::Message;
 use crate::ui::style::rows::RowStyles;
 use crate::{db, THEME};
@@ -101,35 +101,34 @@ pub(crate) trait AsEntry<'a> {
         };
 
         let icon = THEME.icon_theme.as_ref().and_then(|_| self.get_icon());
-        let row = match icon {
-            Some(icon) => {
-                let icon = match &icon.extension {
-                    Extension::Svg => Container::new(
-                        Svg::from_path(&icon.path)
-                            .height(Length::Units(THEME.icon_size))
-                            .width(Length::Units(THEME.icon_size)),
-                    ),
-                    Extension::Png => Container::new(
-                        Image::new(&icon.path)
-                            .height(Length::Units(THEME.icon_size))
-                            .width(Length::Units(THEME.icon_size)),
-                    ),
-                };
-
-                let icon = icon
-                    .style(&theme.icon)
-                    .align_y(theme.icon.align_y)
-                    .align_x(theme.icon.align_x)
-                    .width(theme.icon.width)
-                    .height(theme.icon.height)
-                    .padding(theme.icon.padding.to_iced_padding());
-
-                Row::new().push(icon)
-            }
-            None => Row::new(),
+        let icon = match icon {
+            Some(icon) => match &icon.extension {
+                Extension::Svg => Container::new(
+                    Svg::from_path(&icon.path)
+                        .height(Length::Units(THEME.icon_size))
+                        .width(Length::Units(THEME.icon_size)),
+                ),
+                Extension::Png => Container::new(
+                    Image::new(&icon.path)
+                        .height(Length::Units(THEME.icon_size))
+                        .width(Length::Units(THEME.icon_size)),
+                ),
+            },
+            None => Container::new(fallback_icon())
+                .height(Length::Units(THEME.icon_size))
+                .width(Length::Units(THEME.icon_size)),
         };
 
-        let row = row
+        let icon = icon
+            .style(&theme.icon)
+            .align_y(theme.icon.align_y)
+            .align_x(theme.icon.align_x)
+            .width(theme.icon.width)
+            .height(theme.icon.height)
+            .padding(theme.icon.padding.to_iced_padding());
+
+        let row = Row::new()
+            .push(icon)
             .height(Length::Fill)
             .width(Length::Fill)
             // See : https://github.com/iced-rs/iced/pull/1044
