@@ -1,6 +1,6 @@
+use crate::app::style::rows::RowStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use crate::ui::style::rows::RowStyles;
 use iced::{Background, Length};
 use iced_style::container;
 

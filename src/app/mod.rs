@@ -1,28 +1,68 @@
+use crate::app::entries::pop_entry::PopSearchResult;
+use crate::app::entries::AsEntry;
+use crate::app::mode::ActiveMode;
+use crate::app::plugin_matchers::Plugin;
+use crate::app::state::{Selection, State};
+use crate::app::subscriptions::plugin_configs::PluginMatcherSubscription;
+use crate::app::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
-use crate::entries::pop_entry::PopSearchResult;
-use crate::entries::AsEntry;
+use crate::font::DEFAULT_FONT;
 use crate::freedesktop::desktop::DesktopEntry;
-use crate::ui::mode::ActiveMode;
-use crate::ui::plugin_matchers::Plugin;
-use crate::ui::state::{Selection, State};
-use crate::ui::subscriptions::plugin_configs::PluginMatcherSubscription;
-use crate::ui::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
-use crate::THEME;
+use crate::{font, THEME};
+use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
 use iced::{
-    Alignment, Application, Color, Column, Container, Element, Length, Row, Scrollable, Text,
-    TextInput,
+    window, Alignment, Application, Color, Column, Container, Element, Length, Row, Scrollable,
+    Settings, Text, TextInput,
 };
 use iced_native::{Command, Event, Subscription};
 use log::{debug, trace};
 use pop_launcher_toolkit::launcher::{Request, Response};
-
-use iced::alignment::{Horizontal, Vertical};
 use std::path::Path;
 use std::process::exit;
+
+pub mod cache;
+pub mod entries;
+pub mod mode;
+pub mod plugin_matchers;
+pub mod state;
+pub mod style;
+pub mod subscriptions;
+
+pub fn run() -> iced::Result {
+    debug!("Starting Onagre in debug mode");
+
+    let default_font = THEME
+        .font
+        .as_ref()
+        .and_then(|font| font::load(font))
+        .unwrap_or(DEFAULT_FONT);
+
+    Onagre::run(Settings {
+        id: Some("onagre".to_string()),
+        window: window::Settings {
+            transparent: true,
+            size: THEME.size,
+            decorations: false,
+            always_on_top: true,
+            resizable: false,
+            position: window::Position::Centered,
+            min_size: None,
+            max_size: None,
+            icon: None,
+        },
+        default_text_size: THEME.font_size,
+        text_multithreading: false,
+        antialiasing: true,
+        exit_on_close_request: false,
+        default_font: Some(default_font),
+        flags: (),
+        try_opengles_first: false,
+    })
+}
 
 #[derive(Debug)]
 pub struct Onagre<'a> {

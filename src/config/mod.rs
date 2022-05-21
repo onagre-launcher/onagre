@@ -12,15 +12,15 @@ use pest_derive::Parser;
 use std::convert::TryFrom;
 use std::path::Path;
 
-use crate::ui::style::app::AppContainerStyles;
-use crate::ui::style::rows::generic::GenericContainerStyle;
-use crate::ui::style::rows::icon::IconStyle;
-use crate::ui::style::rows::RowStyles;
-use crate::ui::style::scrollable::scroller::ScrollerStyles;
-use crate::ui::style::scrollable::RowContainerStyle;
-use crate::ui::style::search::input::SearchInputStyles;
-use crate::ui::style::search::SearchContainerStyles;
-use crate::ui::style::Theme;
+use crate::app::style::app::AppContainerStyles;
+use crate::app::style::rows::generic::GenericContainerStyle;
+use crate::app::style::rows::icon::IconStyle;
+use crate::app::style::rows::RowStyles;
+use crate::app::style::scrollable::scroller::ScrollerStyles;
+use crate::app::style::scrollable::RowContainerStyle;
+use crate::app::style::search::input::SearchInputStyles;
+use crate::app::style::search::SearchContainerStyles;
+use crate::app::style::Theme;
 use padding::OnagrePadding;
 
 #[derive(Parser)]
@@ -434,8 +434,8 @@ impl Theme {
 
 #[cfg(test)]
 mod test {
+    use crate::app::style::Theme;
     use crate::config::parse_file;
-    use crate::ui::style::Theme;
     use pretty_assertions::assert_eq;
 
     #[test]

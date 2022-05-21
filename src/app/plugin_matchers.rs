@@ -1,4 +1,4 @@
-use crate::ui::mode::WEB_CONFIG;
+use crate::app::mode::WEB_CONFIG;
 use pop_launcher_toolkit::service::config::PluginConfig;
 use regex::Regex;
 
@@ -120,7 +120,7 @@ impl Plugin {
 
 #[cfg(test)]
 mod test {
-    use crate::ui::plugin_matchers::{Plugin, PluginMode};
+    use crate::app::plugin_matchers::{Plugin, PluginMode};
     use regex::Regex;
 
     #[test]

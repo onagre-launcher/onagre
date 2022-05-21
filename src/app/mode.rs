@@ -1,4 +1,4 @@
-use crate::ui::plugin_matchers::PluginMode;
+use crate::app::plugin_matchers::PluginMode;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 
