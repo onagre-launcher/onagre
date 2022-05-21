@@ -3,6 +3,8 @@ use font_kit::handle::Handle;
 use font_kit::properties::Properties;
 use font_kit::source::SystemSource;
 
+pub const DEFAULT_FONT: &[u8] = include_bytes!("JetBrainsMonoNL-Regular.ttf");
+
 pub fn load(name: &str) -> Option<&'static [u8]> {
     let mut families = Vec::new();
     for family in name.split(',') {

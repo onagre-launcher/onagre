@@ -9,7 +9,6 @@ use iced::Background;
 use iced_style::container;
 
 pub mod app;
-pub mod font;
 pub mod rows;
 pub mod scrollable;
 pub mod search;

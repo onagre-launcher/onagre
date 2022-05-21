@@ -10,7 +10,9 @@ use ui::style::Theme;
 pub mod config;
 pub mod db;
 pub mod entries;
+pub mod font;
 pub mod freedesktop;
+pub mod icons;
 pub mod ui;
 
 pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {

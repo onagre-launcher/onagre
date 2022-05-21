@@ -2,7 +2,7 @@ use pop_launcher_toolkit::launcher::{IconSource, SearchResult};
 use std::borrow::Cow;
 
 use crate::entries::AsEntry;
-use crate::freedesktop::IconPath;
+use crate::icons::IconPath;
 use crate::THEME;
 
 pub struct PopSearchResult<'a>(pub &'a SearchResult);
