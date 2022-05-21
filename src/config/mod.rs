@@ -338,6 +338,7 @@ impl ApplyConfig for RowStyles {
                 }
                 Rule::title_row => self.title.apply(pair)?,
                 Rule::icon => self.icon.apply(pair)?,
+                Rule::category_icon => self.category_icon.apply(pair)?,
                 _ => unreachable!(),
             }
         }
@@ -417,10 +418,12 @@ impl Theme {
                 rows: RowContainerStyle {
                     row: RowStyles {
                         hide_description: true,
+                        hide_category_icon: true,
                         ..Default::default()
                     },
                     row_selected: RowStyles {
                         hide_description: true,
+                        hide_category_icon: true,
                         ..Default::default()
                     },
                     ..Default::default()

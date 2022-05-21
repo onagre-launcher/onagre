@@ -38,6 +38,11 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
         }
     }
 
+    // Should we persist that or can it be reconstructed from the desktop entry file
+    fn get_category_icon(&self) -> Option<IconPath> {
+        None
+    }
+
     fn get_description(&self) -> Option<Cow<'_, str>> {
         self.description.as_ref().cloned()
     }
@@ -48,10 +53,17 @@ impl<'a> AsEntry<'a> for PluginCommandEntity<'a> {
         self.query.as_ref()
     }
 
+    // TODO: we should hold the plugin config here and get the icon from there
     fn get_icon(&self) -> Option<IconPath> {
-        IconPath::from_icon_source(TERMINAL_ICON.as_ref())
+        IconPath::absolute_from_icon_source(TERMINAL_ICON.as_ref())
     }
 
+    // TODO: we should hold the plugin config here and get the category icon from there
+    fn get_category_icon(&self) -> Option<IconPath> {
+        None
+    }
+
+    // TODO: persist this
     fn get_description(&self) -> Option<Cow<'_, str>> {
         None
     }
@@ -95,9 +107,14 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
                         extension: Extension::Png,
                     })
                 } else {
-                    IconPath::from_icon_source(WEB_ICON.as_ref())
+                    IconPath::absolute_from_icon_source(WEB_ICON.as_ref())
                 };
             })
+    }
+
+    // TODO: we should hold the plugin config here and get the icon from there
+    fn get_category_icon(&self) -> Option<IconPath> {
+        None
     }
 
     fn get_description(&self) -> Option<Cow<'_, str>> {

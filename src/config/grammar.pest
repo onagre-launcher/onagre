@@ -189,7 +189,9 @@ selected_row = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | description_row | title_row | icon | align_x | align_y)*
+    | align_x | align_y
+    | width | height
+    | description_row | title_row | category_icon | icon )*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
@@ -200,7 +202,9 @@ default_row = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | description_row | title_row | icon | align_y | align_x)*
+    | width | height
+    | align_y | align_x
+    | description_row | title_row | category_icon | icon )*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
@@ -228,6 +232,17 @@ title_row = {
 }
 icon = {
     ".icon"
+    ~ NEWLINE*
+    ~ DELIMITER_START
+    ~ NEWLINE*
+    ~ (background | color | border_color | border_radius | border_width | padding
+    | padding_left | padding_right | padding_bottom | padding_top
+    | align_y | align_x | width | height | icon_size )*
+    ~ DELIMITER_END
+    ~ NEWLINE*
+}
+category_icon = {
+    ".category-icon"
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*

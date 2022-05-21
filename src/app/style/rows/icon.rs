@@ -46,7 +46,22 @@ impl Default for IconStyle {
             height: Length::Shrink,
             align_x: Horizontal::Center,
             align_y: Vertical::Center,
-            size: 0,
+            size: 22,
+        }
+    }
+}
+
+impl IconStyle {
+    pub(crate) fn category_default() -> Self {
+        Self {
+            size: 12,
+            padding: OnagrePadding {
+                top: 10,
+                right: 6,
+                bottom: 0,
+                left: 0,
+            },
+            ..Default::default()
         }
     }
 }

@@ -24,18 +24,18 @@ pub(crate) trait AsEntry<'a> {
             Some(icon) => match &icon.extension {
                 Extension::Svg => Container::new(
                     Svg::from_path(&icon.path)
-                        .height(Length::Units(THEME.icon_size))
-                        .width(Length::Units(THEME.icon_size)),
+                        .height(Length::Units(theme.icon.size))
+                        .width(Length::Units(theme.icon.size)),
                 ),
                 Extension::Png => Container::new(
                     Image::new(&icon.path)
-                        .height(Length::Units(THEME.icon_size))
-                        .width(Length::Units(THEME.icon_size)),
+                        .height(Length::Units(theme.icon.size))
+                        .width(Length::Units(theme.icon.size)),
                 ),
             },
             None => Container::new(fallback_icon())
-                .height(Length::Units(THEME.icon_size))
-                .width(Length::Units(THEME.icon_size)),
+                .height(Length::Units(theme.icon.size))
+                .width(Length::Units(theme.icon.size)),
         };
 
         let icon = icon
@@ -46,7 +46,43 @@ pub(crate) trait AsEntry<'a> {
             .height(theme.icon.height)
             .padding(theme.icon.padding.to_iced_padding());
 
-        let row = Row::new()
+        let row = if !theme.hide_category_icon {
+            let category_icon = THEME
+                .icon_theme
+                .as_ref()
+                .and_then(|_| self.get_category_icon());
+            let category_icon = match category_icon {
+                Some(icon) => match &icon.extension {
+                    Extension::Svg => Container::new(
+                        Svg::from_path(&icon.path)
+                            .height(Length::Units(theme.category_icon.size))
+                            .width(Length::Units(theme.category_icon.size)),
+                    ),
+                    Extension::Png => Container::new(
+                        Image::new(&icon.path)
+                            .height(Length::Units(theme.category_icon.size))
+                            .width(Length::Units(theme.category_icon.size)),
+                    ),
+                },
+                None => Container::new(fallback_icon())
+                    .height(Length::Units(theme.category_icon.size))
+                    .width(Length::Units(theme.category_icon.size)),
+            };
+
+            let category_icon = category_icon
+                .style(&theme.category_icon)
+                .align_y(theme.category_icon.align_y)
+                .align_x(theme.category_icon.align_x)
+                .width(theme.category_icon.width)
+                .height(theme.category_icon.height)
+                .padding(theme.category_icon.padding.to_iced_padding());
+
+            Row::new().push(category_icon)
+        } else {
+            Row::new()
+        };
+
+        let row = row
             .push(icon)
             .height(Length::Fill)
             .width(Length::Fill)
@@ -97,5 +133,6 @@ pub(crate) trait AsEntry<'a> {
 
     fn get_display_name(&self) -> &str;
     fn get_icon(&self) -> Option<IconPath>;
+    fn get_category_icon(&self) -> Option<IconPath>;
     fn get_description(&self) -> Option<Cow<'_, str>>;
 }

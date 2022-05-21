@@ -425,20 +425,29 @@ impl Onagre<'_> {
                     }
                     self.state.pop_search = search_updates;
                 }
-                Response::Fill(fill) => {
-                    let mode_prefix = &self.state.input_value.modifier_display;
-                    let fill = fill
-                        .strip_prefix(mode_prefix)
-                        .expect("Auto-completion Error");
-                    self.state.input_value.input_display = fill.into();
-                    self.state.input.move_cursor_to_end();
-                    let filled = self.state.input_value.input_display.clone();
-                    self.on_input_changed(filled);
-                }
+                Response::Fill(fill) => self.complete(fill),
             },
         };
 
         Command::none()
+    }
+
+    fn complete(&mut self, fill: String) {
+        let filled = if THEME.plugin_hint().is_none() {
+            self.state.input_value.input_display = fill.into();
+            self.state.input.move_cursor_to_end();
+            self.state.input_value.input_display.clone()
+        } else {
+            let mode_prefix = &self.state.input_value.modifier_display;
+            let fill = fill
+                .strip_prefix(mode_prefix)
+                .expect("Auto-completion Error");
+            self.state.input_value.input_display = fill.into();
+            self.state.input.move_cursor_to_end();
+            self.state.input_value.input_display.clone()
+        };
+
+        self.on_input_changed(filled);
     }
 
     fn on_execute(&mut self) -> Command<Message> {
