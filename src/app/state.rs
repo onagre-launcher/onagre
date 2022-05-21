@@ -46,13 +46,18 @@ impl State<'_> {
         }
     }
 
+    // TODO: refactor me please
     pub fn set_input(&mut self, input: &str) {
         let previous_modi = self.input_value.modifier_display.clone();
 
         if !previous_modi.is_empty() {
             if input.is_empty() {
                 self.input_value.modifier_display = "".to_string();
-                self.input_value.input_display = previous_modi;
+                self.input_value.input_display = if THEME.plugin_hint().is_none() {
+                    input.to_string()
+                } else {
+                    previous_modi
+                };
                 self.input.move_cursor_to_end();
                 self.input_value.mode = ActiveMode::DesktopEntry;
             } else {

@@ -3,6 +3,7 @@ use iced_native::widget::Svg;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 
+use crate::THEME;
 use anyhow::anyhow;
 use pop_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};
@@ -39,7 +40,7 @@ impl IconPath {
             .and_then(Self::from_path)
     }
 
-    pub fn from_icon_source(source: Option<&IconSource>) -> Option<Self> {
+    pub fn absolute_from_icon_source(source: Option<&IconSource>) -> Option<Self> {
         source.and_then(|icon| {
             let path = match icon {
                 IconSource::Name(icon) => icon,
@@ -48,6 +49,16 @@ impl IconPath {
 
             IconPath::from_path(path.as_ref())
         })
+    }
+
+    pub fn from_source(source: &IconSource, theme: &String) -> Option<Self> {
+        match source {
+            IconSource::Name(name) => IconPath::lookup(name, theme, THEME.icon_size),
+            IconSource::Mime(mime) => {
+                let name = mime.replace('/', "-");
+                IconPath::lookup(&name, theme, THEME.icon_size)
+            }
+        }
     }
 
     pub fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {

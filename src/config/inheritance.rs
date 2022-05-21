@@ -40,7 +40,9 @@ impl Inherit for Theme {
 
     fn propagate_icon_size(&mut self) {
         self.app_container.rows.row.icon.size = self.icon_size;
+        self.app_container.rows.row.category_icon.size = self.icon_size;
         self.app_container.rows.row_selected.icon.size = self.icon_size;
+        self.app_container.rows.row_selected.category_icon.size = self.icon_size;
     }
 
     fn propagate_color(&mut self) {

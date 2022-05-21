@@ -24,10 +24,12 @@ pub struct RowStyles {
     pub color: OnagreColor,
     pub border_color: OnagreColor,
     pub hide_description: bool,
+    pub hide_category_icon: bool,
     // Children
     pub title: GenericContainerStyle,
     pub description: GenericContainerStyle,
     pub icon: IconStyle,
+    pub category_icon: IconStyle,
 }
 
 impl Default for RowStyles {
@@ -44,9 +46,11 @@ impl Default for RowStyles {
             align_y: Vertical::Bottom,
             border_color: OnagreColor::RED,
             hide_description: false,
+            hide_category_icon: false,
             title: GenericContainerStyle::default(),
             description: GenericContainerStyle::description_default(),
             icon: Default::default(),
+            category_icon: IconStyle::category_default(),
         }
     }
 }
