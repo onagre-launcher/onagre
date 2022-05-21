@@ -6,14 +6,13 @@ Onagre is a general purpose application launcher for X and wayland  inspired by 
 
 ## Disclaimer 
 
-⚠️️ Onagre is currently unreleased. 
-Until the roadmap is completed, expect breaking changes, bugs and performance issues. ⚠️
+⚠️️ Onagre is currently unreleased, alpha is comming soon ⚠️
 
 ## Difference with wofi/rofi
 
 I built onagre for my main setup (sway/i3) as an alternative to [wofi](https://hg.sr.ht/~scoopta/wofi) so it's worth mentioning there are a few differences : 
 
-- Window transparency.
+- Window transparency (Currently broken on wayland see: https://github.com/gfx-rs/wgpu/issues/687).
 - Rounded corners (even on sway).
 - Several default plugins (thanks to pop-launcher)
 - Change mode with prefix not rofi like modi.
@@ -63,33 +62,11 @@ Mode with no prefix are enabled by default, there entry will be mixed in the sea
 | External    | Shell command as launcher entries                             | configurable    | `$HOME/.config/onagre/config.toml`                        |
 | Help        | List available pop-launcher modes                             | '?'             |                                                           |
 
-## Configuration
-
-### External mode
-
-**1. Example:**
-
-You can add mode from external commands like so: 
-
-```toml
-# Integrate `pass` password manager.
-# Note that we need to run command in a subshell to escape double quotes and have env variables accessible.
-[modes.pass]
-source = "sh -c \"cd $HOME/.password-store && fd -t f . | sed s/\\.gpg//\""
-# Execute this command on `enter` `%` will be replaced with the selected entry
-target = "sh -c \"pass -c %\""
-```
-
-**2. Alternate config:**
-
-You can provide alternate config and theme with the `--config` and `--theme` flags.
-For more info run `onagre --help`.
-
 ## Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.toml` and will fall back to the default theme if none is found.
+Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fall back to the default theme if none is found.
 
-⚠ Until the theming API is stabilized you can take a look at [the examples](docs/theme_examples)
+⚠ Until the theming API is stabilized you can take a look at [the examples](docs/config.example-ugly.scss)
 
 ## Screenshots
 
@@ -116,19 +93,6 @@ Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.toml` and wil
 ![screenshot](docs/screenshots/sc-file.png)
 
 *File mode*
-
-
-## Roadmap
-
-  - [x] default desktop entries launcher. 
-  - [x] optional desktop icons.
-  - [x] custom menu from external command.
-  - [x] configurable styling.
-  - [x] config from flag.
-  - [x] prefix mode search (ex: type "de" to search for desktop entries).
-  - [x] transparency 
-  - [ ] packaging 
-  - [ ] theme config stabilization
 
 ## Code of conduct
 
