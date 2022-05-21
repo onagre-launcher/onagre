@@ -1,10 +1,10 @@
+use crate::app::style::app::AppContainerStyles;
+use crate::app::style::rows::generic::GenericContainerStyle;
+use crate::app::style::scrollable::scroller::ScrollerStyles;
+use crate::app::style::search::input::SearchInputStyles;
+use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use crate::ui::style::app::AppContainerStyles;
-use crate::ui::style::rows::generic::GenericContainerStyle;
-use crate::ui::style::scrollable::scroller::ScrollerStyles;
-use crate::ui::style::search::input::SearchInputStyles;
-use crate::ui::style::search::SearchContainerStyles;
 use iced::Background;
 use iced_style::container;
 

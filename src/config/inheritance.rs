@@ -1,7 +1,7 @@
-use crate::ui::style::app::AppContainerStyles;
-use crate::ui::style::rows::RowStyles;
-use crate::ui::style::scrollable::RowContainerStyle;
-use crate::ui::style::search::SearchContainerStyles;
+use crate::app::style::app::AppContainerStyles;
+use crate::app::style::rows::RowStyles;
+use crate::app::style::scrollable::RowContainerStyle;
+use crate::app::style::search::SearchContainerStyles;
 use crate::Theme;
 
 // Propagate style from parent to children

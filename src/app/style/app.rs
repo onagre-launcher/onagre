@@ -1,8 +1,8 @@
+use crate::app::style::scrollable::scroller::ScrollerStyles;
+use crate::app::style::scrollable::RowContainerStyle;
+use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use crate::ui::style::scrollable::scroller::ScrollerStyles;
-use crate::ui::style::scrollable::RowContainerStyle;
-use crate::ui::style::search::SearchContainerStyles;
 use iced::{container, Color};
 use iced_native::Background;
 

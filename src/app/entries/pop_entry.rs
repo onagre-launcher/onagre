@@ -1,7 +1,7 @@
 use pop_launcher_toolkit::launcher::{IconSource, SearchResult};
 use std::borrow::Cow;
 
-use crate::entries::AsEntry;
+use crate::app::entries::AsEntry;
 use crate::icons::IconPath;
 use crate::THEME;
 

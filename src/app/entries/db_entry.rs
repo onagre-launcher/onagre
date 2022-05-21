@@ -5,12 +5,12 @@ use once_cell::sync::Lazy;
 use pop_launcher_toolkit::launcher::IconSource;
 use serde::Deserialize;
 
+use crate::app::entries::AsEntry;
+use crate::app::mode::WEB_CONFIG;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
-use crate::entries::AsEntry;
 use crate::icons::{Extension, IconPath};
-use crate::ui::mode::WEB_CONFIG;
 use crate::THEME;
 
 static TERMINAL_ICON: Lazy<Option<IconSource>> =

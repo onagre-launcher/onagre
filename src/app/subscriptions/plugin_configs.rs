@@ -1,4 +1,4 @@
-use crate::ui::plugin_matchers::Plugin;
+use crate::app::plugin_matchers::Plugin;
 use iced::futures::StreamExt;
 use iced_native::futures::stream::BoxStream;
 use iced_native::Subscription;

@@ -1,19 +1,18 @@
 use std::path::PathBuf;
 
 use anyhow::anyhow;
+use app::style::Theme;
 use log::debug;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use structopt::StructOpt;
-use ui::style::Theme;
 
+pub mod app;
 pub mod config;
 pub mod db;
-pub mod entries;
 pub mod font;
 pub mod freedesktop;
 pub mod icons;
-pub mod ui;
 
 pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {
     Mutex::new(
@@ -52,5 +51,5 @@ pub fn main() -> iced::Result {
         debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
-    ui::run()
+    app::run()
 }
