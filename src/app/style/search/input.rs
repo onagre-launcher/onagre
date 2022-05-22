@@ -17,7 +17,7 @@ pub struct SearchInputStyles {
     pub text_width: Length,
 
     // Layout
-    pub size: u16,
+    pub font_size: u16,
     pub width: Length,
     pub height: Length,
     pub align_x: Horizontal,
@@ -38,7 +38,7 @@ impl Default for SearchInputStyles {
             value_color: OnagreColor::DEFAULT_TEXT,
             selection_color: OnagreColor::DEFAULT_BORDER,
             text_width: Length::Fill,
-            size: 14,
+            font_size: 14,
             width: Length::Fill,
             height: Length::Fill,
             align_x: Horizontal::Left,

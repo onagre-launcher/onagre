@@ -76,7 +76,6 @@ impl TryFrom<Pair<'_, Rule>> for Theme {
                     theme.background = helpers::unwrap_hex_color(pair)?;
                     theme.propagate_background();
                 }
-                Rule::spacing => theme.background = helpers::unwrap_hex_color(pair)?,
                 Rule::color => {
                     theme.color = helpers::unwrap_hex_color(pair)?;
                     theme.propagate_color();
@@ -201,6 +200,7 @@ impl ApplyConfig for SearchContainerStyles {
                 Rule::padding_bottom => self.padding.bottom = helpers::unwrap_attr_u16(pair)?,
                 Rule::padding_right => self.padding.right = helpers::unwrap_attr_u16(pair)?,
                 Rule::padding_left => self.padding.left = helpers::unwrap_attr_u16(pair)?,
+                Rule::spacing => self.spacing = helpers::unwrap_attr_u16(pair)?,
                 Rule::width => self.width = helpers::unwrap_length(pair)?,
                 Rule::height => self.height = helpers::unwrap_length(pair)?,
                 Rule::align_x => self.align_x = helpers::unwrap_x(pair)?,
@@ -239,7 +239,7 @@ impl ApplyConfig for SearchInputStyles {
                 Rule::placeholder_color => {
                     self.placeholder_color = helpers::unwrap_hex_color(pair)?
                 }
-                Rule::font_size => self.size = helpers::unwrap_attr_u16(pair)?,
+                Rule::font_size => self.font_size = helpers::unwrap_attr_u16(pair)?,
 
                 // Layout
                 Rule::padding => {
@@ -310,13 +310,13 @@ impl ApplyConfig for RowStyles {
                     self.background = helpers::unwrap_hex_color(pair)?;
                     self.propagate_background();
                 }
-                Rule::border_color => {
-                    self.border_color = helpers::unwrap_hex_color(pair)?;
-                    self.propagate_color();
-                }
+                Rule::border_color => self.border_color = helpers::unwrap_hex_color(pair)?,
                 Rule::border_radius => self.border_radius = helpers::unwrap_attr_f32(pair)?,
                 Rule::border_width => self.border_width = helpers::unwrap_attr_f32(pair)?,
-                Rule::color => self.color = helpers::unwrap_hex_color(pair)?,
+                Rule::color => {
+                    self.color = helpers::unwrap_hex_color(pair)?;
+                    self.propagate_color();
+                }
 
                 // Iced Layout
                 Rule::padding => {
@@ -326,6 +326,7 @@ impl ApplyConfig for RowStyles {
                 Rule::padding_bottom => self.padding.bottom = helpers::unwrap_attr_u16(pair)?,
                 Rule::padding_right => self.padding.right = helpers::unwrap_attr_u16(pair)?,
                 Rule::padding_left => self.padding.left = helpers::unwrap_attr_u16(pair)?,
+                Rule::spacing => self.spacing = helpers::unwrap_attr_u16(pair)?,
                 Rule::width => self.width = helpers::unwrap_length(pair)?,
                 Rule::height => self.height = helpers::unwrap_length(pair)?,
                 Rule::align_x => self.align_x = helpers::unwrap_x(pair)?,
@@ -338,7 +339,10 @@ impl ApplyConfig for RowStyles {
                 }
                 Rule::title_row => self.title.apply(pair)?,
                 Rule::icon => self.icon.apply(pair)?,
-                Rule::category_icon => self.category_icon.apply(pair)?,
+                Rule::category_icon => {
+                    self.hide_category_icon = false;
+                    self.category_icon.apply(pair)?
+                }
                 _ => unreachable!(),
             }
         }
@@ -401,7 +405,7 @@ impl ApplyConfig for IconStyle {
                 Rule::height => self.height = helpers::unwrap_length(pair)?,
                 Rule::align_x => self.align_x = helpers::unwrap_x(pair)?,
                 Rule::align_y => self.align_y = helpers::unwrap_y(pair)?,
-                Rule::icon_size => self.size = helpers::unwrap_attr_u16(pair)?,
+                Rule::icon_size => self.icon_size = helpers::unwrap_attr_u16(pair)?,
                 _ => unreachable!(),
             }
         }

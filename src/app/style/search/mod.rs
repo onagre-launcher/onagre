@@ -21,6 +21,7 @@ pub struct SearchContainerStyles {
 
     // Layout
     pub padding: OnagrePadding,
+    pub spacing: u16,
     pub width: Length,
     pub height: Length,
     pub align_x: Horizontal,
@@ -48,6 +49,7 @@ impl Default for SearchContainerStyles {
             padding: OnagrePadding::ZERO,
             input: Default::default(),
             plugin_hint: None,
+            spacing: 2,
         }
     }
 }

@@ -32,17 +32,17 @@ impl Inherit for Theme {
 
     fn propagate_font_size(&mut self) {
         let font_size = self.font_size;
-        self.app_container.search.input.size = font_size;
+        self.app_container.search.input.font_size = font_size;
         if let Some(hint) = &mut self.app_container.search.plugin_hint {
             hint.font_size = font_size
         }
     }
 
     fn propagate_icon_size(&mut self) {
-        self.app_container.rows.row.icon.size = self.icon_size;
-        self.app_container.rows.row.category_icon.size = self.icon_size;
-        self.app_container.rows.row_selected.icon.size = self.icon_size;
-        self.app_container.rows.row_selected.category_icon.size = self.icon_size;
+        self.app_container.rows.row.icon.icon_size = self.icon_size;
+        self.app_container.rows.row.category_icon.icon_size = self.icon_size;
+        self.app_container.rows.row_selected.icon.icon_size = self.icon_size;
+        self.app_container.rows.row_selected.category_icon.icon_size = self.icon_size;
     }
 
     fn propagate_color(&mut self) {
@@ -55,8 +55,10 @@ impl Inherit for AppContainerStyles {
     fn propagate_background(&mut self) {
         self.rows.background = self.background;
         self.rows.propagate_background();
+
         self.search.background = self.background;
         self.search.propagate_background();
+
         self.scrollable.background = self.background;
     }
 
@@ -92,12 +94,14 @@ impl Inherit for RowStyles {
         self.title.background = self.background;
         self.description.background = self.background;
         self.icon.background = self.background;
+        self.category_icon.background = self.background;
     }
 
     fn propagate_color(&mut self) {
         self.title.color = self.color;
         self.description.color = self.color;
         self.icon.color = self.color;
+        self.category_icon.color = self.color;
     }
 }
 

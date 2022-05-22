@@ -20,7 +20,7 @@ pub struct IconStyle {
     pub height: Length,
     pub align_x: Horizontal,
     pub align_y: Vertical,
-    pub size: u16,
+    pub icon_size: u16,
 }
 
 impl Eq for IconStyle {}
@@ -46,7 +46,7 @@ impl Default for IconStyle {
             height: Length::Shrink,
             align_x: Horizontal::Center,
             align_y: Vertical::Center,
-            size: 22,
+            icon_size: 22,
         }
     }
 }
@@ -54,7 +54,7 @@ impl Default for IconStyle {
 impl IconStyle {
     pub(crate) fn category_default() -> Self {
         Self {
-            size: 12,
+            icon_size: 12,
             padding: OnagrePadding {
                 top: 10,
                 right: 6,

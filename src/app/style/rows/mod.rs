@@ -14,6 +14,7 @@ pub struct RowStyles {
     pub padding: OnagrePadding,
     pub width: Length,
     pub height: Length,
+    pub spacing: u16,
     pub align_x: Horizontal,
     pub align_y: Vertical,
 
@@ -25,6 +26,7 @@ pub struct RowStyles {
     pub border_color: OnagreColor,
     pub hide_description: bool,
     pub hide_category_icon: bool,
+
     // Children
     pub title: GenericContainerStyle,
     pub description: GenericContainerStyle,
@@ -51,6 +53,7 @@ impl Default for RowStyles {
             description: GenericContainerStyle::description_default(),
             icon: Default::default(),
             category_icon: IconStyle::category_default(),
+            spacing: 2,
         }
     }
 }

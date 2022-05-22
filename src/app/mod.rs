@@ -197,7 +197,7 @@ impl Application for Onagre<'_> {
             )
             .padding(THEME.search_input().padding.to_iced_padding())
             .width(THEME.search_input().text_width)
-            .size(THEME.search_input().size)
+            .size(THEME.search_input().font_size)
             .style(THEME.search_input()),
         )
         .width(THEME.search_input().width)
@@ -210,31 +210,32 @@ impl Application for Onagre<'_> {
         // Or we display the normal search input
         let search_bar = match THEME.plugin_hint() {
             None => search_bar.push(search_input),
-            Some(plugin_hint_style) => {
-                if !self.state.input_value.modifier_display.is_empty() {
-                    let plugin_hint = Container::new(
-                        Text::new(&self.state.input_value.modifier_display)
-                            .vertical_alignment(Vertical::Center)
-                            .horizontal_alignment(Horizontal::Center),
-                    )
-                    .style(plugin_hint_style)
-                    .width(plugin_hint_style.width)
-                    .height(plugin_hint_style.height)
-                    .align_y(plugin_hint_style.align_y)
-                    .align_x(plugin_hint_style.align_x)
-                    .padding(plugin_hint_style.padding.to_iced_padding());
+            Some(plugin_hint_style) => if !self.state.input_value.modifier_display.is_empty() {
+                let plugin_hint = Container::new(
+                    Text::new(&self.state.input_value.modifier_display)
+                        .vertical_alignment(Vertical::Center)
+                        .horizontal_alignment(Horizontal::Center)
+                        .size(plugin_hint_style.font_size),
+                )
+                .style(plugin_hint_style)
+                .width(plugin_hint_style.width)
+                .height(plugin_hint_style.height)
+                .align_y(plugin_hint_style.align_y)
+                .align_x(plugin_hint_style.align_x)
+                .padding(plugin_hint_style.padding.to_iced_padding());
 
-                    search_bar.push(plugin_hint).push(search_input)
-                } else {
-                    search_bar.push(search_input)
-                }
+                search_bar.push(plugin_hint).push(search_input)
+            } else {
+                search_bar.push(search_input)
             }
+            .spacing(THEME.search().spacing),
         };
 
         let search_bar = Container::new(search_bar)
             .style(THEME.search())
             .align_x(THEME.search().align_x)
             .align_y(THEME.search().align_y)
+            .padding(THEME.search().padding.to_iced_padding())
             .width(THEME.search().width)
             .height(THEME.search().height);
 

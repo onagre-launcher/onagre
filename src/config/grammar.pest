@@ -137,9 +137,11 @@ search = {
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height |  align_x | align_y | plugin_hint | bar )*
+    ~ (background | color | border_color | border_radius | border_width
+    | padding | padding_left | padding_right | padding_bottom | padding_top
+    | spacing
+    | width | height |  align_x | align_y
+    | plugin_hint | bar )*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
@@ -150,7 +152,8 @@ plugin_hint = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | spacing | align_y | align_x)*
+    | width | height | align_y | align_x
+    | font_size)*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
@@ -187,10 +190,11 @@ selected_row = {
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
+    ~ (background | color | border_color | border_radius | border_width
+    | padding | padding_left | padding_right | padding_bottom | padding_top
     | align_x | align_y
     | width | height
+    | spacing
     | description_row | title_row | category_icon | icon )*
     ~ DELIMITER_END
     ~ NEWLINE*
@@ -200,10 +204,11 @@ default_row = {
     ~ NEWLINE*
     ~ DELIMITER_START
     ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
+    ~ (background | color | border_color | border_radius | border_width
+    | padding | padding_left | padding_right | padding_bottom | padding_top
     | width | height
     | align_y | align_x
+    | spacing
     | description_row | title_row | category_icon | icon )*
     ~ DELIMITER_END
     ~ NEWLINE*
@@ -215,10 +220,11 @@ description_row = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | spacing | align_y | align_x | font_size)*
+    | width | height | align_y | align_x | font_size)*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
+
 title_row = {
     ".title"
     ~ NEWLINE*
@@ -226,7 +232,7 @@ title_row = {
     ~ NEWLINE*
     ~ (background | color | border_color | border_radius | border_width | padding
     | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | spacing |  align_x | align_y | font_size)*
+    | width | height |  align_x | align_y | font_size)*
     ~ DELIMITER_END
     ~ NEWLINE*
 }
