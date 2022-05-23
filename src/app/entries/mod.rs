@@ -3,8 +3,8 @@ use crate::app::style::rows::RowStyles;
 use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
-use iced::{Container, Image, Length, Row, Svg, Text};
-use iced_native::widget::Column;
+use iced::{Container, Image, Length, Row, Text};
+use iced_native::widget::{Column};
 use iced_native::Alignment;
 use std::borrow::Cow;
 
@@ -54,7 +54,7 @@ pub(crate) trait AsEntry<'a> {
         let icon = match icon {
             Some(icon) => match &icon.extension {
                 Extension::Svg => Container::new(
-                    Svg::from_path(&icon.path)
+            icon.to_svg(&theme.color)
                         .height(Length::Units(theme.icon_size))
                         .width(Length::Units(theme.icon_size)),
                 ),
@@ -65,7 +65,7 @@ pub(crate) trait AsEntry<'a> {
                 ),
             },
             None => Container::new(
-                fallback_icon()
+                fallback_icon(&theme.color)
                     .height(Length::Units(theme.icon_size))
                     .width(Length::Units(theme.icon_size)),
             ),

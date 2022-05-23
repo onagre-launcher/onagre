@@ -25,7 +25,7 @@ sled = "0.34.7"
 
 pop-launcher-toolkit = { git = "https://github.com/pop-os/launcher/" }
 structopt = { version = "^0", default-features = false, optional = true }
-freedesktop-icons = "0.1.1"
+freedesktop-icons = { path = "../freedestkop-icons"}
 
 log = { version = "0.4.11" }
 env_logger = { version = "0.8.1" }

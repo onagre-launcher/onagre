@@ -99,12 +99,14 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
                     Some(IconPath {
                         path,
                         extension: Extension::Png,
+                        symbolic: filename.ends_with("-symbolic")
                     })
                 } else if path.with_extension("ico").exists() {
                     ico_to_png(path.with_extension("ico"));
                     Some(IconPath {
                         path,
                         extension: Extension::Png,
+                        symbolic: filename.ends_with("-symbolic")
                     })
                 } else {
                     IconPath::absolute_from_icon_source(WEB_ICON.as_ref())
