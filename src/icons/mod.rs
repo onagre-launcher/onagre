@@ -1,20 +1,21 @@
-use std::collections::HashMap;
 use iced_native::svg::Handle;
 use iced_native::widget::Svg;
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use crate::config::color::OnagreColor;
 use crate::THEME;
 use anyhow::anyhow;
 use once_cell::sync::Lazy;
 use pop_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};
-use crate::config::color::OnagreColor;
 
 // We use this only for symbolic svg icons which needs to be loaded with a color theme
 // For other icons, the freedesktop-icon crate has a cache already
-pub(crate) static SYMBOLIC_ICON_CACHE: Lazy<Mutex<HashMap<String, Vec<u8>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+pub(crate) static SYMBOLIC_ICON_CACHE: Lazy<Mutex<HashMap<String, Vec<u8>>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
 
 // This work is licenced under the terms of either the GNU LGPL v3 or
 // Creative Commons Attribution-Share Alike 3.0 United States License.
@@ -55,7 +56,7 @@ fn inject_color_into_svg(content: &str, hex_color: &str) -> String {
     let hex_color = &hex_color[0..7];
 
     let mut string = content.to_string();
-    for (pos, _) in content.match_indices("#") {
+    for (pos, _) in content.match_indices('#') {
         string.replace_range(pos..pos + 7, hex_color);
     }
 
@@ -99,7 +100,7 @@ impl IconPath {
         })
     }
 
-    pub fn from_source(source: &IconSource, theme: &String) -> Option<Self> {
+    pub fn from_source(source: &IconSource, theme: &str) -> Option<Self> {
         match source {
             IconSource::Name(name) => IconPath::lookup(name, theme, THEME.icon_size),
             IconSource::Mime(mime) => {
@@ -123,20 +124,20 @@ impl IconPath {
 
     // If we have a symbolic icon try to replace the foreground color with the current
     // one and cache the result, otherwise build the svg from icon path
-    pub fn  to_svg(&self, color: &OnagreColor) -> Svg {
+    pub fn to_svg(&self, color: &OnagreColor) -> Svg {
         if self.symbolic {
             let mut icon_cache = SYMBOLIC_ICON_CACHE.lock().unwrap();
             let hex_color = color.to_string();
             let key = format!("{hex_color}{:?}", self.path);
             let svg = match icon_cache.get(&key) {
                 None => {
-                    let content = std::fs::read_to_string(&self.path)
-                        .expect("Icon path does not exists");
+                    let content =
+                        std::fs::read_to_string(&self.path).expect("Icon path does not exists");
                     let svg = inject_color_into_svg(&content, &hex_color);
                     icon_cache.insert(key.clone(), svg.as_bytes().to_vec());
                     icon_cache.get(&key).unwrap()
                 }
-                Some(svg) => svg
+                Some(svg) => svg,
             };
 
             let handle = Handle::from_memory(svg.as_slice());

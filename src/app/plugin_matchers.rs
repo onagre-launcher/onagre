@@ -55,25 +55,14 @@ impl Plugin {
 }
 
 pub fn match_web_plugins(text: &str) -> Option<(PluginMode, String)> {
-    match WEB_CONFIG.as_ref() {
-        None => None,
-
-        // Fixme: we should attach the config to the plugin itself and check them on the fly
-        Some(config) => text.split_once(' ').and_then(|(mode, query)| {
-            let is_match = config
-                .rules
-                .iter()
-                .flat_map(|rule| rule.matches.as_slice())
-                .any(|matches| matches.contains(&mode.to_string()));
-
-            if is_match {
-                let mode = PluginMode::new_mode_web(mode);
-                Some((mode, query.to_string()))
-            } else {
-                None
-            }
-        }),
-    }
+    text.split_once(' ').and_then(|(mode, query)| {
+        if WEB_CONFIG.get(mode).is_some() {
+            let mode = PluginMode::new_mode_web(mode);
+            Some((mode, query.to_string()))
+        } else {
+            None
+        }
+    })
 }
 
 impl Plugin {
@@ -140,7 +129,7 @@ mod test {
                 PluginMode {
                     plugin_name: "find".to_string(),
                     modifier: "find ".to_string(),
-                    history: false
+                    history: false,
                 },
                 "some text".to_string()
             ))
@@ -178,7 +167,7 @@ mod test {
                 PluginMode {
                     plugin_name: "find".to_string(),
                     modifier: "find ".to_string(),
-                    history: false
+                    history: false,
                 },
                 "".to_string()
             ))

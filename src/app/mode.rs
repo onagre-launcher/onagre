@@ -1,13 +1,8 @@
 use crate::app::plugin_matchers::PluginMode;
 use once_cell::sync::Lazy;
-use serde::Deserialize;
+use pop_launcher_toolkit::plugins::web::Config as WebConfig;
 
-pub(crate) static WEB_CONFIG: Lazy<Option<WebConfig>> = Lazy::new(|| {
-    pop_launcher_toolkit::launcher::config::find("web")
-        .next()
-        .and_then(|path| std::fs::read_to_string(path).ok())
-        .and_then(|config| ron::from_str::<WebConfig>(&config).ok())
-});
+pub(crate) static WEB_CONFIG: Lazy<WebConfig> = Lazy::new(pop_launcher_toolkit::plugins::web::load);
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ActiveMode {
@@ -39,21 +34,4 @@ impl Default for ActiveMode {
     fn default() -> Self {
         ActiveMode::History
     }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct WebConfig {
-    pub rules: Vec<Rule>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Rule {
-    pub matches: Vec<String>,
-    pub queries: Vec<WebQuery>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct WebQuery {
-    pub name: String,
-    pub query: String,
 }

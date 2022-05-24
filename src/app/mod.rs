@@ -435,7 +435,7 @@ impl Onagre<'_> {
 
     fn complete(&mut self, fill: String) {
         let filled = if THEME.plugin_hint().is_none() {
-            self.state.input_value.input_display = fill.into();
+            self.state.input_value.input_display = fill;
             self.state.input.move_cursor_to_end();
             self.state.input_value.input_display.clone()
         } else {

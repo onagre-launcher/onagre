@@ -76,15 +76,8 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
 
     fn get_icon(&self) -> Option<IconPath> {
         WEB_CONFIG
-            .as_ref()
-            .and_then(|config| {
-                config
-                    .rules
-                    .iter()
-                    .find(|rule| rule.matches.contains(&self.kind.to_string()))
-            })
-            // FIXME: see web/config.ron
-            .map(|item| item.queries.first().unwrap().name.to_owned())
+            .get(&self.kind)
+            .and_then(|definition| definition.first().map(|def| &def.name))
             .map(|web_query_kind| {
                 (
                     dirs::cache_dir().unwrap().join("pop-launcher"),
@@ -99,14 +92,14 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
                     Some(IconPath {
                         path,
                         extension: Extension::Png,
-                        symbolic: filename.ends_with("-symbolic")
+                        symbolic: filename.ends_with("-symbolic"),
                     })
                 } else if path.with_extension("ico").exists() {
                     ico_to_png(path.with_extension("ico"));
                     Some(IconPath {
                         path,
                         extension: Extension::Png,
-                        symbolic: filename.ends_with("-symbolic")
+                        symbolic: filename.ends_with("-symbolic"),
                     })
                 } else {
                     IconPath::absolute_from_icon_source(WEB_ICON.as_ref())

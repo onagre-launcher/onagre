@@ -4,7 +4,7 @@ use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
 use iced::{Container, Image, Length, Row, Text};
-use iced_native::widget::{Column};
+use iced_native::widget::Column;
 use iced_native::Alignment;
 use std::borrow::Cow;
 
@@ -41,7 +41,8 @@ pub(crate) trait AsEntry<'a> {
             }
         };
 
-        let row = row.height(Length::Fill)
+        let row = row
+            .height(Length::Fill)
             .width(Length::Fill)
             .spacing(theme.spacing)
             // See : https://github.com/iced-rs/iced/pull/1044
@@ -54,7 +55,7 @@ pub(crate) trait AsEntry<'a> {
         let icon = match icon {
             Some(icon) => match &icon.extension {
                 Extension::Svg => Container::new(
-            icon.to_svg(&theme.color)
+                    icon.to_svg(&theme.color)
                         .height(Length::Units(theme.icon_size))
                         .width(Length::Units(theme.icon_size)),
                 ),
@@ -83,23 +84,23 @@ pub(crate) trait AsEntry<'a> {
         let title_row = Container::new(
             Row::new().push(Text::new(self.get_display_name()).size(theme.title.font_size)),
         )
-            .style(&theme.title)
-            .padding(theme.title.padding.to_iced_padding())
-            .width(theme.title.width)
-            .height(theme.title.height)
-            .align_x(theme.title.align_x)
-            .align_y(theme.title.align_y);
+        .style(&theme.title)
+        .padding(theme.title.padding.to_iced_padding())
+        .width(theme.title.width)
+        .height(theme.title.height)
+        .align_x(theme.title.align_x)
+        .align_y(theme.title.align_y);
 
         let description_row = self.get_description().map(|description| {
             Container::new(
                 Row::new().push(Text::new(description.as_ref()).size(theme.description.font_size)),
             )
-                .style(&theme.description)
-                .padding(theme.description.padding.to_iced_padding())
-                .width(theme.description.width)
-                .height(theme.description.height)
-                .align_x(theme.description.align_x)
-                .align_y(theme.description.align_y)
+            .style(&theme.description)
+            .padding(theme.description.padding.to_iced_padding())
+            .width(theme.description.width)
+            .height(theme.description.height)
+            .align_x(theme.description.align_x)
+            .align_y(theme.description.align_y)
         });
 
         let column = Column::new().push(title_row);
