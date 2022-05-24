@@ -1,64 +1,63 @@
 use crate::app::mode::WEB_CONFIG;
-use pop_launcher_toolkit::service::config::PluginConfig;
+use crate::icons::IconPath;
 use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Plugin {
     pub name: String,
+    pub icon: Option<IconPath>,
     pub history: bool,
     pub help: Option<String>,
     pub regex: Option<Regex>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct PluginMode {
+pub struct QueryData {
+    pub icon: Option<IconPath>,
     pub plugin_name: String,
     pub modifier: String,
+    pub query: String,
     pub history: bool,
 }
 
-impl PluginMode {
-    fn new_mode_web<S: AsRef<str>>(modifier: S) -> PluginMode {
-        PluginMode {
+impl QueryData {
+    fn new_mode_web<S: AsRef<str>>(modifier: S, query: String) -> QueryData {
+        QueryData {
+            icon: None,
             plugin_name: "web".to_string(),
             modifier: modifier.as_ref().to_string(),
             history: true,
+            query,
         }
     }
 }
 
 impl Plugin {
-    pub fn from_subscription(name: String, config: PluginConfig, regex: Option<Regex>) -> Self {
-        Self {
-            help: config.query.help.map(|h| h.to_string()),
-            history: config.history,
-            name,
-            regex,
-        }
-    }
-
-    fn to_mode(&self) -> PluginMode {
-        PluginMode {
+    fn to_query_data(&self, query: String) -> QueryData {
+        QueryData {
+            icon: None,
             plugin_name: self.name.clone(),
             modifier: self.name.clone(),
+            query,
             history: self.history,
         }
     }
 
-    fn new_mode<S: AsRef<str>>(&self, modifier: S) -> PluginMode {
-        PluginMode {
+    fn new<S: AsRef<str>>(&self, modifier: S, query: String) -> QueryData {
+        QueryData {
+            icon: None,
             plugin_name: self.name.clone(),
             modifier: modifier.as_ref().to_string(),
+            query,
             history: self.history,
         }
     }
 }
 
-pub fn match_web_plugins(text: &str) -> Option<(PluginMode, String)> {
+pub fn match_web_plugins(text: &str) -> Option<QueryData> {
     text.split_once(' ').and_then(|(mode, query)| {
         if WEB_CONFIG.get(mode).is_some() {
-            let mode = PluginMode::new_mode_web(mode);
-            Some((mode, query.to_string()))
+            Some(QueryData::new_mode_web(mode, query.to_string()))
         } else {
             None
         }
@@ -66,12 +65,12 @@ pub fn match_web_plugins(text: &str) -> Option<(PluginMode, String)> {
 }
 
 impl Plugin {
-    pub fn try_match(&self, text: &str) -> Option<(PluginMode, String)> {
+    pub fn try_match(&self, text: &str) -> Option<QueryData> {
         self.match_plugin_help(text)
             .or_else(|| self.match_plugin_regex(text))
     }
 
-    fn match_plugin_regex(&self, text: &str) -> Option<(PluginMode, String)> {
+    fn match_plugin_regex(&self, text: &str) -> Option<QueryData> {
         // A dirty fix to prevent looping between modifier and search display
         // for the file mode, could this happen to other plugins ?
         if text == "~" {
@@ -90,26 +89,26 @@ impl Plugin {
                     .strip_prefix(mode)
                     .or_else(|| text.strip_prefix(&self.name))
                     .unwrap_or("");
-                let mode = self.new_mode(mode);
-
-                Some((mode, query.to_string())).filter(|(mode, _query)| !mode.modifier.is_empty())
+                if !mode.is_empty() {
+                    Some(self.new(mode, query.to_string()))
+                } else {
+                    None
+                }
             })
         } else {
             None
         }
     }
 
-    fn match_plugin_help(&self, text: &str) -> Option<(PluginMode, String)> {
-        text.split_once(&self.name).map(|(_, query)| {
-            let mode = self.to_mode();
-            (mode, query.to_string())
-        })
+    fn match_plugin_help(&self, text: &str) -> Option<QueryData> {
+        text.split_once(&self.name)
+            .map(|(_, query)| self.to_query_data(query.to_string()))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::app::plugin_matchers::{Plugin, PluginMode};
+    use crate::app::plugin_matchers::{Plugin, QueryData};
     use regex::Regex;
 
     #[test]
@@ -126,7 +125,7 @@ mod test {
         assert_eq!(
             match_,
             Some((
-                PluginMode {
+                QueryData {
                     plugin_name: "find".to_string(),
                     modifier: "find ".to_string(),
                     history: false,
@@ -164,7 +163,7 @@ mod test {
         assert_eq!(
             match_,
             Some((
-                PluginMode {
+                QueryData {
                     plugin_name: "find".to_string(),
                     modifier: "find ".to_string(),
                     history: false,

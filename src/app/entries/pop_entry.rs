@@ -23,17 +23,6 @@ impl<'a> AsEntry<'a> for PopSearchResult<'a> {
         }
     }
 
-    fn get_category_icon(&self) -> Option<IconPath> {
-        match &THEME.icon_theme {
-            Some(theme) => self
-                .0
-                .category_icon
-                .as_ref()
-                .and_then(|source| IconPath::from_source(source, theme)),
-            _ => None,
-        }
-    }
-
     fn get_description(&self) -> Option<Cow<'_, str>> {
         Some(Cow::Borrowed(self.0.description.as_str()))
     }

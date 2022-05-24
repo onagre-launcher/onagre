@@ -1,27 +1,16 @@
+use iced::Row;
 use std::borrow::Cow;
 use std::path::PathBuf;
 
-use once_cell::sync::Lazy;
-use pop_launcher_toolkit::launcher::IconSource;
-use serde::Deserialize;
-
 use crate::app::entries::AsEntry;
 use crate::app::mode::WEB_CONFIG;
+use crate::app::style::rows::RowStyles;
+use crate::app::Message;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::icons::{Extension, IconPath};
 use crate::THEME;
-
-static TERMINAL_ICON: Lazy<Option<IconSource>> =
-    Lazy::new(|| get_plugin_icon("terminal/plugin.ron"));
-
-static WEB_ICON: Lazy<Option<IconSource>> = Lazy::new(|| get_plugin_icon("web/plugin.ron"));
-
-#[derive(Deserialize)]
-struct PluginConfig {
-    icon: IconSource,
-}
 
 impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
     fn get_display_name(&self) -> &str {
@@ -38,32 +27,29 @@ impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
         }
     }
 
-    // Should we persist that or can it be reconstructed from the desktop entry file
-    fn get_category_icon(&self) -> Option<IconPath> {
-        None
-    }
-
     fn get_description(&self) -> Option<Cow<'_, str>> {
         self.description.as_ref().cloned()
     }
 }
 
 impl<'a> AsEntry<'a> for PluginCommandEntity<'a> {
+    // For plugin entities we use the category icon has the main icon
+    fn get_icon_layout<'b>(
+        &'a self,
+        category_icon: Option<&'a IconPath>,
+        style: &'static RowStyles,
+    ) -> Row<'b, Message>
+    where
+        'b: 'a,
+    {
+        let icon = Self::build_icon(&style.icon, category_icon);
+        Row::new().push(icon)
+    }
+
     fn get_display_name(&self) -> &str {
         self.query.as_ref()
     }
 
-    // TODO: we should hold the plugin config here and get the icon from there
-    fn get_icon(&self) -> Option<IconPath> {
-        IconPath::absolute_from_icon_source(TERMINAL_ICON.as_ref())
-    }
-
-    // TODO: we should hold the plugin config here and get the category icon from there
-    fn get_category_icon(&self) -> Option<IconPath> {
-        None
-    }
-
-    // TODO: persist this
     fn get_description(&self) -> Option<Cow<'_, str>> {
         None
     }
@@ -102,31 +88,14 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
                         symbolic: filename.ends_with("-symbolic"),
                     })
                 } else {
-                    IconPath::absolute_from_icon_source(WEB_ICON.as_ref())
+                    None
                 };
             })
-    }
-
-    // TODO: we should hold the plugin config here and get the icon from there
-    fn get_category_icon(&self) -> Option<IconPath> {
-        None
     }
 
     fn get_description(&self) -> Option<Cow<'_, str>> {
         None
     }
-}
-
-fn get_plugin_icon(plugin: &str) -> Option<IconSource> {
-    let path = pop_launcher_toolkit::launcher::plugin_paths()
-        .map(|path| path.as_ref().join(plugin))
-        .find(|path| path.exists());
-
-    path.map(std::fs::read_to_string)
-        .and_then(Result::ok)
-        .map(|plugin| ron::from_str::<PluginConfig>(&plugin))
-        .and_then(Result::ok)
-        .map(|plugin| plugin.icon)
 }
 
 // FIXME: This should be removed

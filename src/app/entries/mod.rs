@@ -12,33 +12,21 @@ pub(crate) mod db_entry;
 pub(crate) mod pop_entry;
 
 pub(crate) trait AsEntry<'a> {
-    fn to_row(&self, selected: Option<usize>, idx: usize) -> Container<'a, Message> {
-        let selected = selected.map(|selected| selected == idx).unwrap_or(false);
-        let theme = if selected {
-            &THEME.app_container.rows.row_selected
+    fn to_row<'b>(
+        &'a self,
+        selected: Option<usize>,
+        idx: usize,
+        category_icon: Option<&'a IconPath>,
+    ) -> Container<'b, Message>
+    where
+        'b: 'a,
+    {
+        let theme = self.get_style(selected, idx);
+
+        let row = if THEME.icon_theme.is_some() {
+            self.get_icon_layout(category_icon, theme)
         } else {
-            &THEME.app_container.rows.row
-        };
-
-        let row = match THEME.icon_theme.as_ref() {
-            None => Row::new(),
-            Some(_) => {
-                let icon = THEME.icon_theme.as_ref().and_then(|_| self.get_icon());
-                let icon = Self::build_icon(&theme.icon, icon);
-                let row = if !theme.hide_category_icon {
-                    let category_icon = THEME
-                        .icon_theme
-                        .as_ref()
-                        .and_then(|_| self.get_category_icon());
-
-                    let category_icon = Self::build_icon(&theme.category_icon, category_icon);
-                    Row::new().push(category_icon)
-                } else {
-                    Row::new()
-                };
-
-                row.push(icon)
-            }
+            Row::new()
         };
 
         let row = row
@@ -51,36 +39,10 @@ pub(crate) trait AsEntry<'a> {
         self.as_row(row, theme)
     }
 
-    fn build_icon(theme: &IconStyle, icon: Option<IconPath>) -> Container<'_, Message> {
-        let icon = match icon {
-            Some(icon) => match &icon.extension {
-                Extension::Svg => Container::new(
-                    icon.to_svg(&theme.color)
-                        .height(Length::Units(theme.icon_size))
-                        .width(Length::Units(theme.icon_size)),
-                ),
-                Extension::Png => Container::new(
-                    Image::new(&icon.path)
-                        .height(Length::Units(theme.icon_size))
-                        .width(Length::Units(theme.icon_size)),
-                ),
-            },
-            None => Container::new(
-                fallback_icon(&theme.color)
-                    .height(Length::Units(theme.icon_size))
-                    .width(Length::Units(theme.icon_size)),
-            ),
-        };
-
-        icon.style(theme)
-            .align_y(theme.align_y)
-            .align_x(theme.align_x)
-            .width(theme.width)
-            .height(theme.height)
-            .padding(theme.padding.to_iced_padding())
-    }
-
-    fn as_row(&self, row: Row<'a, Message>, theme: &'a RowStyles) -> Container<'a, Message> {
+    fn as_row<'b>(&self, row: Row<'b, Message>, theme: &'static RowStyles) -> Container<'b, Message>
+    where
+        'b: 'a,
+    {
         let title_row = Container::new(
             Row::new().push(Text::new(self.get_display_name()).size(theme.title.font_size)),
         )
@@ -119,8 +81,75 @@ pub(crate) trait AsEntry<'a> {
             .align_y(theme.align_y)
     }
 
+    fn get_style(&self, selected: Option<usize>, idx: usize) -> &'static RowStyles {
+        let selected = selected.map(|selected| selected == idx).unwrap_or(false);
+        if selected {
+            &THEME.app_container.rows.row_selected
+        } else {
+            &THEME.app_container.rows.row
+        }
+    }
+
+    fn get_icon_layout<'b>(
+        &'a self,
+        category_icon: Option<&'a IconPath>,
+        style: &'static RowStyles,
+    ) -> Row<'b, Message>
+    where
+        'b: 'a,
+    {
+        let icon = self.get_icon();
+        let icon = Self::build_icon(&style.icon, icon);
+        let row = if !style.hide_category_icon {
+            let category_icon = Self::build_icon(&style.category_icon, category_icon);
+            Row::new().push(category_icon)
+        } else {
+            Row::new()
+        };
+
+        row.push(icon)
+    }
+
+    fn build_icon<'b, I: AsRef<IconPath>>(
+        theme: &'static IconStyle,
+        icon: Option<I>,
+    ) -> Container<'b, Message>
+    where
+        'b: 'a,
+    {
+        let icon = match icon.as_ref() {
+            Some(icon) => match icon.as_ref().extension {
+                Extension::Svg => Container::new(
+                    icon.as_ref()
+                        .to_svg(&theme.color)
+                        .height(Length::Units(theme.icon_size))
+                        .width(Length::Units(theme.icon_size)),
+                ),
+                Extension::Png => Container::new(
+                    Image::new(&icon.as_ref().path)
+                        .height(Length::Units(theme.icon_size))
+                        .width(Length::Units(theme.icon_size)),
+                ),
+            },
+            None => Container::new(
+                fallback_icon(&theme.color)
+                    .height(Length::Units(theme.icon_size))
+                    .width(Length::Units(theme.icon_size)),
+            ),
+        };
+
+        icon.style(theme)
+            .align_y(theme.align_y)
+            .align_x(theme.align_x)
+            .width(theme.width)
+            .height(theme.height)
+            .padding(theme.padding.to_iced_padding())
+    }
+
     fn get_display_name(&self) -> &str;
-    fn get_icon(&self) -> Option<IconPath>;
-    fn get_category_icon(&self) -> Option<IconPath>;
+
+    fn get_icon(&self) -> Option<IconPath> {
+        unreachable!()
+    }
     fn get_description(&self) -> Option<Cow<'_, str>>;
 }

@@ -63,11 +63,17 @@ fn inject_color_into_svg(content: &str, hex_color: &str) -> String {
     string
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IconPath {
     pub path: PathBuf,
     pub extension: Extension,
     pub symbolic: bool,
+}
+
+impl AsRef<IconPath> for IconPath {
+    fn as_ref(&self) -> &IconPath {
+        self
+    }
 }
 
 impl IconPath {
@@ -148,7 +154,7 @@ impl IconPath {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Extension {
     Svg,
     Png,

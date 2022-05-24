@@ -1,4 +1,4 @@
-use crate::app::plugin_matchers::PluginMode;
+use crate::app::plugin_matchers::QueryData;
 use once_cell::sync::Lazy;
 use pop_launcher_toolkit::plugins::web::Config as WebConfig;
 
@@ -8,7 +8,9 @@ pub(crate) static WEB_CONFIG: Lazy<WebConfig> = Lazy::new(pop_launcher_toolkit::
 pub enum ActiveMode {
     History,
     DesktopEntry,
-    Web(String),
+    Web {
+        modifier: String,
+    },
     Plugin {
         plugin_name: String,
         modifier: String,
@@ -16,15 +18,17 @@ pub enum ActiveMode {
     },
 }
 
-impl From<PluginMode> for ActiveMode {
-    fn from(plugin_mode: PluginMode) -> Self {
-        let mode = plugin_mode.plugin_name.as_str();
+impl From<QueryData> for ActiveMode {
+    fn from(query_data: QueryData) -> Self {
+        let mode = query_data.plugin_name.as_str();
         match mode {
-            "web" => ActiveMode::Web(plugin_mode.modifier),
+            "web" => ActiveMode::Web {
+                modifier: query_data.modifier,
+            },
             _other => ActiveMode::Plugin {
-                plugin_name: plugin_mode.plugin_name,
-                modifier: plugin_mode.modifier,
-                history: plugin_mode.history,
+                plugin_name: query_data.plugin_name,
+                modifier: query_data.modifier,
+                history: query_data.history,
             },
         }
     }

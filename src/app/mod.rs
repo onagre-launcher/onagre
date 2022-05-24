@@ -10,6 +10,7 @@ use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::font::DEFAULT_FONT;
 use crate::freedesktop::desktop::DesktopEntry;
+use crate::icons::IconPath;
 use crate::{font, THEME};
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
@@ -136,37 +137,54 @@ impl Application for Onagre<'_> {
                 plugin_name,
                 history,
                 ..
-            } if *history => self
-                .state
-                .cache
-                .plugin_history(plugin_name)
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx).into())
-                .collect(),
-            ActiveMode::Web(web_name) => self
-                .state
-                .cache
-                .web_history(web_name)
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx).into())
-                .collect(),
-            ActiveMode::History => self
-                .state
-                .cache
-                .de_history()
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx).into())
-                .collect(),
+            } if *history => {
+                let icon = self.state.plugin_matchers.get_plugin_icon(plugin_name);
+                self.state
+                    .cache
+                    .plugin_history(plugin_name)
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .collect()
+            }
+            ActiveMode::Web { modifier, .. } => {
+                let icon = self.state.plugin_matchers.get_plugin_icon("web");
+                self.state
+                    .cache
+                    .web_history(modifier)
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .collect()
+            }
+            ActiveMode::History => {
+                let icon = self
+                    .state
+                    .plugin_matchers
+                    .get_plugin_icon("desktop_entries");
+                self.state
+                    .cache
+                    .de_history()
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .collect()
+            }
             _ => self
                 .state
                 .pop_search
                 .iter()
                 .map(|entry| {
+                    let icon = match &THEME.icon_theme {
+                        Some(theme) => entry
+                            .category_icon
+                            .as_ref()
+                            .and_then(|source| IconPath::from_source(source, theme)),
+                        _ => None,
+                    };
+
                     PopSearchResult(entry)
-                        .to_row(selected, entry.id as usize)
+                        .to_row(selected, entry.id as usize, icon.as_ref())
                         .into()
                 })
                 .collect(),
@@ -296,7 +314,7 @@ impl Onagre<'_> {
                         .map(|entry| format!("{}{}", modifier, entry.query)),
                 }
             }
-            ActiveMode::Web(web_name) => {
+            ActiveMode::Web { modifier, .. } => {
                 // Get user input as pop-entry
                 match selected {
                     None => {
@@ -305,7 +323,7 @@ impl Onagre<'_> {
                     Some(selected) => self
                         .state
                         .cache
-                        .web_history(web_name)
+                        .web_history(modifier)
                         .get(selected)
                         .map(|entry| entry.query()),
                 }
@@ -320,7 +338,7 @@ impl Onagre<'_> {
             // For those mode first line is unselected on change
             // We want to issue a pop-launcher search request to get the query at index 0 in
             // the next search response, then activate it
-            ActiveMode::Web(_) | ActiveMode::History => Selection::Reset,
+            ActiveMode::Web { .. } | ActiveMode::History => Selection::Reset,
             ActiveMode::Plugin { history, .. } if *history => Selection::Reset,
             _ => Selection::PopLauncher(0),
         };
@@ -477,10 +495,10 @@ impl Onagre<'_> {
                         .expect("Unable to send pop-launcher request");
                 }
             }
-            ActiveMode::Web(kind) => {
+            ActiveMode::Web { modifier, .. } => {
                 let query = self.state.get_input();
-                let query = query.strip_prefix(kind).unwrap();
-                WebEntity::persist(query, kind, &self.state.cache.db);
+                let query = query.strip_prefix(modifier).unwrap();
+                WebEntity::persist(query, modifier, &self.state.cache.db);
                 // Running the user input query at index zero
                 if self.selected().is_none() {
                     self.pop_request(Request::Activate(0))
@@ -530,7 +548,7 @@ impl Onagre<'_> {
             }
             ActiveMode::History => self.state.cache.de_len(),
             ActiveMode::DesktopEntry => self.state.pop_search.len(),
-            ActiveMode::Web(web_name) => self.state.cache.web_history_len(web_name),
+            ActiveMode::Web { modifier, .. } => self.state.cache.web_history_len(modifier),
         }
     }
 

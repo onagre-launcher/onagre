@@ -5,6 +5,7 @@ use iced_native::widget::{scrollable, text_input};
 use log::debug;
 use pop_launcher_toolkit::launcher::SearchResult;
 
+use crate::icons::IconPath;
 use crate::THEME;
 use std::collections::HashMap;
 
@@ -17,7 +18,30 @@ pub struct State<'a> {
     pub scroll: scrollable::State,
     pub input: text_input::State,
     pub exec_on_next_search: bool,
-    pub plugin_matchers: HashMap<String, Plugin>,
+    pub plugin_matchers: PluginConfigCache,
+}
+
+#[derive(Debug)]
+pub struct PluginConfigCache {
+    pub(crate) inner: HashMap<String, Plugin>,
+}
+
+impl Default for PluginConfigCache {
+    fn default() -> Self {
+        Self {
+            inner: Default::default(),
+        }
+    }
+}
+
+impl PluginConfigCache {
+    pub fn get_plugin_icon(&self, plugin_name: &str) -> Option<IconPath> {
+        self.inner.get(plugin_name).and_then(|de| de.icon.clone())
+    }
+
+    pub fn insert(&mut self, key: String, plugin: Plugin) {
+        self.inner.insert(key, plugin);
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -67,20 +91,21 @@ impl State<'_> {
             let terms = &format!("{}{}", previous_modi, input);
             let plugin_split = match_web_plugins(terms).or_else(|| {
                 self.plugin_matchers
+                    .inner
                     .values()
                     .map(|matcher| matcher.try_match(terms))
                     .find_map(|match_| match_)
             });
 
-            if let Some((modi, query)) = plugin_split {
-                self.input_value.modifier_display = modi.modifier.clone();
-                self.input_value.mode = ActiveMode::from(modi);
+            if let Some(query_data) = plugin_split {
+                self.input_value.modifier_display = query_data.modifier.clone();
+                self.input_value.mode = ActiveMode::from(query_data.clone());
                 // If plugin-hint is disabled use the full input,
                 // otherwise use the split value
                 self.input_value.input_display = if THEME.plugin_hint().is_none() {
                     input.to_string()
                 } else {
-                    query
+                    query_data.query
                 }
             } else {
                 self.input_value.input_display = input.to_string();
@@ -97,7 +122,9 @@ impl State<'_> {
             ActiveMode::History | ActiveMode::DesktopEntry => {
                 self.input_value.input_display.clone()
             }
-            ActiveMode::Web(modifier) => format!("{modifier} {}", self.input_value.input_display),
+            ActiveMode::Web { modifier, .. } => {
+                format!("{modifier} {}", self.input_value.input_display)
+            }
             ActiveMode::Plugin { modifier, .. } => {
                 format!("{modifier}{}", self.input_value.input_display)
             }
@@ -129,7 +156,7 @@ impl Default for State<'_> {
             input: Default::default(),
             input_value: SearchInput::default(),
             exec_on_next_search: false,
-            plugin_matchers: HashMap::new(),
+            plugin_matchers: PluginConfigCache::default(),
         }
     }
 }
