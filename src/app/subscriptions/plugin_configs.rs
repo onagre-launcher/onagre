@@ -34,7 +34,7 @@ where
                         .icon
                         .as_ref()
                         .map(|source| (source, theme))
-                        .and_then(|(source, theme)| IconPath::from_source(&source, &theme))
+                        .and_then(|(source, theme)| IconPath::from_source(source, theme))
                 });
 
                 let name = path

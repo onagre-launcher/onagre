@@ -43,7 +43,7 @@ impl Plugin {
         }
     }
 
-    fn new<S: AsRef<str>>(&self, modifier: S, query: String) -> QueryData {
+    fn get_query_data<S: AsRef<str>>(&self, modifier: S, query: String) -> QueryData {
         QueryData {
             icon: None,
             plugin_name: self.name.clone(),
@@ -90,7 +90,7 @@ impl Plugin {
                     .or_else(|| text.strip_prefix(&self.name))
                     .unwrap_or("");
                 if !mode.is_empty() {
-                    Some(self.new(mode, query.to_string()))
+                    Some(self.get_query_data(mode, query.to_string()))
                 } else {
                     None
                 }

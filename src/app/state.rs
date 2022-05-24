@@ -21,17 +21,9 @@ pub struct State<'a> {
     pub plugin_matchers: PluginConfigCache,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct PluginConfigCache {
     pub(crate) inner: HashMap<String, Plugin>,
-}
-
-impl Default for PluginConfigCache {
-    fn default() -> Self {
-        Self {
-            inner: Default::default(),
-        }
-    }
 }
 
 impl PluginConfigCache {

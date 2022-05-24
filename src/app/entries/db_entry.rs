@@ -74,7 +74,7 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
                 // Unfortunately we need to copy .ico files to png extension for iced
                 // To render the icon
                 let path = path.join(format!("{}.png", &filename));
-                return if path.exists() {
+                if path.exists() {
                     Some(IconPath {
                         path,
                         extension: Extension::Png,
@@ -89,7 +89,7 @@ impl<'a> AsEntry<'a> for WebEntity<'a> {
                     })
                 } else {
                     None
-                };
+                }
             })
     }
 
