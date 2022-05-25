@@ -438,23 +438,3 @@ impl Theme {
         }
     }
 }
-
-#[cfg(test)]
-mod test {
-    use crate::app::style::Theme;
-    use crate::config::parse_file;
-    use pretty_assertions::assert_eq;
-
-    #[test]
-    fn should_parse_theme_config() {
-        let theme = parse_file("tests/theme.scss");
-
-        if let Err(err) = &theme {
-            println!("{err}")
-        }
-
-        let theme = theme.unwrap();
-
-        assert_eq!(theme, Theme::default());
-    }
-}

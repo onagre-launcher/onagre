@@ -115,6 +115,7 @@ mod test {
     fn should_split_entry() {
         let plugin = Plugin {
             name: "find".to_string(),
+            icon: None,
             history: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
@@ -124,27 +125,27 @@ mod test {
 
         assert_eq!(
             match_,
-            Some((
-                QueryData {
-                    plugin_name: "find".to_string(),
-                    modifier: "find ".to_string(),
-                    history: false,
-                },
-                "some text".to_string()
-            ))
+            Some(QueryData {
+                icon: None,
+                plugin_name: "find".to_string(),
+                modifier: "find".to_string(),
+                query: " some text".to_string(),
+                history: false,
+            })
         );
     }
 
     #[test]
-    fn should_not_split_entry_with_only_plugin_name() {
+    fn should_not_match_plugin() {
         let plugin = Plugin {
             name: "find".to_string(),
+            icon: None,
             history: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
 
-        let match_ = plugin.try_match("find");
+        let match_ = plugin.try_match("fin");
 
         assert_eq!(match_, None);
     }
@@ -153,6 +154,7 @@ mod test {
     fn should_split_entry_with_plugin_name_followed_by_white_space() {
         let plugin = Plugin {
             name: "find".to_string(),
+            icon: None,
             history: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
@@ -162,14 +164,13 @@ mod test {
 
         assert_eq!(
             match_,
-            Some((
-                QueryData {
-                    plugin_name: "find".to_string(),
-                    modifier: "find ".to_string(),
-                    history: false,
-                },
-                "".to_string()
-            ))
+            Some(QueryData {
+                icon: None,
+                plugin_name: "find".to_string(),
+                modifier: "find".to_string(),
+                query: " ".to_string(),
+                history: false,
+            })
         );
     }
 }
