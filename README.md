@@ -3,6 +3,8 @@
 A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with [iced](https://github.com/hecrj/iced/)
 and [pop-launcher](https://github.com/pop-os/launcher).
 
+https://user-images.githubusercontent.com/24563836/170211350-6639015f-f489-4977-a200-caa61450e143.mp4
+
 Onagre is build on top of [pop-launcher](https://github.com/pop-os/launcher) which makes it very versatile.
 The pop-launcher plugin system allow you to extend Onagre with plugin from the community or even write your own
 using any programming language. 
