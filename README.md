@@ -1,22 +1,21 @@
 # Onagre 
 
-Onagre is a general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred and build with [iced](https://github.com/hecrj/iced/).
+A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with [iced](https://github.com/hecrj/iced/)
+and [pop-launcher](https://github.com/pop-os/launcher).
 
-![nord-theme-screenshot](docs/screenshots/nord.png)
+<img src="docs/screenshots/default-theme.png" alt="default-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
-## Disclaimer 
+Onagre is build on top of [pop-launcher](https://github.com/pop-os/launcher) which makes it very versatile.
+The pop-launcher plugin system allow you to extend Onagre with plugin from the community or even write your own
+using any programming language. 
 
-⚠️️ Onagre is currently unreleased, alpha is comming soon ⚠️
+## Features
 
-## Difference with wofi/rofi
+- Works on x11 and wayland.
+- Fully customizable theme.
+- Default plugins: calc, files, pop_shell, recent, terminal, desktop entries, find, pulse, scripts, web.
+- Can be extended with [pop-launcher](https://github.com/pop-os/launcher) plugins.
 
-I built onagre for my main setup (sway/i3) as an alternative to [wofi](https://hg.sr.ht/~scoopta/wofi) so it's worth mentioning there are a few differences : 
-
-- Window transparency (Currently broken on wayland see: https://github.com/gfx-rs/wgpu/issues/687).
-- Rounded corners (even on sway).
-- Several default plugins (thanks to pop-launcher)
-- Change mode with prefix not rofi like modi.
-  
 ## Install
 
 **Dependencies** :
@@ -34,65 +33,66 @@ cargo install --git https://github.com/oknozor/onagre
 **1. Key bindings:**
 
 
-| Key     | Action  | 
-| :----   | :-----  |
-| `Arrow up/down` | Change selection |
-| `Tab`   | Autocomplete (in files mode) | 
-| `Esc`   | Quit without launching | 
-| `Enter` | Launch selection | 
+| Key             | Action                       | 
+|:----------------|:-----------------------------|
+| `Arrow up/down` | Change selection             |
+| `Tab`           | Autocomplete (in files mode) | 
+| `Esc`           | Quit without launching       | 
+| `Enter`         | Launch selection             | 
 
-**2. Modes:**
+**2. Plugins:**
 
-To change mode simply type the mode prefix followed by a space and a query. 
-For example `ddg onagre launcher` will open a DuckDuckGo search query with your default browser.
+To use a plugin simply match its regex when typing your query.
 
-Mode with no prefix are enabled by default, there entry will be mixed in the search results.
+For instance the `file` plugin will match `^(/|~).*`, typing `~/` would enable the plugin and start the file navigation.
 
-| Mode        | Description                                                   | Prefix          | Configuration                                             |
-| :----       | :-----                                                        | :------         | :-----------                                              |
-| History     | Display the most used desktop entries on start                |                 |                                                           |
-| PopLauncher | Search for desktop entries                                    |                 |                                                           |
-| Pulse       | Control PulseAudio devices and volume                         |                 |                                                           |
-| Script      | Shell scripts as launcher options                             |                 | `$HOME/.local/share/pop-launcher/scripts`                 |
-| Terminal    | Terminal or background commands                               | 'run'           |                                                           | 
-| Web         | Web search                                                    | 'ddg', 'g', ... | `$HOME/.local/share/pop-launcher/plugins/web/config.ron`  |
-| Files       | Find files using fd/find                                      | 'find'          |                                                           |
-| Recent      | Recently-opened document search                               | 'recent'        |                                                           |
-| Calc        | Calculator with unit conversion (uses Qalculate! expressions) | '='             |                                                           |
-| External    | Shell command as launcher entries                             | configurable    | `$HOME/.config/onagre/config.toml`                        |
-| Help        | List available pop-launcher modes                             | '?'             |                                                           |
+Plugin with no prefix are enabled by default, there entry will be mixed in the search results.
+
+**Default plugins:**
+
+| Mode        | Description                                                   | Prefix           | Configuration                                            |
+|:------------|:--------------------------------------------------------------|:-----------------|:---------------------------------------------------------|
+| History     | Display the most used desktop entries on start                |                  |                                                          |
+| PopLauncher | Search for desktop entries                                    |                  |                                                          |
+| Pulse       | Control PulseAudio devices and volume                         |                  |                                                          |
+| Script      | Shell scripts as launcher options                             |                  | `$HOME/.local/share/pop-launcher/scripts`                |
+| Terminal    | Terminal or background commands                               | 'run '           |                                                          | 
+| Web         | Web search                                                    | 'ddg ', 'g', ... | `$HOME/.local/share/pop-launcher/plugins/web/config.ron` |
+| Files       | Find files using fd/find                                      | 'find '          |                                                          |
+| Recent      | Recently-opened document search                               | 'recent '        |                                                          |
+| Calc        | Calculator with unit conversion (uses Qalculate! expressions) | '= '             |                                                          |
+| Help        | List available pop-launcher modes                             | '?'              |                                                          |
+
 
 ## Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fall back to the default theme if none is found.
+Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fall back to the default theme if none 
+is found or if your theme contains syntax errors. To ensure your theme is correctly formatted run `onagre` from the terminal.
 
 ⚠ Until the theming API is stabilized you can take a look at [the examples](docs/config.example-ugly.scss)
 
-## Screenshots
+## Galerie
 
-[*Murz theme*](docs/theme_examples/murz-theme.toml) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
-![murz-theme-screenshot](docs/screenshots/murz.png)
+<img src="docs/screenshots/murz.png" alt="murz-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+
+[*Murz*](docs/theme_examples/murz.scss) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
 
 ---
-[*Simple theme*](docs/theme_examples/simple-theme.toml)
-![simple-theme-screenshot](docs/screenshots/simple.png)
+<img src="docs/screenshots/nord-rounded.png" alt="simple-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+
+[*Nord*](docs/theme_examples/nord-rounded.scss)
+
 ---
+<img src="docs/screenshots/not-adwaita.png" alt="not-adwaita-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
-[*Nord rounded*](docs/theme_examples/simple-theme.toml)
-![screenshot](docs/screenshots/nord-rounded.png)
+[*Not-Adwaita*](docs/theme_examples/not-adwaita.scss)
+___
 
+## Related projects
 
-![screenshot](docs/screenshots/sc-main.png)
-
-*History mode*
-
-![screenshot](docs/screenshots/sc-run.png)
-
-*Terminal mode*
-
-![screenshot](docs/screenshots/sc-file.png)
-
-*File mode*
+- [pop-launcher](https://github.com/pop-os/launcher)
+- [pop-shell](https://github.com/pop-os/shell/)
+- [cosmic-launcher](https://github.com/pop-os/cosmic-launcher)
 
 ## Code of conduct
 
@@ -102,7 +102,7 @@ This project is bound by a [code of conduct](CODE_OF_CONDUCT.md) based on the [c
 
 Having a question or suggestion for a new feature ? Feel free to open an issue or submit a PR.
 Currently, what we need the most is feedback from users using different window managers and hardware. 
-If onagre does not work out of the box for you *please let us know* so we can fix it.
+If onagre does not work out of the box for you *please let us know*, so we can fix it.
 
 ## License 
 
