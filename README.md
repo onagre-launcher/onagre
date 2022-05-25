@@ -3,8 +3,6 @@
 A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with [iced](https://github.com/hecrj/iced/)
 and [pop-launcher](https://github.com/pop-os/launcher).
 
-<img src="docs/screenshots/default-theme.png" alt="default-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
-
 Onagre is build on top of [pop-launcher](https://github.com/pop-os/launcher) which makes it very versatile.
 The pop-launcher plugin system allow you to extend Onagre with plugin from the community or even write your own
 using any programming language. 
@@ -73,6 +71,12 @@ is found or if your theme contains syntax errors. To ensure your theme is correc
 
 ## Galerie
 
+---
+<img src="docs/screenshots/default-theme.png" alt="default-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+
+*Default theme*
+
+---
 <img src="docs/screenshots/murz.png" alt="murz-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 [*Murz*](docs/theme_examples/murz.scss) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
