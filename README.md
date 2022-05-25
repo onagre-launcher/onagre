@@ -24,7 +24,19 @@ using any programming language.
 - [pop-launcher](https://github.com/pop-os/launcher) > 1.0.1 (for arch users there is and AUR package out there)
 - [Qalculate](http://qalculate.github.io/) (optional)
 
-**Installation:**
+There are currently no distro package available for Onagre, 
+you need Rust and [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to build it.
+
+**From source:**
+
+```bash
+git clone https://github.com/oknozor/onagre.git
+cd onagre
+cargo build --release
+sudo mv target/release/onagre /usr/bin/onagre
+```
+
+**With cargo:**
 
 ```bash
 cargo install --git https://github.com/oknozor/onagre

@@ -1,24 +1,24 @@
 [package]
 name = "onagre"
-version = "0.1.0"
+version = "1.0.0-alpha.0"
 authors = ["Paul Delafosse <paul.delafosse@protonmail.com>"]
 edition = "2018"
 resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-# [profile.release]
-# codegen-units = 1
-# lto = true
+[profile.release]
+codegen-units = 1
+lto = true
 
 [features]
 default = ["iced/wgpu", "iced/default_system_font", "iced/palette", "cli"]
 cli = ["structopt"]
-debug = [ "iced/debug" ]
+debug = ["iced/debug"]
 
 [dependencies]
-iced = { git = "https://github.com/hecrj/iced", features = ["wgpu", "default_system_font", "palette", "svg", "image", "tokio"] }
-iced_native = { git = "https://github.com/hecrj/iced" }
-iced_style = { git = "https://github.com/hecrj/iced" }
+iced = { version = "0.4.2", features = ["wgpu", "default_system_font", "palette", "svg", "image", "tokio"] }
+iced_native = "0.5.0"
+iced_style = "0.4.0"
 palette = { version = "0.5.0", features = ["serializing"] }
 tokio = { version = "1.18.2", features = ["process", "macros", "io-util"] }
 sled = "0.34.7"
