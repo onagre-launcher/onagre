@@ -71,7 +71,8 @@ Plugin with no prefix are enabled by default, there entry will be mixed in the s
 Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fall back to the default theme if none 
 is found or if your theme contains syntax errors. To ensure your theme is correctly formatted run `onagre` from the terminal.
 
-⚠ Until the theming API is stabilized you can take a look at [the examples](docs/config.example-ugly.scss)
+For a detailed guide refer to [wiki -> theming](https://github.com/oknozor/onagre/wiki/Theming)
+, or take a look at the [theme examples directory](docs/theme_examples).
 
 ## Galerie
 
