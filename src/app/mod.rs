@@ -296,11 +296,7 @@ impl Onagre<'_> {
                 .de_history()
                 .get(selected.unwrap())
                 .map(|entry| entry.path.to_string_lossy().to_string()),
-            ActiveMode::Plugin {
-                modifier,
-                plugin_name,
-                ..
-            } => {
+            ActiveMode::Plugin { plugin_name, .. } => {
                 // Get user input as pop-entry
                 match selected {
                     None => {
@@ -311,7 +307,7 @@ impl Onagre<'_> {
                         .cache
                         .plugin_history(plugin_name)
                         .get(selected)
-                        .map(|entry| format!("{}{}", modifier, entry.query)),
+                        .map(|entry| entry.query.to_string()),
                 }
             }
             ActiveMode::Web { modifier, .. } => {
