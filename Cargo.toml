@@ -4,7 +4,15 @@ version = "1.0.0-alpha.0"
 authors = ["Paul Delafosse <paul.delafosse@protonmail.com>"]
 edition = "2018"
 resolver = "2"
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/oknozor/onagre"
+categories = ["gui", "development-tools"]
+keywords = ["launcher", "app-launcher", "pop-launcher", "onagre"]
+description = """
+A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with iced
+and pop-launcher.
+"""
 
 [profile.release]
 codegen-units = 1
