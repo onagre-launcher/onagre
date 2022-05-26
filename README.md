@@ -107,7 +107,19 @@ For a detailed guide refer to [wiki -> theming](https://github.com/oknozor/onagr
 <img src="docs/screenshots/not-adwaita.png" alt="not-adwaita-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 [*Not-Adwaita*](docs/theme_examples/not-adwaita.scss)
+
+---
+<img src="docs/screenshots/solarized.png" alt="solarized-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+
+[*Solarized*](docs/theme_examples/solarized.scss)
+
+---
+<img src="docs/screenshots/darcula.png" alt="darcula-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+
+*Darcula*
+
 ___
+
 
 ## Related projects
 
