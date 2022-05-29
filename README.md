@@ -1,8 +1,15 @@
-# Onagre 
+<p align="center">
+  <img
+    width="600"
+    src="./docs/onagre.png"
+    alt="Onagre logo"
+  />
+</p>
 
 A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with [iced](https://github.com/hecrj/iced/)
 and [pop-launcher](https://github.com/pop-os/launcher).
 
+---
 
 https://user-images.githubusercontent.com/24563836/170211716-7822ec0b-94d1-414e-a131-cf91af540ca4.mp4
 
@@ -140,3 +147,7 @@ If onagre does not work out of the box for you *please let us know*, so we can f
 ## License 
 
 All the code in this repository is released under the MIT License, for more information take a look at the [LICENSE](LICENSE) file.
+
+## Thanks 
+
+Credit to [@themou3ad](https://github.com/themou3ad) for the logo !
