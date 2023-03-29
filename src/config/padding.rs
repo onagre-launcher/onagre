@@ -18,10 +18,10 @@ impl OnagrePadding {
 
     pub fn to_iced_padding(&self) -> Padding {
         Padding {
-            top: self.top,
-            right: self.right,
-            bottom: self.bottom,
-            left: self.left,
+            top: self.top as f32,
+            right: self.right as f32,
+            bottom: self.bottom as f32,
+            left: self.left as f32,
         }
     }
 }
@@ -29,10 +29,10 @@ impl OnagrePadding {
 impl From<Padding> for OnagrePadding {
     fn from(value: Padding) -> Self {
         Self {
-            top: value.top,
-            right: value.right,
-            bottom: value.bottom,
-            left: value.left,
+            top: value.top as u16,
+            right: value.right as u16,
+            bottom: value.bottom as u16,
+            left: value.left as u16,
         }
     }
 }

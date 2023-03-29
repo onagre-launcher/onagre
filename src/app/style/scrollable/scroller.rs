@@ -1,6 +1,8 @@
 use crate::config::color::OnagreColor;
+use iced::widget::scrollable::Scrollbar;
 use iced::Background;
-use iced_style::scrollable::{Scrollbar, Scroller};
+use iced_style::scrollable::StyleSheet;
+use iced_style::theme::Scrollable;
 
 #[derive(Debug, PartialEq)]
 pub struct ScrollerStyles {
@@ -37,14 +39,22 @@ impl Default for ScrollerStyles {
     }
 }
 
-impl iced::scrollable::StyleSheet for &ScrollerStyles {
-    fn active(&self) -> Scrollbar {
+impl Into<Scrollable> for &ScrollerStyles {
+    fn into(self) -> Scrollable {
+        Scrollable::Default
+    }
+}
+
+impl StyleSheet for &ScrollerStyles {
+    type Style = iced::Theme;
+
+    fn active(&self, _: &Self::Style) -> Scrollbar {
         Scrollbar {
             background: Some(Background::Color(self.background.into())),
             border_radius: self.border_radius,
             border_width: self.border_width,
             border_color: self.border_color.into(),
-            scroller: Scroller {
+            scroller: iced::widget::scrollable::Scroller {
                 color: self.scroller_color.into(),
                 border_radius: self.scroller_border_radius,
                 border_width: self.scroller_border_width,
@@ -53,7 +63,7 @@ impl iced::scrollable::StyleSheet for &ScrollerStyles {
         }
     }
 
-    fn hovered(&self) -> Scrollbar {
-        self.active()
+    fn hovered(&self, style: &Self::Style) -> Scrollbar {
+        self.active(style)
     }
 }

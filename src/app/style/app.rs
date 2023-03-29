@@ -3,25 +3,13 @@ use crate::app::style::scrollable::RowContainerStyle;
 use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use iced::{container, Color};
 use iced_native::Background;
+use iced_style::container::{Appearance, StyleSheet};
 
 // The top level container wrapping the app
 // We don't want to edit this style, it's here only to provide rounded
 // Transparent corner and avoid weird behavior with the scrollable widget
 pub struct AppWrapperStyle;
-
-impl container::StyleSheet for AppWrapperStyle {
-    fn style(&self) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(Color::TRANSPARENT)),
-            border_radius: 0.0,
-            border_width: 0.0,
-            text_color: None,
-            border_color: Color::TRANSPARENT,
-        }
-    }
-}
 
 #[derive(Debug, PartialEq)]
 pub struct AppContainerStyles {
@@ -41,6 +29,20 @@ pub struct AppContainerStyles {
     pub scrollable: ScrollerStyles,
 }
 
+impl StyleSheet for &AppContainerStyles {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _: &Self::Style) -> Appearance {
+        Appearance {
+            text_color: Some(self.color.into()),
+            background: Some(Background::Color(self.background.into())),
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+            border_color: self.border_color.into(),
+        }
+    }
+}
+
 impl Default for AppContainerStyles {
     fn default() -> Self {
         Self {
@@ -53,18 +55,6 @@ impl Default for AppContainerStyles {
             search: Default::default(),
             rows: Default::default(),
             scrollable: Default::default(),
-        }
-    }
-}
-
-impl container::StyleSheet for &AppContainerStyles {
-    fn style(&self) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(self.background.into())),
-            border_radius: self.border_radius,
-            border_width: self.border_width,
-            text_color: Some(self.color.into()),
-            border_color: self.border_color.into(),
         }
     }
 }

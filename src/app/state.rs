@@ -5,6 +5,7 @@ use iced_native::widget::{scrollable, text_input};
 use log::debug;
 use pop_launcher_toolkit::launcher::SearchResult;
 
+use crate::app::{Message, INPUT_ID};
 use crate::icons::IconPath;
 use crate::THEME;
 use std::collections::HashMap;
@@ -16,7 +17,6 @@ pub struct State<'a> {
     pub cache: Cache<'a>,
     pub pop_search: Vec<SearchResult>,
     pub scroll: scrollable::State,
-    pub input: text_input::State,
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
 }
@@ -74,11 +74,11 @@ impl State<'_> {
                 } else {
                     previous_modi
                 };
-                self.input.move_cursor_to_end();
                 self.input_value.mode = ActiveMode::DesktopEntry;
+                let _: iced::Command<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
             } else {
                 self.input_value.input_display = input.to_string();
-            };
+            }
         } else {
             let terms = &format!("{}{}", previous_modi, input);
             let plugin_split = match_web_plugins(terms).or_else(|| {
@@ -98,7 +98,7 @@ impl State<'_> {
                     input.to_string()
                 } else {
                     query_data.query
-                }
+                };
             } else {
                 self.input_value.input_display = input.to_string();
 
@@ -145,7 +145,6 @@ impl Default for State<'_> {
             cache: Default::default(),
             pop_search: Default::default(),
             scroll: Default::default(),
-            input: Default::default(),
             input_value: SearchInput::default(),
             exec_on_next_search: false,
             plugin_matchers: PluginConfigCache::default(),

@@ -8,6 +8,7 @@ use std::sync::Mutex;
 use crate::config::color::OnagreColor;
 use crate::THEME;
 use anyhow::anyhow;
+use iced::Renderer;
 use once_cell::sync::Lazy;
 use pop_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};
@@ -31,7 +32,7 @@ const FALLBACK_ICON_PATH: &str = "dialog-question-symbolic.svg";
 
 // Build the fallback icon once for .row-selected and .row foreground colors
 // and cache the result.
-pub fn fallback_icon(color: &OnagreColor) -> Svg {
+pub fn fallback_icon(color: &OnagreColor) -> Svg<Renderer> {
     let hex_color = color.to_string();
     let mut cache = SYMBOLIC_ICON_CACHE.lock().unwrap();
     let path = Path::new(FALLBACK_ICON_PATH);
@@ -46,7 +47,7 @@ pub fn fallback_icon(color: &OnagreColor) -> Svg {
         }
     };
 
-    let handle = Handle::from_memory(svg.as_slice());
+    let handle = Handle::from_memory(svg.clone());
 
     Svg::new(handle)
 }
@@ -130,7 +131,7 @@ impl IconPath {
 
     // If we have a symbolic icon try to replace the foreground color with the current
     // one and cache the result, otherwise build the svg from icon path
-    pub fn to_svg(&self, color: &OnagreColor) -> Svg {
+    pub fn to_svg(&self, color: &OnagreColor) -> Svg<Renderer> {
         if self.symbolic {
             let mut icon_cache = SYMBOLIC_ICON_CACHE.lock().unwrap();
             let hex_color = color.to_string();
@@ -146,7 +147,7 @@ impl IconPath {
                 Some(svg) => svg,
             };
 
-            let handle = Handle::from_memory(svg.as_slice());
+            let handle = Handle::from_memory(svg.clone());
             Svg::new(handle)
         } else {
             Svg::from_path(&self.path)

@@ -1,9 +1,9 @@
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
-use iced::{Background, Length};
-use iced_style::container;
-use iced_style::container::Style;
+use iced::Length;
+use iced_core::Background;
+use iced_style::container::{Appearance, StyleSheet};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct GenericContainerStyle {
@@ -41,6 +41,20 @@ impl Default for GenericContainerStyle {
     }
 }
 
+impl StyleSheet for &GenericContainerStyle {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _: &Self::Style) -> Appearance {
+        Appearance {
+            text_color: Some(self.color.into()),
+            background: Some(Background::Color(self.background.into())),
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+            border_color: self.border_color.into(),
+        }
+    }
+}
+
 impl GenericContainerStyle {
     pub fn description_default() -> Self {
         Self {
@@ -51,15 +65,3 @@ impl GenericContainerStyle {
 }
 
 impl Eq for GenericContainerStyle {}
-
-impl container::StyleSheet for &GenericContainerStyle {
-    fn style(&self) -> Style {
-        Style {
-            background: Some(Background::Color(self.background.into())),
-            border_radius: self.border_radius,
-            border_width: self.border_width,
-            text_color: Some(self.color.into()),
-            border_color: self.border_color.into(),
-        }
-    }
-}
