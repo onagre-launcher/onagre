@@ -1,12 +1,13 @@
 use crate::app::style::rows::RowStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use iced::{Background, Length};
-use iced_style::container;
+use iced::Length;
+use iced_core::Background;
+use iced_style::container::{Appearance, StyleSheet};
 
 pub mod scroller;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct RowContainerStyle {
     // Iced Container
     pub color: OnagreColor,
@@ -27,6 +28,20 @@ pub struct RowContainerStyle {
 
 impl Eq for RowContainerStyle {}
 
+impl StyleSheet for &RowContainerStyle {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _: &Self::Style) -> Appearance {
+        Appearance {
+            text_color: Some(self.color.into()),
+            background: Some(Background::Color(self.background.into())),
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+            border_color: self.border_color.into(),
+        }
+    }
+}
+
 impl Default for RowContainerStyle {
     fn default() -> Self {
         Self {
@@ -45,18 +60,6 @@ impl Default for RowContainerStyle {
             height: Length::FillPortion(8),
             row: RowStyles::default(),
             row_selected: RowStyles::default_selected(),
-        }
-    }
-}
-
-impl container::StyleSheet for &RowContainerStyle {
-    fn style(&self) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(self.background.into())),
-            text_color: Some(self.color.into()),
-            border_radius: self.border_radius,
-            border_width: self.border_radius,
-            border_color: self.border_color.into(),
         }
     }
 }

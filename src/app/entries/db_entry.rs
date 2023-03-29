@@ -1,4 +1,4 @@
-use iced::Row;
+use iced::widget::Row;
 use std::borrow::Cow;
 use std::path::PathBuf;
 

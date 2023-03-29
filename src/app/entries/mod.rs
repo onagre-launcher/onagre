@@ -3,9 +3,11 @@ use crate::app::style::rows::RowStyles;
 use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
-use iced::{Container, Image, Length, Row, Text};
-use iced_native::widget::Column;
-use iced_native::Alignment;
+use iced::widget::Row;
+use iced::widget::{Container, Image};
+use iced::{Alignment, Length, Renderer};
+use iced_native::row;
+use iced_native::widget::{column, container, text};
 use std::borrow::Cow;
 
 pub(crate) mod db_entry;
@@ -43,21 +45,24 @@ pub(crate) trait AsEntry<'a> {
     where
         'b: 'a,
     {
-        let title_row = Container::new(
-            Row::new().push(Text::new(self.get_display_name()).size(theme.title.font_size)),
+        let title_row: iced_native::widget::Container<'_, Message, Renderer> = container(
+            iced_native::widget::row(vec![text(self.get_display_name())
+                .size(theme.title.font_size)
+                .into()]),
         )
-        .style(&theme.title)
+        // .style(&theme.title)
         .padding(theme.title.padding.to_iced_padding())
         .width(theme.title.width)
         .height(theme.title.height)
         .align_x(theme.title.align_x)
         .align_y(theme.title.align_y);
 
-        let description_row = self.get_description().map(|description| {
-            Container::new(
-                Row::new().push(Text::new(description.as_ref()).size(theme.description.font_size)),
-            )
-            .style(&theme.description)
+        let description_row: std::option::Option<
+            iced_native::widget::Container<'_, Message, Renderer>,
+        > = self.get_description().map(|description| {
+            container(row!(
+                text(description.as_ref()).size(theme.description.font_size)
+            ))
             .padding(theme.description.padding.to_iced_padding())
             .width(theme.description.width)
             .height(theme.description.height)
@@ -65,7 +70,7 @@ pub(crate) trait AsEntry<'a> {
             .align_y(theme.description.align_y)
         });
 
-        let column = Column::new().push(title_row);
+        let column = column(vec![title_row.into()]);
 
         let column = match description_row {
             Some(description) if !theme.hide_description => column.push(description),
@@ -73,7 +78,7 @@ pub(crate) trait AsEntry<'a> {
         };
 
         Container::new(row.push(column))
-            .style(theme)
+            // .style(theme.into())
             .padding(theme.padding.to_iced_padding())
             .width(theme.width)
             .height(theme.height)
@@ -122,23 +127,24 @@ pub(crate) trait AsEntry<'a> {
                 Extension::Svg => Container::new(
                     icon.as_ref()
                         .to_svg(&theme.color)
-                        .height(Length::Units(theme.icon_size))
-                        .width(Length::Units(theme.icon_size)),
+                        .height(iced_core::Length::Fixed(theme.icon_size as f32))
+                        .width(iced_core::Length::Fixed(theme.icon_size as f32)),
                 ),
                 Extension::Png => Container::new(
                     Image::new(&icon.as_ref().path)
-                        .height(Length::Units(theme.icon_size))
-                        .width(Length::Units(theme.icon_size)),
+                        .height(Length::Fixed(theme.icon_size as f32))
+                        .width(Length::Fixed(theme.icon_size as f32)),
                 ),
             },
             None => Container::new(
                 fallback_icon(&theme.color)
-                    .height(Length::Units(theme.icon_size))
-                    .width(Length::Units(theme.icon_size)),
+                    .height(Length::Fixed(theme.icon_size as f32))
+                    .width(Length::Fixed(theme.icon_size as f32)),
             ),
         };
 
-        icon.style(theme)
+        icon
+            //.style(theme)
             .align_y(theme.align_y)
             .align_x(theme.align_x)
             .width(theme.width)

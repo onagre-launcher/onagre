@@ -93,7 +93,7 @@ pub fn unwrap_length(pair: Pair<'_, Rule>) -> Result<Length, ConfigError> {
         Rule::number => {
             let value = pair.as_str();
             let value = value.parse::<u16>()?;
-            Length::Units(value)
+            Length::Fixed(value as f32)
         }
         _ => unreachable!(),
     })

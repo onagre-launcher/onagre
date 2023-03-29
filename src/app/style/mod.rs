@@ -5,8 +5,8 @@ use crate::app::style::search::input::SearchInputStyles;
 use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
+use iced::widget::container::Appearance;
 use iced::Background;
-use iced_style::container;
 
 pub mod app;
 pub mod rows;
@@ -102,9 +102,11 @@ impl Default for Theme {
     }
 }
 
-impl container::StyleSheet for &Theme {
-    fn style(&self) -> container::Style {
-        container::Style {
+impl iced::widget::container::StyleSheet for &Theme {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _: &Self::Style) -> Appearance {
+        Appearance {
             background: Some(Background::Color(self.background.into())),
             border_radius: self.border_radius,
             border_width: self.border_width,

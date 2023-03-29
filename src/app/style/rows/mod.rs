@@ -2,8 +2,7 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use generic::GenericContainerStyle;
 use iced::alignment::{Horizontal, Vertical};
-use iced::{Background, Length};
-use iced_style::container;
+use iced::Length;
 use icon::IconStyle;
 pub mod generic;
 pub mod icon;
@@ -75,15 +74,3 @@ impl RowStyles {
     }
 }
 impl Eq for RowStyles {}
-
-impl container::StyleSheet for &RowStyles {
-    fn style(&self) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(self.background.into())),
-            border_radius: self.border_radius,
-            border_width: self.border_width,
-            text_color: Some(self.color.into()),
-            border_color: self.border_color.into(),
-        }
-    }
-}

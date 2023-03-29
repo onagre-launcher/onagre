@@ -15,12 +15,14 @@ use crate::{font, THEME};
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
-use iced::{
-    window, Alignment, Application, Color, Column, Container, Element, Length, Row, Scrollable,
-    Settings, Text, TextInput,
-};
-use iced_native::{Command, Event, Subscription};
+use iced::widget::{Column, Container, Row, Text};
+use iced::{window, Application, Command, Element, Length, Renderer, Settings};
+use iced_native::widget::scrollable::RelativeOffset;
+use iced_native::widget::{column, container, scrollable, text_input};
+use iced_native::{Event, Subscription};
+use iced_style::Theme;
 use log::{debug, trace};
+use once_cell::sync::Lazy;
 use pop_launcher_toolkit::launcher::{Request, Response};
 use std::path::Path;
 use std::process::exit;
@@ -54,14 +56,15 @@ pub fn run() -> iced::Result {
             min_size: None,
             max_size: None,
             icon: None,
+            visible: true,
         },
-        default_text_size: THEME.font_size,
+        default_text_size: THEME.font_size as f32,
         text_multithreading: false,
         antialiasing: true,
         exit_on_close_request: false,
         default_font: Some(default_font),
         flags: (),
-        try_opengles_first: false,
+        try_opengles_first: true,
     })
 }
 
@@ -73,6 +76,7 @@ pub struct Onagre<'a> {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    Loading,
     InputChanged(String),
     KeyboardEvent(KeyCode),
     SubscriptionResponse(SubscriptionMessage),
@@ -80,9 +84,14 @@ pub enum Message {
     Unfocused,
 }
 
+static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
+static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
+
 impl Application for Onagre<'_> {
     type Executor = iced::executor::Default;
     type Message = Message;
+    type Theme = Theme;
+
     type Flags = ();
 
     fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
@@ -91,7 +100,10 @@ impl Application for Onagre<'_> {
             request_tx: Default::default(),
         };
 
-        (onagre, Command::none())
+        (
+            onagre,
+            Command::perform(async {}, move |()| Message::Loading),
+        )
     }
 
     fn title(&self) -> String {
@@ -99,9 +111,8 @@ impl Application for Onagre<'_> {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.state.input.focus();
-
         match message {
+            Message::Loading => text_input::focus(INPUT_ID.clone()),
             Message::InputChanged(input) => self.on_input_changed(input),
             Message::KeyboardEvent(event) => self.handle_input(event),
             Message::SubscriptionResponse(message) => self.on_pop_launcher_message(message),
@@ -121,15 +132,7 @@ impl Application for Onagre<'_> {
         }
     }
 
-    fn subscription(&self) -> Subscription<Message> {
-        let keyboard_event = Onagre::keyboard_event();
-        let pop_launcher = PopLauncherSubscription::create().map(Message::SubscriptionResponse);
-        let matchers = PluginMatcherSubscription::create().map(Message::PluginConfig);
-        let subs = vec![keyboard_event, pop_launcher, matchers];
-        Subscription::batch(subs)
-    }
-
-    fn view(&mut self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
         // Build rows from current mode search entries
         let selected = self.selected();
         let rows = match &self.state.get_active_mode() {
@@ -191,37 +194,39 @@ impl Application for Onagre<'_> {
         };
 
         // Scrollable element containing the rows
-        let scrollable = Scrollable::new(&mut self.state.scroll)
-            .push(Column::with_children(rows))
-            .style(THEME.scrollable())
-            .scrollbar_margin(THEME.scrollable().scrollbar_margin)
-            .scrollbar_width(THEME.scrollable().scrollbar_width)
-            .scroller_width(THEME.scrollable().scroller_width)
-            .width(Length::Fill)
-            .height(Length::Fill);
+        let scrollable =
+            scrollable(column(rows))
+                .id(SCROLL_ID.clone())
+                .style(iced::theme::Scrollable::Custom(Box::new(
+                    THEME.scrollable(),
+                )));
 
-        let scrollable = Container::new(scrollable)
-            .style(&THEME.app_container.rows)
+        let scrollable = container(scrollable)
+            .style(iced::theme::Container::Custom(Box::new(
+                &THEME.app_container.rows,
+            )))
             .padding(THEME.app_container.rows.padding.to_iced_padding())
             .width(THEME.app_container.rows.width)
             .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
 
-        let search_input = Container::new(
-            TextInput::new(
-                &mut self.state.input,
-                "Search",
-                &self.state.input_value.input_display,
-                Message::InputChanged,
-            )
-            .padding(THEME.search_input().padding.to_iced_padding())
-            .width(THEME.search_input().text_width)
-            .size(THEME.search_input().font_size)
-            .style(THEME.search_input()),
+        let text_input = text_input(
+            "Search",
+            &self.state.input_value.input_display,
+            Message::InputChanged,
         )
-        .width(THEME.search_input().width)
-        .height(THEME.search_input().height)
-        .align_x(THEME.search_input().align_x)
-        .align_y(THEME.search_input().align_y);
+        .id(INPUT_ID.clone())
+        .style(iced::theme::TextInput::Custom(Box::new(
+            THEME.search_input(),
+        )))
+        .padding(THEME.search_input().padding.to_iced_padding())
+        .width(THEME.search_input().text_width)
+        .size(THEME.search_input().font_size);
+
+        let search_input = container(text_input)
+            .width(THEME.search_input().width)
+            .height(THEME.search_input().height)
+            .align_x(THEME.search_input().align_x)
+            .align_y(THEME.search_input().align_y);
 
         let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
         // Either plugin_hint is enabled and we try to display it
@@ -235,7 +240,7 @@ impl Application for Onagre<'_> {
                         .horizontal_alignment(Horizontal::Center)
                         .size(plugin_hint_style.font_size),
                 )
-                .style(plugin_hint_style)
+                .style(iced::theme::Container::Custom(Box::new(plugin_hint_style)))
                 .width(plugin_hint_style.width)
                 .height(plugin_hint_style.height)
                 .align_y(plugin_hint_style.align_y)
@@ -250,7 +255,7 @@ impl Application for Onagre<'_> {
         };
 
         let search_bar = Container::new(search_bar)
-            .style(THEME.search())
+            .style(iced::theme::Container::Custom(Box::new(THEME.search())))
             .align_x(THEME.search().align_x)
             .align_y(THEME.search().align_y)
             .padding(THEME.search().padding.to_iced_padding())
@@ -261,10 +266,10 @@ impl Application for Onagre<'_> {
             Column::new()
                 .push(search_bar)
                 .push(scrollable)
-                .align_items(Alignment::Start),
+                .align_items(iced_core::Alignment::Start),
         )
         .padding(THEME.app().padding.to_iced_padding())
-        .style(THEME.app())
+        .style(iced::theme::Container::Custom(Box::new(THEME.app())))
         .center_y()
         .center_x();
 
@@ -274,13 +279,17 @@ impl Application for Onagre<'_> {
             .height(Length::Fill)
             .width(Length::Fill)
             .padding(THEME.padding.to_iced_padding())
-            .style(&*THEME);
+            .style(iced::theme::Container::Custom(Box::new(&*THEME)));
 
         app_wrapper.into()
     }
 
-    fn background_color(&self) -> Color {
-        Color::TRANSPARENT
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        let keyboard_event = Onagre::keyboard_event();
+        let pop_launcher = PopLauncherSubscription::create().map(Message::SubscriptionResponse);
+        let matchers = PluginMatcherSubscription::create().map(Message::PluginConfig);
+        let subs = vec![keyboard_event, pop_launcher, matchers];
+        iced::Subscription::batch(subs)
     }
 }
 
@@ -339,7 +348,8 @@ impl Onagre<'_> {
             _ => Selection::PopLauncher(0),
         };
 
-        self.state.scroll.snap_to(0.0);
+        let _: iced::Command<Message> =
+            scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START);
 
         match &self.state.get_active_mode() {
             ActiveMode::History => {}
@@ -351,7 +361,7 @@ impl Onagre<'_> {
             }
         }
 
-        Command::none()
+        text_input::focus(INPUT_ID.clone())
     }
 
     fn run_command<P: AsRef<Path>>(&self, desktop_entry_path: P) -> Command<Message> {
@@ -382,13 +392,12 @@ impl Onagre<'_> {
     fn handle_input(&mut self, key_code: KeyCode) -> Command<Message> {
         match key_code {
             KeyCode::Up => {
-                self.dec_selected();
-                self.snap();
                 trace!("Selected line : {:?}", self.selected());
+                return self.dec_selected();
             }
             KeyCode::Down => {
-                self.inc_selected();
                 trace!("Selected line : {:?}", self.selected());
+                return self.inc_selected();
             }
             KeyCode::Enter => return self.on_execute(),
             KeyCode::Tab => {
@@ -406,15 +415,15 @@ impl Onagre<'_> {
         Command::none()
     }
 
-    fn snap(&mut self) {
+    fn snap(&mut self) -> Command<Message> {
         let total_items = self.current_entries_len() as f32;
         match self.selected() {
-            None => self.state.scroll.snap_to(0.0),
+            None => {
+                scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START)
+            }
             Some(selected) => {
-                let line_offset = if selected == 0 { 0 } else { &selected + 1 } as f32;
-
-                let offset = (1.0 / total_items) * (line_offset) as f32;
-                self.state.scroll.snap_to(offset);
+                let offset = (1.0 / total_items) * selected as f32;
+                scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset { x: 0.0, y: offset })
             }
         }
     }
@@ -429,7 +438,7 @@ impl Onagre<'_> {
                 Response::Context { .. } => todo!("Discrete graphics is not implemented"),
                 Response::DesktopEntry { path, .. } => {
                     debug!("Launch DesktopEntry {path:?} via run_command");
-                    self.run_command(path);
+                    let _ = self.run_command(path);
                 }
                 Response::Update(search_updates) => {
                     if self.state.exec_on_next_search {
@@ -450,7 +459,7 @@ impl Onagre<'_> {
     fn complete(&mut self, fill: String) {
         let filled = if THEME.plugin_hint().is_none() {
             self.state.input_value.input_display = fill;
-            self.state.input.move_cursor_to_end();
+            let _: iced::Command<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
             self.state.input_value.input_display.clone()
         } else {
             let mode_prefix = &self.state.input_value.modifier_display;
@@ -458,11 +467,11 @@ impl Onagre<'_> {
                 .strip_prefix(mode_prefix)
                 .expect("Auto-completion Error");
             self.state.input_value.input_display = fill.into();
-            self.state.input.move_cursor_to_end();
+            let _: iced::Command<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
             self.state.input_value.input_display.clone()
         };
 
-        self.on_input_changed(filled);
+        let _ = self.on_input_changed(filled);
     }
 
     fn on_execute(&mut self) -> Command<Message> {
@@ -511,7 +520,7 @@ impl Onagre<'_> {
             ActiveMode::History => {
                 let path = self.current_entry();
                 let path = path.unwrap();
-                self.run_command(path);
+                let _ = self.run_command(path);
             }
             _ => {
                 if self.selected().is_none() {
@@ -562,7 +571,7 @@ impl Onagre<'_> {
         }
     }
 
-    fn dec_selected(&mut self) {
+    fn dec_selected(&mut self) -> Command<Message> {
         match self.state.selected {
             Selection::Reset => self.state.selected = Selection::Reset,
             Selection::History(selected) => {
@@ -576,31 +585,33 @@ impl Onagre<'_> {
                 }
             }
         };
+
+        self.snap()
     }
 
-    fn inc_selected(&mut self) {
+    fn inc_selected(&mut self) -> Command<Message> {
         match self.state.selected {
             Selection::Reset => self.state.selected = Selection::History(0),
             Selection::History(selected) => {
                 let total_items = self.current_entries_len();
                 if total_items != 0 && selected < total_items - 1 {
                     self.state.selected = Selection::History(selected + 1);
-                    self.snap();
                 }
             }
             Selection::PopLauncher(selected) => {
                 let total_items = self.current_entries_len();
                 if total_items != 0 && selected < total_items - 1 {
                     self.state.selected = Selection::PopLauncher(selected + 1);
-                    self.snap();
                 }
             }
         };
+
+        self.snap()
     }
 
     fn keyboard_event() -> Subscription<Message> {
         iced_native::subscription::events_with(|event, _status| match event {
-            Event::Window(iced_native::window::Event::Unfocused) => Some(Message::Unfocused),
+            Event::Window(window::Event::Unfocused) => Some(Message::Unfocused),
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
                 modifiers: _,
                 key_code,
