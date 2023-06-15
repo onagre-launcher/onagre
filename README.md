@@ -31,7 +31,9 @@ using any programming language.
 - [pop-launcher](https://github.com/pop-os/launcher) > 1.0.1 (for arch users there is and AUR package out there)
 - [Qalculate](http://qalculate.github.io/) (optional)
 
-There are currently no distro package available for Onagre, 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/onagre.svg)](https://repology.org/project/onagre/versions)
+
+If there is no distro package available for Onagre in youre preferred manager, 
 you need Rust and [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to build it.
 
 **From source:**
