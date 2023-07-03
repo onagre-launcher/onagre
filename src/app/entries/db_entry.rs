@@ -113,7 +113,7 @@ fn ico_to_png(path: PathBuf) {
         }
         Err(_) => {
             // We were unable to read the icon, it's probably a png
-            std::fs::copy(&path, &path.with_extension("png")).unwrap();
+            std::fs::copy(&path, path.with_extension("png")).unwrap();
         }
     }
 }

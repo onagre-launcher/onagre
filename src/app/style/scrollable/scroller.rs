@@ -39,8 +39,8 @@ impl Default for ScrollerStyles {
     }
 }
 
-impl Into<Scrollable> for &ScrollerStyles {
-    fn into(self) -> Scrollable {
+impl From<&ScrollerStyles> for Scrollable {
+    fn from(_: &ScrollerStyles) -> Self {
         Scrollable::Default
     }
 }

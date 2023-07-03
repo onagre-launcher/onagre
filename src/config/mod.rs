@@ -30,7 +30,8 @@ struct ThemeParser;
 pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<Theme, ConfigError> {
     let content = std::fs::read_to_string(path)?;
 
-    let pairs = ThemeParser::parse(Rule::stylesheet, &content)?
+    let pairs = ThemeParser::parse(Rule::stylesheet, &content)
+        .map_err(Box::new)?
         .next()
         .unwrap();
 
