@@ -63,7 +63,7 @@ impl StyleSheet for &ScrollerStyles {
         }
     }
 
-    fn hovered(&self, style: &Self::Style) -> Scrollbar {
+    fn hovered(&self, style: &Self::Style, _is_mouse_over_scrollbar: bool) -> Scrollbar {
         self.active(style)
     }
 }

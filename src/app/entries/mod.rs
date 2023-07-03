@@ -35,7 +35,7 @@ pub(crate) trait AsEntry<'a> {
             .width(Length::Fill)
             .spacing(theme.spacing)
             // See : https://github.com/iced-rs/iced/pull/1044
-            .align_items(Alignment::Fill);
+            .align_items(Alignment::Start);
 
         self.as_row(row, theme)
     }

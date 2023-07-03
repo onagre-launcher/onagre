@@ -16,6 +16,7 @@ use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
 use iced::widget::{Column, Container, Row, Text};
+use iced::window::PlatformSpecific;
 use iced::{window, Application, Command, Element, Length, Renderer, Settings};
 use iced_native::widget::scrollable::RelativeOffset;
 use iced_native::widget::{column, container, scrollable, text_input};
@@ -57,6 +58,7 @@ pub fn run() -> iced::Result {
             max_size: None,
             icon: None,
             visible: true,
+            platform_specific: PlatformSpecific::default(),
         },
         default_text_size: THEME.font_size as f32,
         text_multithreading: false,
@@ -209,18 +211,15 @@ impl Application for Onagre<'_> {
             .width(THEME.app_container.rows.width)
             .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
 
-        let text_input = text_input(
-            "Search",
-            &self.state.input_value.input_display,
-            Message::InputChanged,
-        )
-        .id(INPUT_ID.clone())
-        .style(iced::theme::TextInput::Custom(Box::new(
-            THEME.search_input(),
-        )))
-        .padding(THEME.search_input().padding.to_iced_padding())
-        .width(THEME.search_input().text_width)
-        .size(THEME.search_input().font_size);
+        let text_input = text_input("Search", &self.state.input_value.input_display)
+            .on_input(Message::InputChanged)
+            .id(INPUT_ID.clone())
+            .style(iced::theme::TextInput::Custom(Box::new(
+                THEME.search_input(),
+            )))
+            .padding(THEME.search_input().padding.to_iced_padding())
+            .width(THEME.search_input().text_width)
+            .size(THEME.search_input().font_size);
 
         let search_input = container(text_input)
             .width(THEME.search_input().width)

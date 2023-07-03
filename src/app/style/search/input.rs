@@ -37,6 +37,7 @@ impl StyleSheet for &SearchInputStyles {
             border_radius: self.border_radius,
             border_width: self.border_width,
             border_color: self.border_color.into(),
+            icon_color: Default::default(),
         }
     }
 
@@ -52,8 +53,22 @@ impl StyleSheet for &SearchInputStyles {
         self.value_color.into()
     }
 
+    fn disabled_color(&self, _style: &Self::Style) -> Color {
+        Color::TRANSPARENT
+    }
+
     fn selection_color(&self, _: &Self::Style) -> Color {
         self.selection_color.into()
+    }
+
+    fn disabled(&self, _style: &Self::Style) -> Appearance {
+        Appearance {
+            background: Background::Color(self.background.into()),
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+            border_color: self.border_color.into(),
+            icon_color: Default::default(),
+        }
     }
 }
 

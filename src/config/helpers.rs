@@ -379,7 +379,7 @@ mod test {
         asserting!("Should parse 'width' 'fixed' attribute")
             .that(&width)
             .is_ok()
-            .is_equal_to(Length::Units(24));
+            .is_equal_to(Length::Fixed(24.0));
     }
 
     #[test]
@@ -439,7 +439,7 @@ mod test {
         asserting!("Should parse 'height' 'fixed' attribute")
             .that(&height)
             .is_ok()
-            .is_equal_to(Length::Units(24));
+            .is_equal_to(Length::Fixed(24.0));
     }
 
     #[test]
