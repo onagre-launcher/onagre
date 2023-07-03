@@ -24,11 +24,11 @@ cli = ["structopt"]
 debug = ["iced/debug"]
 
 [dependencies]
-iced = { version = "0.8.0", features = ["wgpu", "default_system_font", "palette", "svg", "image", "tokio"] }
-iced_core = "0.8.1"
-iced_native = "0.9.1"
-iced_style = "0.7.0"
-tokio = { version = "1.18.2", features = ["process", "macros", "io-util"] }
+iced = { version = "0.9.0", features = ["wgpu", "default_system_font", "palette", "svg", "image", "tokio"] }
+iced_core = "0.9.0"
+iced_native = "0.10.3"
+iced_style = "0.8.0"
+tokio = { version = "1.29.1", features = ["process", "macros", "io-util"] }
 sled = "0.34.7"
 
 pop-launcher-toolkit = { git = "https://github.com/pop-os/launcher/" }
@@ -37,19 +37,19 @@ freedesktop-icons = "0.2.3"
 
 log = { version = "0.4.11" }
 env_logger = { version = "0.10.0" }
-once_cell = "1.10.0"
-anyhow = "1.0.34"
-dirs = "5.0.0"
-thiserror = "1.0.31"
+once_cell = "^1"
+anyhow = "^1"
+dirs = "^5"
+thiserror = "^1"
 
 serde = { version = "^1", features = ["derive"] }
 serde_ini = "0.2.0"
-serde_json = "1.0.59"
-pest = "2.1.3"
-pest_derive = "2.1.0"
+serde_json = "1.0.99"
+pest = "2.7.0"
+pest_derive = "2.7.0"
 font-kit = "0.10.1"
 ico = "0.3.0"
-regex = "1.5.5"
+regex = "1.8.4"
 shell-words = "^1"
 
 [dev-dependencies]

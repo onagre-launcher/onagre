@@ -13,6 +13,12 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -35,28 +41,23 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components: llvm-tools-preview
-
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
 
       - uses: actions-rs/cargo@v1
         with:
-          command: llvm-cov
-          args: --all-features --workspace --lcov --output-path lcov.info
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: lcov.info
-          fail_ci_if_error: true
+          command: test
 
       - uses: Swatinem/rust-cache@v1
 
   lints:
     name: Lints & Format
     runs-on: ubuntu-latest
+
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev
+
       - name: Checkout sources
         uses: actions/checkout@v2
 
