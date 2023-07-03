@@ -9,7 +9,7 @@ pub enum ConfigError {
     #[error("Failed to open config file")]
     IO(#[from] io::Error),
     #[error("Failed to parse config file:\n{0}")]
-    Parse(#[from] PestError<Rule>),
+    Parse(#[from] Box<PestError<Rule>>),
     #[error("Failed to parse number")]
     ParseInt(#[from] ParseIntError),
     #[error("Failed to parse number")]

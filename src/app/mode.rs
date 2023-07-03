@@ -4,8 +4,9 @@ use pop_launcher_toolkit::plugins::web::Config as WebConfig;
 
 pub(crate) static WEB_CONFIG: Lazy<WebConfig> = Lazy::new(pop_launcher_toolkit::plugins::web::load);
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub enum ActiveMode {
+    #[default]
     History,
     DesktopEntry,
     Web {
@@ -31,11 +32,5 @@ impl From<QueryData> for ActiveMode {
                 history: query_data.history,
             },
         }
-    }
-}
-
-impl Default for ActiveMode {
-    fn default() -> Self {
-        ActiveMode::History
     }
 }

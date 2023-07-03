@@ -381,7 +381,7 @@ impl Onagre<'_> {
             .filter(|entry| !entry.starts_with('%'))
             .collect::<Vec<&String>>();
 
-        std::process::Command::new(&args[0])
+        std::process::Command::new(args[0])
             .args(&args[1..])
             .spawn()
             .expect("Command failure");
@@ -418,9 +418,7 @@ impl Onagre<'_> {
     fn snap(&mut self) -> Command<Message> {
         let total_items = self.current_entries_len() as f32;
         match self.selected() {
-            None => {
-                scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START)
-            }
+            None => scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START),
             Some(selected) => {
                 let offset = (1.0 / total_items) * selected as f32;
                 scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset { x: 0.0, y: offset })
