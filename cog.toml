@@ -1,9 +1,49 @@
+# A list of glob patterns describing branches on which semver bump are allowed
+branch_whitelist = ["main"]
+
+# Ignore merge commits from conventional commit checks
+ignore_merge_commits = true
+
+pre_bump_hooks = [
+    "cargo test",
+    "cargo clippy",
+    "cargo fmt --all",
+    "cargo set-version {{version}}",
+    "cargo build --release",
+]
+
+post_bump_hooks = [
+    "git push",
+    "git push origin {{version}}",
+    "cargo package",
+    "cargo publish"
+]
+
+[git_hooks.commit-msg]
+script = """#!/bin/sh
+set -e
+
+echo "[Check current commit message]"
+cog verify --file $1
+
+echo "[Conventional commit check]"
+cog check
+
+echo "[Format code]"
+cargo fmt -v --all --check
+
+echo "[Lints]"
+cargo clippy
+"""
+
 [changelog]
 path = "CHANGELOG.md"
 template = "remote"
 remote = "github.com"
 repository = "onagre"
 owner = "oknozor"
+
+
 authors = [
     { signature = "Paul Delafosse", username = "oknozor" },
 ]
