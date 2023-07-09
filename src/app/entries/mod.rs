@@ -49,7 +49,9 @@ pub(crate) trait AsEntry<'a> {
                 .size(theme.title.font_size)
                 .into()]),
         )
-        // .style(&theme.title)
+        .style(iced::theme::Container::Custom(Box::new(
+            &theme.title,
+        )))
         .padding(theme.title.padding.to_iced_padding())
         .width(theme.title.width)
         .height(theme.title.height)
@@ -62,6 +64,9 @@ pub(crate) trait AsEntry<'a> {
             container(row!(
                 text(description.as_ref()).size(theme.description.font_size)
             ))
+            .style(iced::theme::Container::Custom(Box::new(
+                &theme.description,
+            )))
             .padding(theme.description.padding.to_iced_padding())
             .width(theme.description.width)
             .height(theme.description.height)
@@ -77,7 +82,9 @@ pub(crate) trait AsEntry<'a> {
         };
 
         Container::new(row.push(column))
-            // .style(theme.into())
+            .style(iced::theme::Container::Custom(Box::new(
+                theme,
+            )))
             .padding(theme.padding.to_iced_padding())
             .width(theme.width)
             .height(theme.height)
