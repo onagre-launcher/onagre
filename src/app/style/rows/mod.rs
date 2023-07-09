@@ -4,6 +4,8 @@ use generic::GenericContainerStyle;
 use iced::alignment::{Horizontal, Vertical};
 use iced::Length;
 use icon::IconStyle;
+use iced_native::Background;
+use iced_style::container::{Appearance, StyleSheet};
 pub mod generic;
 pub mod icon;
 
@@ -33,13 +35,27 @@ pub struct RowStyles {
     pub category_icon: IconStyle,
 }
 
+impl StyleSheet for &RowStyles {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _: &Self::Style) -> Appearance {
+        Appearance {
+            text_color: Some(self.color.into()),
+            background: Some(Background::Color(self.background.into())),
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+            border_color: self.border_color.into(),
+        }
+    }
+}
+
 impl Default for RowStyles {
     fn default() -> Self {
         RowStyles {
             width: Length::Fill,
             height: Length::Shrink,
             background: OnagreColor::DEFAULT_BACKGROUND,
-            color: OnagreColor::WHITE,
+            color: OnagreColor::DEFAULT_TEXT,
             border_radius: 0.0,
             border_width: 0.0,
             padding: OnagrePadding::from(5),
