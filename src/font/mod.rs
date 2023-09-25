@@ -2,6 +2,7 @@ use font_kit::family_name::FamilyName;
 use font_kit::handle::Handle;
 use font_kit::properties::Properties;
 use font_kit::source::SystemSource;
+use log::error;
 
 // Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
 //
@@ -128,7 +129,7 @@ pub fn load(name: &str) -> Option<&'static [u8]> {
             _ => None,
         },
         Err(err) => {
-            eprintln!("Failed to load fond {name}: {err}");
+            error!("Failed to load fond {name}: {err}");
             None
         }
     }

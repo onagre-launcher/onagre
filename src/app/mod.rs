@@ -58,7 +58,7 @@ pub fn run() -> iced::Result {
             max_size: None,
             icon: None,
             visible: true,
-            platform_specific: PlatformSpecific::default(),
+            platform_specific: PlatformSpecific,
         },
         default_text_size: THEME.font_size as f32,
         text_multithreading: false,

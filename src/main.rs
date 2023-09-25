@@ -2,10 +2,11 @@ use std::path::PathBuf;
 
 use anyhow::anyhow;
 use app::style::Theme;
-use log::debug;
+use log::{info, LevelFilter};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use structopt::StructOpt;
+use systemd_journal_logger::JournalLog;
 
 pub mod app;
 pub mod config;
@@ -39,7 +40,9 @@ struct Cli {
 }
 
 pub fn main() -> iced::Result {
-    env_logger::init();
+    JournalLog::default().install().unwrap();
+    log::set_max_level(LevelFilter::Info);
+    info!("Starting onagre");
     let cli = Cli::from_args();
     // User defined theme config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise
     if let Some(theme_path) = cli.theme {
@@ -48,7 +51,7 @@ pub fn main() -> iced::Result {
             *THEME_PATH.lock().unwrap() = path;
         }
 
-        debug!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
+        info!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
     app::run()
