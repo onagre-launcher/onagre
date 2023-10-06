@@ -15,7 +15,7 @@ https://user-images.githubusercontent.com/24563836/170211716-7822ec0b-94d1-414e-
 
 
 Onagre is build on top of [pop-launcher](https://github.com/pop-os/launcher) which makes it very versatile.
-The pop-launcher plugin system allow you to extend Onagre with plugin from the community or even write your own
+The pop-launcher plugin system allow you to extend Onagre with plugins from the community or even write your own
 using any programming language. 
 
 ## Features
@@ -33,7 +33,7 @@ using any programming language.
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/onagre.svg)](https://repology.org/project/onagre/versions)
 
-If there is no distro package available for Onagre in youre preferred manager, 
+If there is no distro package available for Onagre in your preferred manager, 
 you need Rust and [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to build it.
 
 **From source:**
@@ -89,13 +89,13 @@ Plugin with no prefix are enabled by default, there entry will be mixed in the s
 
 ## Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fall back to the default theme if none 
+Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fallback to the default theme if none 
 is found or if your theme contains syntax errors. To ensure your theme is correctly formatted run `onagre` from the terminal.
 
 For a detailed guide refer to [wiki -> theming](https://github.com/oknozor/onagre/wiki/Theming)
 , or take a look at the [theme examples directory](docs/theme_examples).
 
-## Galerie
+## Gallery
 
 ---
 <img src="docs/screenshots/default-theme.png" alt="default-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
@@ -144,7 +144,7 @@ This project is bound by a [code of conduct](CODE_OF_CONDUCT.md) based on the [c
 
 Having a question or suggestion for a new feature ? Feel free to open an issue or submit a PR.
 Currently, what we need the most is feedback from users using different window managers and hardware. 
-If onagre does not work out of the box for you *please let us know*, so we can fix it.
+If Onagre does not work out of the box for you *please let us know*, so we can fix it.
 
 ## License 
 
