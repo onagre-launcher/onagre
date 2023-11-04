@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::anyhow;
 use app::style::Theme;
 use clap::Parser;
-use log::{info, LevelFilter};
+use log::{debug, info, LevelFilter};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use systemd_journal_logger::JournalLog;
@@ -34,6 +34,9 @@ struct Cli {
         help = "Path to an alternate onagre theme file"
     )]
     theme: Option<PathBuf>,
+
+    #[arg(long = "mode", short = 'm', help = "The mode parameter as a string")]
+    mode: Option<String>,
 }
 
 pub fn main() -> iced::Result {
@@ -51,5 +54,11 @@ pub fn main() -> iced::Result {
         info!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
     }
 
-    app::run()
+    if let Some(mode) = cli.mode {
+        debug!("Mode parameter: {:?}", mode);
+
+        app::run(Some(mode))
+    } else {
+        app::run(None)
+    }
 }

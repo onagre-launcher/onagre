@@ -19,9 +19,7 @@ use once_cell::sync::Lazy;
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::entries::AsEntry;
 use crate::app::mode::ActiveMode;
-use crate::app::plugin_matchers::Plugin;
 use crate::app::state::{Selection, State};
-use crate::app::subscriptions::plugin_configs::PluginMatcherSubscription;
 use crate::app::subscriptions::pop_launcher::{PopLauncherSubscription, SubscriptionMessage};
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
@@ -38,7 +36,7 @@ pub mod state;
 pub mod style;
 pub mod subscriptions;
 
-pub fn run() -> iced::Result {
+pub fn run(pre_value: Option<String>) -> iced::Result {
     debug!("Starting Onagre in debug mode");
 
     let default_font = THEME
@@ -68,7 +66,7 @@ pub fn run() -> iced::Result {
         antialiasing: true,
         exit_on_close_request: false,
         default_font,
-        flags: (),
+        flags: OnagreFlags { pre_value },
     })
 }
 
@@ -84,25 +82,36 @@ pub enum Message {
     InputChanged(String),
     KeyboardEvent(KeyCode),
     SubscriptionResponse(SubscriptionMessage),
-    PluginConfig(Plugin),
     Unfocused,
 }
 
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 
+pub struct OnagreFlags {
+    pre_value: Option<String>,
+}
+
 impl Application for Onagre<'_> {
     type Executor = iced::executor::Default;
     type Message = Message;
     type Theme = Theme;
 
-    type Flags = ();
+    type Flags = OnagreFlags;
 
-    fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
-        let onagre = Onagre {
-            state: Default::default(),
-            request_tx: Default::default(),
-        };
+    fn new(flags: OnagreFlags) -> (Self, Command<Self::Message>) {
+        let onagre;
+        if let Some(pre_value) = flags.pre_value {
+            onagre = Onagre {
+                state: State::with_mode(&pre_value),
+                request_tx: Default::default(),
+            };
+        } else {
+            onagre = Onagre {
+                state: Default::default(),
+                request_tx: Default::default(),
+            };
+        }
 
         (
             onagre,
@@ -126,12 +135,6 @@ impl Application for Onagre<'_> {
                 } else {
                     Command::none()
                 }
-            }
-            Message::PluginConfig(plugin) => {
-                self.state
-                    .plugin_matchers
-                    .insert(plugin.name.clone(), plugin);
-                Command::none()
             }
         }
     }
@@ -285,12 +288,11 @@ impl Application for Onagre<'_> {
         app_wrapper.into()
     }
 
-    fn subscription(&self) -> iced::Subscription<Self::Message> {
+    fn subscription(&self) -> Subscription<Self::Message> {
         let keyboard_event = Onagre::keyboard_event();
         let pop_launcher = PopLauncherSubscription::create().map(Message::SubscriptionResponse);
-        let matchers = PluginMatcherSubscription::create().map(Message::PluginConfig);
-        let subs = vec![keyboard_event, pop_launcher, matchers];
-        iced::Subscription::batch(subs)
+        let subs = vec![keyboard_event, pop_launcher];
+        Subscription::batch(subs)
     }
 }
 
@@ -357,8 +359,7 @@ impl Onagre<'_> {
             _ => Selection::PopLauncher(0),
         };
 
-        let _: iced::Command<Message> =
-            scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START);
+        let _: Command<Message> = scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START);
 
         match &self.state.get_active_mode() {
             ActiveMode::History => {}
