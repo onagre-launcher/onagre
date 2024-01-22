@@ -1,21 +1,23 @@
 use std::path::Path;
 use std::process::exit;
 
-use iced::{Application, Command, Element, Length, Renderer, Settings, Subscription, subscription, window};
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::KeyCode;
-use iced::widget::{Column, column, Container, container, Row, scrollable, Text, text_input};
+use iced::widget::{column, container, scrollable, text_input, Column, Container, Row, Text};
 use iced::window::PlatformSpecific;
-use iced_core::{Event, Font};
+use iced::{
+    subscription, window, Application, Command, Element, Length, Renderer, Settings, Subscription,
+};
 use iced_core::widget::operation::scrollable::RelativeOffset;
+use iced_core::{Event, Font};
 use iced_style::Theme;
 use log::{debug, trace};
-use once_cell::sync::Lazy;
 use onagre_launcher_toolkit::launcher::{Request, Response};
+use once_cell::sync::Lazy;
 
-use crate::app::entries::AsEntry;
 use crate::app::entries::pop_entry::PopSearchResult;
+use crate::app::entries::AsEntry;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::Plugin;
 use crate::app::state::{Selection, State};
@@ -43,7 +45,7 @@ pub fn run() -> iced::Result {
         .font
         .as_ref()
         .map(|font| Font::with_name(font))
-        .unwrap_or(Font::default());
+        .unwrap_or_default();
 
     Onagre::run(Settings {
         id: Some("onagre".to_string()),
@@ -308,7 +310,11 @@ impl Onagre<'_> {
                 // Get user input as pop-entry
                 match selected {
                     None => {
-                        return self.state.pop_search.get(0).map(|entry| entry.name.clone());
+                        return self
+                            .state
+                            .pop_search
+                            .first()
+                            .map(|entry| entry.name.clone());
                     }
                     Some(selected) => self
                         .state
@@ -322,7 +328,11 @@ impl Onagre<'_> {
                 // Get user input as pop-entry
                 match selected {
                     None => {
-                        return self.state.pop_search.get(0).map(|entry| entry.name.clone());
+                        return self
+                            .state
+                            .pop_search
+                            .first()
+                            .map(|entry| entry.name.clone());
                     }
                     Some(selected) => self
                         .state

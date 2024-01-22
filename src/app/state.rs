@@ -7,8 +7,8 @@ use onagre_launcher_toolkit::launcher::SearchResult;
 use crate::app::{Message, INPUT_ID};
 use crate::icons::IconPath;
 use crate::THEME;
-use std::collections::HashMap;
 use iced::widget::{scrollable, text_input};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct State<'a> {

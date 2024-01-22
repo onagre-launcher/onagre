@@ -149,7 +149,7 @@ impl From<OnagreColor> for Color {
 #[cfg(test)]
 mod test {
     use crate::config::color::OnagreColor;
-    use iced_style::Color;
+    use iced_core::Color;
 
     #[test]
     fn should_get_color_from_str() {

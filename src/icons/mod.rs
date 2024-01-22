@@ -6,11 +6,11 @@ use std::sync::Mutex;
 use crate::config::color::OnagreColor;
 use crate::THEME;
 use anyhow::anyhow;
-use iced::Renderer;
 use iced::widget::Svg;
+use iced::Renderer;
 use iced_core::svg::Handle;
-use once_cell::sync::Lazy;
 use onagre_launcher_toolkit::launcher::IconSource;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 // We use this only for symbolic svg icons which needs to be loaded with a color theme

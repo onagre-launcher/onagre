@@ -1,9 +1,9 @@
-use iced_core::{Background, BorderRadius};
 use crate::app::style::scrollable::scroller::ScrollerStyles;
 use crate::app::style::scrollable::RowContainerStyle;
 use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
+use iced_core::{Background, BorderRadius};
 use iced_style::container::{Appearance, StyleSheet};
 
 // The top level container wrapping the app

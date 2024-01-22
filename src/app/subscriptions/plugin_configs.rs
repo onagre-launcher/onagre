@@ -1,4 +1,4 @@
-use std::hash::{Hasher};
+use std::hash::Hasher;
 
 use iced::futures::stream::BoxStream;
 use iced::futures::StreamExt;
@@ -26,8 +26,8 @@ impl Recipe for PluginMatcherSubscription {
     }
 
     fn stream(self: Box<Self>, _: BoxStream<(iced::Event, Status)>) -> BoxStream<Self::Output> {
-        Box::pin(
-            onagre_launcher_toolkit::service::load::from_paths().map(|(path, config, regex)| {
+        Box::pin(onagre_launcher_toolkit::service::load::from_paths().map(
+            |(path, config, regex)| {
                 let icon: Option<IconPath> = THEME.icon_theme.as_ref().and_then(|theme| {
                     config
                         .icon
@@ -51,7 +51,7 @@ impl Recipe for PluginMatcherSubscription {
                     help: config.query.help.map(|h| h.to_string()),
                     regex,
                 }
-            }),
-        )
+            },
+        ))
     }
 }

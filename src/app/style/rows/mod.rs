@@ -3,10 +3,10 @@ use crate::config::padding::OnagrePadding;
 use generic::GenericContainerStyle;
 use iced::alignment::{Horizontal, Vertical};
 use iced::Length;
-use iced_core::BorderRadius;
-use icon::IconStyle;
-use iced_style::container::{Appearance, StyleSheet};
 use iced_core::Background;
+use iced_core::BorderRadius;
+use iced_style::container::{Appearance, StyleSheet};
+use icon::IconStyle;
 
 pub mod generic;
 pub mod icon;

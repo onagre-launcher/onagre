@@ -1,15 +1,15 @@
 use iced::futures::channel::mpsc;
 use iced::futures::channel::mpsc::{channel, Sender};
-use iced::futures::{join, SinkExt, StreamExt};
-use log::debug;
-use onagre_launcher_toolkit::launcher::{json_input_stream, Request, Response};
-use std::hash::{Hash};
-use std::process::Stdio;
 use iced::futures::stream::BoxStream;
+use iced::futures::{join, SinkExt, StreamExt};
 use iced::Subscription;
 use iced_core::event::Status;
 use iced_runtime::futures::futures::stream;
 use iced_runtime::futures::subscription::Recipe;
+use log::debug;
+use onagre_launcher_toolkit::launcher::{json_input_stream, Request, Response};
+use std::hash::Hash;
+use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 

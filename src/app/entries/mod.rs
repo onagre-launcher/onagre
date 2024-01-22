@@ -3,7 +3,7 @@ use crate::app::style::rows::RowStyles;
 use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
-use iced::widget::{column, Container, container, Image, Row, row, text};
+use iced::widget::{column, container, row, text, Container, Image, Row};
 use iced::{Alignment, Length, Renderer};
 use std::borrow::Cow;
 
@@ -42,34 +42,29 @@ pub(crate) trait AsEntry<'a> {
     where
         'b: 'a,
     {
-        let title_row: iced::widget::Container<'_, Message, Renderer> = container(
-            iced::widget::row(vec![text(self.get_display_name())
+        let title_row: iced::widget::Container<'_, Message, Renderer> =
+            container(iced::widget::row(vec![text(self.get_display_name())
                 .size(theme.title.font_size)
-                .into()]),
-        )
-        .style(iced::theme::Container::Custom(Box::new(
-            &theme.title,
-        )))
-        .padding(theme.title.padding.to_iced_padding())
-        .width(theme.title.width)
-        .height(theme.title.height)
-        .align_x(theme.title.align_x)
-        .align_y(theme.title.align_y);
+                .into()]))
+            .style(iced::theme::Container::Custom(Box::new(&theme.title)))
+            .padding(theme.title.padding.to_iced_padding())
+            .width(theme.title.width)
+            .height(theme.title.height)
+            .align_x(theme.title.align_x)
+            .align_y(theme.title.align_y);
 
-        let description_row: Option<Container<'_, Message, Renderer>,
-        > = self.get_description().map(|description| {
-            container(row!(
-                text(description.as_ref()).size(theme.description.font_size)
-            ))
-            .style(iced::theme::Container::Custom(Box::new(
-                &theme.description,
-            )))
-            .padding(theme.description.padding.to_iced_padding())
-            .width(theme.description.width)
-            .height(theme.description.height)
-            .align_x(theme.description.align_x)
-            .align_y(theme.description.align_y)
-        });
+        let description_row: Option<Container<'_, Message, Renderer>> =
+            self.get_description().map(|description| {
+                container(row!(
+                    text(description.as_ref()).size(theme.description.font_size)
+                ))
+                .style(iced::theme::Container::Custom(Box::new(&theme.description)))
+                .padding(theme.description.padding.to_iced_padding())
+                .width(theme.description.width)
+                .height(theme.description.height)
+                .align_x(theme.description.align_x)
+                .align_y(theme.description.align_y)
+            });
 
         let column = column(vec![title_row.into()]);
 
@@ -79,9 +74,7 @@ pub(crate) trait AsEntry<'a> {
         };
 
         Container::new(row.push(column))
-            .style(iced::theme::Container::Custom(Box::new(
-                theme,
-            )))
+            .style(iced::theme::Container::Custom(Box::new(theme)))
             .padding(theme.padding.to_iced_padding())
             .width(theme.width)
             .height(theme.height)

@@ -35,7 +35,7 @@ pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<Theme, ConfigError> {
         .next()
         .unwrap();
 
-    for pair in pairs.into_inner() {
+    if let Some(pair) = pairs.into_inner().next() {
         match pair.as_rule() {
             Rule::onagre_style => {
                 return Theme::try_from(pair);
