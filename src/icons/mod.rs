@@ -1,5 +1,3 @@
-use iced_native::svg::Handle;
-use iced_native::widget::Svg;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
@@ -9,6 +7,8 @@ use crate::config::color::OnagreColor;
 use crate::THEME;
 use anyhow::anyhow;
 use iced::Renderer;
+use iced::widget::Svg;
+use iced_core::svg::Handle;
 use once_cell::sync::Lazy;
 use pop_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};

@@ -1,5 +1,21 @@
-use crate::app::entries::pop_entry::PopSearchResult;
+use std::path::Path;
+use std::process::exit;
+
+use iced::{Application, Command, Element, Length, Renderer, Settings, Subscription, subscription, window};
+use iced::alignment::{Horizontal, Vertical};
+use iced::futures::channel::mpsc::{Sender, TrySendError};
+use iced::keyboard::KeyCode;
+use iced::widget::{Column, column, Container, container, Row, scrollable, Text, text_input};
+use iced::window::PlatformSpecific;
+use iced_core::{Event, Font};
+use iced_core::widget::operation::scrollable::RelativeOffset;
+use iced_style::Theme;
+use log::{debug, trace};
+use once_cell::sync::Lazy;
+use pop_launcher_toolkit::launcher::{Request, Response};
+
 use crate::app::entries::AsEntry;
+use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::Plugin;
 use crate::app::state::{Selection, State};
@@ -8,25 +24,9 @@ use crate::app::subscriptions::pop_launcher::{PopLauncherSubscription, Subscript
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
-use crate::font::DEFAULT_FONT;
 use crate::freedesktop::desktop::DesktopEntry;
 use crate::icons::IconPath;
-use crate::{font, THEME};
-use iced::alignment::{Horizontal, Vertical};
-use iced::futures::channel::mpsc::{Sender, TrySendError};
-use iced::keyboard::KeyCode;
-use iced::widget::{Column, Container, Row, Text};
-use iced::window::PlatformSpecific;
-use iced::{window, Application, Command, Element, Length, Renderer, Settings};
-use iced_native::widget::scrollable::RelativeOffset;
-use iced_native::widget::{column, container, scrollable, text_input};
-use iced_native::{Event, Subscription};
-use iced_style::Theme;
-use log::{debug, trace};
-use once_cell::sync::Lazy;
-use pop_launcher_toolkit::launcher::{Request, Response};
-use std::path::Path;
-use std::process::exit;
+use crate::THEME;
 
 pub mod cache;
 pub mod entries;
@@ -42,8 +42,8 @@ pub fn run() -> iced::Result {
     let default_font = THEME
         .font
         .as_ref()
-        .and_then(|font| font::load(font))
-        .unwrap_or(DEFAULT_FONT);
+        .map(|font| Font::with_name(font))
+        .unwrap_or(Font::default());
 
     Onagre::run(Settings {
         id: Some("onagre".to_string()),
@@ -51,22 +51,22 @@ pub fn run() -> iced::Result {
             transparent: true,
             size: THEME.size,
             decorations: false,
-            always_on_top: true,
             resizable: false,
             position: window::Position::Centered,
             min_size: None,
             max_size: None,
             icon: None,
             visible: true,
-            platform_specific: PlatformSpecific,
+            platform_specific: PlatformSpecific {
+                application_id: "onagre".to_string(),
+            },
+            level: Default::default(),
         },
         default_text_size: THEME.font_size as f32,
-        text_multithreading: false,
         antialiasing: true,
         exit_on_close_request: false,
-        default_font: Some(default_font),
+        default_font,
         flags: (),
-        try_opengles_first: true,
     })
 }
 
@@ -607,7 +607,7 @@ impl Onagre<'_> {
     }
 
     fn keyboard_event() -> Subscription<Message> {
-        iced_native::subscription::events_with(|event, _status| match event {
+        subscription::events_with(|event, _status| match event {
             Event::Window(window::Event::Unfocused) => Some(Message::Unfocused),
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
                 modifiers: _,

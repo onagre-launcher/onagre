@@ -3,10 +3,8 @@ use crate::app::style::rows::RowStyles;
 use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
-use iced::widget::{Container, Image, Row};
+use iced::widget::{column, Container, container, Image, Row, row, text};
 use iced::{Alignment, Length, Renderer};
-use iced_native::row;
-use iced_native::widget::{column, container, text};
 use std::borrow::Cow;
 
 pub(crate) mod db_entry;
@@ -44,8 +42,8 @@ pub(crate) trait AsEntry<'a> {
     where
         'b: 'a,
     {
-        let title_row: iced_native::widget::Container<'_, Message, Renderer> = container(
-            iced_native::widget::row(vec![text(self.get_display_name())
+        let title_row: iced::widget::Container<'_, Message, Renderer> = container(
+            iced::widget::row(vec![text(self.get_display_name())
                 .size(theme.title.font_size)
                 .into()]),
         )
@@ -58,8 +56,7 @@ pub(crate) trait AsEntry<'a> {
         .align_x(theme.title.align_x)
         .align_y(theme.title.align_y);
 
-        let description_row: std::option::Option<
-            iced_native::widget::Container<'_, Message, Renderer>,
+        let description_row: Option<Container<'_, Message, Renderer>,
         > = self.get_description().map(|description| {
             container(row!(
                 text(description.as_ref()).size(theme.description.font_size)

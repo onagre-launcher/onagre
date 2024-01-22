@@ -40,7 +40,7 @@ struct Cli {
 }
 
 pub fn main() -> iced::Result {
-    JournalLog::default().install().unwrap();
+    JournalLog::new().unwrap().install().unwrap();
     log::set_max_level(LevelFilter::Info);
     info!("Starting onagre");
     let cli = Cli::from_args();

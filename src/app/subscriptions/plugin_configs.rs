@@ -1,11 +1,14 @@
-use crate::app::plugin_matchers::Plugin;
-use iced::futures::StreamExt;
-use iced_native::futures::stream::BoxStream;
-use iced_native::Subscription;
+use std::hash::{Hasher};
 
+use iced::futures::stream::BoxStream;
+use iced::futures::StreamExt;
+use iced::Subscription;
+use iced_core::event::Status;
+use iced_runtime::futures::subscription::Recipe;
+
+use crate::app::plugin_matchers::Plugin;
 use crate::icons::IconPath;
 use crate::THEME;
-use std::hash::Hash;
 
 pub struct PluginMatcherSubscription;
 
@@ -15,18 +18,14 @@ impl PluginMatcherSubscription {
     }
 }
 
-impl<H, I> iced_native::subscription::Recipe<H, I> for PluginMatcherSubscription
-where
-    H: std::hash::Hasher,
-{
+impl Recipe for PluginMatcherSubscription {
     type Output = Plugin;
 
-    fn hash(&self, state: &mut H) {
-        std::any::TypeId::of::<Self>().hash(state);
-        "PluginMatcherSubscription".hash(state)
+    fn hash(&self, state: &mut iced_core::Hasher) {
+        state.write("PluginMatcherSubscription".as_bytes())
     }
 
-    fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
+    fn stream(self: Box<Self>, _: BoxStream<(iced::Event, Status)>) -> BoxStream<Self::Output> {
         Box::pin(
             pop_launcher_toolkit::service::load::from_paths().map(|(path, config, regex)| {
                 let icon: Option<IconPath> = THEME.icon_theme.as_ref().and_then(|theme| {

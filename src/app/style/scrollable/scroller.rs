@@ -1,6 +1,7 @@
 use crate::config::color::OnagreColor;
 use iced::widget::scrollable::Scrollbar;
 use iced::Background;
+use iced_core::BorderRadius;
 use iced_style::scrollable::StyleSheet;
 use iced_style::theme::Scrollable;
 
@@ -51,12 +52,12 @@ impl StyleSheet for &ScrollerStyles {
     fn active(&self, _: &Self::Style) -> Scrollbar {
         Scrollbar {
             background: Some(Background::Color(self.background.into())),
-            border_radius: self.border_radius,
+            border_radius: BorderRadius::from(self.border_radius),
             border_width: self.border_width,
             border_color: self.border_color.into(),
             scroller: iced::widget::scrollable::Scroller {
                 color: self.scroller_color.into(),
-                border_radius: self.scroller_border_radius,
+                border_radius: BorderRadius::from(self.scroller_border_radius),
                 border_width: self.scroller_border_width,
                 border_color: self.scroller_border_color.into(),
             },

@@ -7,6 +7,7 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::widget::container::Appearance;
 use iced::Background;
+use iced_core::BorderRadius;
 
 pub mod app;
 pub mod rows;
@@ -108,7 +109,7 @@ impl iced::widget::container::StyleSheet for &Theme {
     fn appearance(&self, _: &Self::Style) -> Appearance {
         Appearance {
             background: Some(Background::Color(self.background.into())),
-            border_radius: self.border_radius,
+            border_radius: BorderRadius::from(self.border_radius),
             border_width: self.border_width,
             text_color: Some(self.color.into()),
             border_color: self.border_color.into(),

@@ -1,13 +1,15 @@
 use iced::futures::channel::mpsc;
 use iced::futures::channel::mpsc::{channel, Sender};
 use iced::futures::{join, SinkExt, StreamExt};
-use iced_native::futures::stream;
-use iced_native::futures::stream::BoxStream;
-use iced_native::Subscription;
 use log::debug;
 use pop_launcher_toolkit::launcher::{json_input_stream, Request, Response};
-use std::hash::Hash;
+use std::hash::{Hash};
 use std::process::Stdio;
+use iced::futures::stream::BoxStream;
+use iced::Subscription;
+use iced_core::event::Status;
+use iced_runtime::futures::futures::stream;
+use iced_runtime::futures::subscription::Recipe;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 
@@ -57,18 +59,15 @@ impl PopLauncherSubscription {
     }
 }
 
-impl<H, I> iced_native::subscription::Recipe<H, I> for PopLauncherSubscription
-where
-    H: std::hash::Hasher,
-{
+impl Recipe for PopLauncherSubscription {
     type Output = SubscriptionMessage;
 
-    fn hash(&self, state: &mut H) {
+    fn hash(&self, state: &mut iced_core::Hasher) {
         std::any::TypeId::of::<Self>().hash(state);
         "PopLauncherSubscription".hash(state)
     }
 
-    fn stream(self: Box<Self>, _: BoxStream<I>) -> BoxStream<Self::Output> {
+    fn stream(self: Box<Self>, _: BoxStream<(iced::Event, Status)>) -> BoxStream<Self::Output> {
         debug!("Starting `pop-launcher` subscription");
         let child = Command::new("pop-launcher")
             .stdin(Stdio::piped())

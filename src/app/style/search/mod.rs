@@ -3,7 +3,7 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::Length;
-use iced_core::Background;
+use iced_core::{Background, BorderRadius};
 use iced_style::container::{Appearance, StyleSheet};
 use input::SearchInputStyles;
 
@@ -41,7 +41,7 @@ impl StyleSheet for &SearchContainerStyles {
         Appearance {
             text_color: Some(self.color.into()),
             background: Some(Background::Color(self.background.into())),
-            border_radius: self.border_radius,
+            border_radius: BorderRadius::from(self.border_radius),
             border_width: self.border_width,
             border_color: self.border_color.into(),
         }
