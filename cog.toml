@@ -41,7 +41,7 @@ path = "CHANGELOG.md"
 template = "remote"
 remote = "github.com"
 repository = "onagre"
-owner = "oknozor"
+owner = "onagre-launcher"
 
 
 authors = [
