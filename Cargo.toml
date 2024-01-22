@@ -33,7 +33,7 @@ sled = "0.34.7"
 
 onagre-launcher-toolkit = "0.1.1"
 structopt = { version = "^0", default-features = false, optional = true }
-freedesktop-icons = "0.2.3"
+freedesktop-icons = "0.2.4"
 
 log = { version = "^0.4" }
 systemd-journal-logger = "2.1.1"
@@ -53,14 +53,5 @@ regex = "1.8.4"
 shell-words = "^1"
 
 [dev-dependencies]
-criterion = "0.4.0"
 speculoos = "0.11.0"
 pretty_assertions = "1.2.1"
-
-[[bench]]
-name = "icon"
-harness = false
-
-[[bench]]
-name = "database"
-harness = false
