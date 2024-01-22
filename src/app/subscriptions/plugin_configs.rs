@@ -27,7 +27,7 @@ impl Recipe for PluginMatcherSubscription {
 
     fn stream(self: Box<Self>, _: BoxStream<(iced::Event, Status)>) -> BoxStream<Self::Output> {
         Box::pin(
-            pop_launcher_toolkit::service::load::from_paths().map(|(path, config, regex)| {
+            onagre_launcher_toolkit::service::load::from_paths().map(|(path, config, regex)| {
                 let icon: Option<IconPath> = THEME.icon_theme.as_ref().and_then(|theme| {
                     config
                         .icon

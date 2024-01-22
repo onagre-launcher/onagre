@@ -10,7 +10,7 @@ use iced::Renderer;
 use iced::widget::Svg;
 use iced_core::svg::Handle;
 use once_cell::sync::Lazy;
-use pop_launcher_toolkit::launcher::IconSource;
+use onagre_launcher_toolkit::launcher::IconSource;
 use serde::{Deserialize, Serialize};
 
 // We use this only for symbolic svg icons which needs to be loaded with a color theme
@@ -146,7 +146,6 @@ impl IconPath {
                 }
                 Some(svg) => svg,
             };
-
             let handle = Handle::from_memory(svg.clone());
             Svg::new(handle)
         } else {

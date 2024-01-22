@@ -11,7 +11,6 @@ use systemd_journal_logger::JournalLog;
 pub mod app;
 pub mod config;
 pub mod db;
-pub mod font;
 pub mod freedesktop;
 pub mod icons;
 

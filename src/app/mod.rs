@@ -12,7 +12,7 @@ use iced_core::widget::operation::scrollable::RelativeOffset;
 use iced_style::Theme;
 use log::{debug, trace};
 use once_cell::sync::Lazy;
-use pop_launcher_toolkit::launcher::{Request, Response};
+use onagre_launcher_toolkit::launcher::{Request, Response};
 
 use crate::app::entries::AsEntry;
 use crate::app::entries::pop_entry::PopSearchResult;

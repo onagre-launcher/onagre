@@ -2759,10 +2759,10 @@ dependencies = [
  "iced_style",
  "ico",
  "log",
+ "onagre-launcher-toolkit",
  "once_cell",
  "pest",
  "pest_derive",
- "pop-launcher-toolkit",
  "pretty_assertions",
  "regex",
  "serde",
@@ -2775,6 +2775,104 @@ dependencies = [
  "systemd-journal-logger",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "onagre-launcher"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56e60d9fbab616fae65d8f2d0a3ea10cbacfc7ddf1befb907c5a68aecefce5a2"
+dependencies = [
+ "const_format",
+ "dirs 4.0.0",
+ "futures",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
+name = "onagre-launcher-plugins"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59fc31c9107be72521d13a00cd1bfebc2617c6cee0464ec132344714745e863e"
+dependencies = [
+ "anyhow",
+ "async-pidfd",
+ "bytes 1.4.0",
+ "dirs 4.0.0",
+ "flume",
+ "fork",
+ "freedesktop-desktop-entry",
+ "futures",
+ "human-sort",
+ "human_format",
+ "new_mime_guess",
+ "onagre-launcher",
+ "recently-used-xbel",
+ "regex",
+ "reqwest",
+ "ron",
+ "serde",
+ "serde_json",
+ "slab",
+ "strsim",
+ "sysfs-class",
+ "tokio",
+ "tracing",
+ "url",
+ "urlencoding",
+ "ward",
+ "zbus",
+ "zvariant",
+]
+
+[[package]]
+name = "onagre-launcher-service"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0266efdbe976efefdc5fc003b2f7470be1d40aae43326194220265d60c2314cc"
+dependencies = [
+ "anyhow",
+ "async-oneshot",
+ "async-trait",
+ "dirs 4.0.0",
+ "flume",
+ "futures",
+ "futures_codec",
+ "gen-z",
+ "num_cpus",
+ "onagre-launcher",
+ "regex",
+ "ron",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "slab",
+ "strsim",
+ "tokio",
+ "tokio-stream",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "onagre-launcher-toolkit"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86303060d76d035cf871f5f7938ad7889312f7c5f48f5f11c46aad9ead341836"
+dependencies = [
+ "async-trait",
+ "dirs 4.0.0",
+ "futures",
+ "onagre-launcher",
+ "onagre-launcher-plugins",
+ "onagre-launcher-service",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3136,96 +3234,6 @@ dependencies = [
  "log",
  "pin-project-lite",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "pop-launcher"
-version = "1.2.2"
-dependencies = [
- "const_format",
- "dirs 4.0.0",
- "futures",
- "serde",
- "serde_json",
- "serde_with",
- "tokio",
- "tokio-stream",
-]
-
-[[package]]
-name = "pop-launcher-plugins"
-version = "1.2.2"
-dependencies = [
- "anyhow",
- "async-pidfd",
- "bytes 1.4.0",
- "dirs 4.0.0",
- "flume",
- "fork",
- "freedesktop-desktop-entry",
- "futures",
- "human-sort",
- "human_format",
- "new_mime_guess",
- "pop-launcher",
- "recently-used-xbel",
- "regex",
- "reqwest",
- "ron",
- "serde",
- "serde_json",
- "slab",
- "strsim",
- "sysfs-class",
- "tokio",
- "tracing",
- "url",
- "urlencoding",
- "ward",
- "zbus",
- "zvariant",
-]
-
-[[package]]
-name = "pop-launcher-service"
-version = "1.2.2"
-dependencies = [
- "anyhow",
- "async-oneshot",
- "async-trait",
- "dirs 4.0.0",
- "flume",
- "futures",
- "futures_codec",
- "gen-z",
- "num_cpus",
- "pop-launcher",
- "regex",
- "ron",
- "serde",
- "serde_json",
- "serde_with",
- "slab",
- "strsim",
- "tokio",
- "tokio-stream",
- "toml",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "pop-launcher-toolkit"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "dirs 4.0.0",
- "futures",
- "pop-launcher",
- "pop-launcher-plugins",
- "pop-launcher-service",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

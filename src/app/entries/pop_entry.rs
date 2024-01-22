@@ -1,4 +1,4 @@
-use pop_launcher_toolkit::launcher::SearchResult;
+use onagre_launcher_toolkit::launcher::SearchResult;
 use std::borrow::Cow;
 
 use crate::app::entries::AsEntry;

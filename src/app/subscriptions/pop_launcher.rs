@@ -2,7 +2,7 @@ use iced::futures::channel::mpsc;
 use iced::futures::channel::mpsc::{channel, Sender};
 use iced::futures::{join, SinkExt, StreamExt};
 use log::debug;
-use pop_launcher_toolkit::launcher::{json_input_stream, Request, Response};
+use onagre_launcher_toolkit::launcher::{json_input_stream, Request, Response};
 use std::hash::{Hash};
 use std::process::Stdio;
 use iced::futures::stream::BoxStream;
