@@ -19,8 +19,7 @@ codegen-units = 1
 lto = true
 
 [features]
-default = ["iced/wgpu", "iced/palette", "cli"]
-cli = ["structopt"]
+default = ["iced/wgpu", "iced/palette"]
 debug = ["iced/debug"]
 
 [dependencies]
@@ -32,7 +31,7 @@ tokio = { version = "1.29.1", features = ["process", "macros", "io-util"] }
 sled = "0.34.7"
 
 onagre-launcher-toolkit = "0.1.1"
-structopt = { version = "^0", default-features = false, optional = true }
+clap = { version = "^4", features = ["derive"] }
 freedesktop-icons = "0.2.5"
 
 log = { version = "^0.4" }
