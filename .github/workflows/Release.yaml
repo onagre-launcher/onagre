@@ -54,5 +54,5 @@ jobs:
 #        env:
 #          COMMIT_MESSAGE: "chore: update gh-pages"
 #          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          BUILD_SCRIPT: cd docs && yarn && yarn docs:build
+#          BUILD_SCRIPT: cd guide && yarn && yarn guide:build
 #          BUILD_DIR: website/.vuepress/dist/

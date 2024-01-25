@@ -9,6 +9,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  CROSS_CONFIG: Cross.toml
 
 jobs:
   upload_license:
@@ -47,10 +48,6 @@ jobs:
           toolchain: stable
           target: ${{ matrix.target }}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev
 
       - uses: actions-rs/cargo@v1
         with:

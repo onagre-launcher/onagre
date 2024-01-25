@@ -1,0 +1,12 @@
+[target.x86_64-unknown-linux-gnu]
+image = "ubuntu:latest"
+pre-build = ["apt-get update && apt-get -y install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev gcc"]
+
+[target.x86_64-unknown-linux-musl]
+image = "ubuntu:latest"
+pre-build = ["apt-get update && apt-get -y install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev gcc"]
+
+[target.armv7-unknown-linux-musleabihf-unknown-linux-gnu]
+image = "ubuntu:latest"
+pre-build = ["apt-get update && apt-get -y install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev gcc"]
+
