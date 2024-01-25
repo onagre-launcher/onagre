@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: SemVer release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{secrets.RELEASE_TOKEN}}
+
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git config --global user.email github-actions@github.com
+          git config --global user.name github-actions
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - run:
+          cargo install cargo-edit
+
+      - run:
+          cargo login ${{secrets.CARGO_TOKEN}}
+
+      - name: SemVer release
+        id: release
+        uses: cocogitto/cocogitto-action@v3
+        with:
+          check-latest-tag-only: true
+          release: true
+          git-user: 'github-actions'
+          git-user-email: 'github-actions@github.com'
+
+      - name: Generate Changelog
+        run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
+
+      - name: Upload github release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: GITHUB_CHANGELOG.md
+          tag_name: ${{ steps.release.outputs.version }}
+
+#      - name: vuepress-deploy
+#        uses: jenkey2011/vuepress-deploy@master
+#        env:
+#          COMMIT_MESSAGE: "chore: update gh-pages"
+#          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          BUILD_SCRIPT: cd docs && yarn && yarn docs:build
+#          BUILD_DIR: website/.vuepress/dist/

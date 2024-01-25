@@ -1,48 +1,118 @@
-name: Publish
+name: Publish latest
 
 on:
   push:
+    branches:
+      - main
     tags:
       - '*'
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
-  binary:
-    name: Publish binary for ${{ matrix.os }}
+  upload_license:
+    name: Upload License
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: LICENSE
+          path: LICENSE
+
+  build:
+    name: Build onagre ${{ matrix.os }}-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # This should work with only the `include`s but it currently doesn't because of this bug:
-        # https://github.community/t5/How-to-use-Git-and-GitHub/GitHub-Actions-Matrix-options-dont-work-as-documented/td-p/29558
-        target: [ x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, armv7-unknown-linux-musleabihf ]
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             target: armv7-unknown-linux-musleabihf
-
     steps:
-      - uses: hecrj/setup-rust-action@v1
+      - uses: actions/checkout@v4
+
+      - uses: Swatinem/rust-cache@v2
         with:
-          rust-version: stable
+          cache-all-crates: "true"
+          key: "${{ matrix.os }}-${{ matrix.target }}"
 
-      - name: Install libssl-dev
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        run: sudo apt-get update && sudo apt-get install cmake mingw-w64
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
 
-      - uses: actions/checkout@v1
-      - name: Build
-        run: ci/action.sh release ${{ matrix.target }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxkbcommon-dev libvulkan1 mesa-vulkan-drivers libegl1-mesa-dev
 
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --target ${{ matrix.target }} --release --locked
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/onagre
+
+
+  upload_to_release:
+    needs: [ build, upload_license]
+    name: Publish onagre binaries
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          path: ~/artifacts
+
+      - name: Copy artifacts to archive
+        run: |
+          mkdir x86_64-unknown-linux-musl
+          cp -r /home/runner/artifacts/x86_64-unknown-linux-musl/onagre x86_64-unknown-linux-musl/onagre
+          chmod +x -R  x86_64-unknown-linux-musl/onagre
+          cp -r /home/runner/artifacts/LICENSE/LICENSE x86_64-unknown-linux-musl/
+          tar -czf onagre-x86_64-unknown-linux-musl.tar.gz x86_64-unknown-linux-musl/*
+          
+          mkdir x86_64-unknown-linux-gnu
+          cp -r /home/runner/artifacts/x86_64-unknown-linux-gnu/onagre x86_64-unknown-linux-gnu/onagre
+          chmod +x -R  x86_64-unknown-linux-gnu/onagre
+          cp -r /home/runner/artifacts/LICENSE/LICENSE x86_64-unknown-linux-gnu/
+          tar -czf onagre-x86_64-unknown-linux-gnu.tar.gz x86_64-unknown-linux-gnu/*
+
+          mkdir armv7-unknown-linux-musleabihf
+          cp -r /home/runner/artifacts/armv7-unknown-linux-musleabihf/onagre armv7-unknown-linux-musleabihf/onagre
+          chmod +x -R  armv7-unknown-linux-musleabihf/onagre
+          cp -r /home/runner/artifacts/LICENSE/LICENSE armv7-unknown-linux-musleabihf/
+          tar -czf onagre-armv7-unknown-linux-musleabihf.tar.gz armv7-unknown-linux-musleabihf/*
+
+      - uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/tar/onagre.tar.gz
+          file: onagre-x86_64-unknown-linux-musl.tar.gz
           tag: ${{ github.ref }}
-          asset_name: onagre-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tar.gz
+          asset_name: onagre-${{ github.ref_name }}-x86_64-unknown-linux-musl.tar.gz
+
+      - uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: onagre-armv7-unknown-linux-musleabihf.tar.gz
+          tag: ${{ github.ref_name }}
+          asset_name: onagre-${{ github.ref_name }}-armv7-unknown-linux-musleabihf.tar.gz
+
+      - uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: onagre-armv7-unknown-linux-musleabihf.tar.gz
+          tag: ${{ github.ref_name }}
+          asset_name: onagre-${{ github.ref_name }}-armv7-unknown-linux-musleabihf.tar.gz
+
+
