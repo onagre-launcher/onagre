@@ -3,7 +3,7 @@ use std::sync::Mutex;
 
 use anyhow::anyhow;
 use clap::Parser;
-use once_cell::sync::Lazy;
+use once_cell::sync::{Lazy, OnceCell};
 use tracing::{debug, info};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -25,10 +25,12 @@ pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {
     )
 });
 
+static THEME_SCALE: OnceCell<f32> = OnceCell::new();
+
 pub static THEME: Lazy<Theme> = Lazy::new(Theme::load);
 
 #[derive(Parser)]
-#[structopt(name = "onagre", author = "Paul D. <paul.delafosse@protonmail.com>")]
+#[command(name = "onagre", author = "Paul D. <paul.delafosse@protonmail.com>")]
 struct Cli {
     #[arg(
         long = "theme",
@@ -36,6 +38,9 @@ struct Cli {
         help = "Path to an alternate onagre theme file"
     )]
     theme: Option<PathBuf>,
+
+    #[arg(long = "scale", short = 's', help = "Change the scale of onagre theme")]
+    scale: Option<f32>,
 
     #[arg(long = "mode", short = 'm', help = "The mode parameter as a string")]
     mode: Option<String>,
@@ -51,6 +56,7 @@ pub fn main() -> iced::Result {
 
     info!("Starting onagre");
     let cli = Cli::parse();
+
     // User defined theme config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise
     if let Some(theme_path) = cli.theme {
         let path = theme_path.canonicalize();
@@ -59,6 +65,11 @@ pub fn main() -> iced::Result {
         }
 
         info!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
+    }
+
+    if let Some(scale) = cli.scale {
+        THEME_SCALE.get_or_init(|| scale);
+        info!("Using scale value : {:?}", scale);
     }
 
     if let Some(mode) = cli.mode {

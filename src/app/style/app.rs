@@ -1,6 +1,7 @@
 use crate::app::style::scrollable::scroller::ScrollerStyles;
 use crate::app::style::scrollable::RowContainerStyle;
 use crate::app::style::search::SearchContainerStyles;
+use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced_core::{Background, BorderRadius};
@@ -27,6 +28,18 @@ pub struct AppContainerStyles {
     pub search: SearchContainerStyles,
     pub rows: RowContainerStyle,
     pub scrollable: ScrollerStyles,
+}
+
+impl Scale for AppContainerStyles {
+    fn scale(mut self, scale: f32) -> Self {
+        self.search = self.search.scale(scale);
+        self.padding = self.padding * scale;
+        self.rows = self.rows.scale(scale);
+        self.search = self.search.scale(scale);
+        self.scrollable = self.scrollable.scale(scale);
+        self.border_width = self.border_width.scale(scale);
+        self
+    }
 }
 
 impl StyleSheet for &AppContainerStyles {

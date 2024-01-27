@@ -1,4 +1,6 @@
+use crate::app::style::Scale;
 use iced::Padding;
+use std::ops::Mul;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct OnagrePadding {
@@ -6,6 +8,25 @@ pub struct OnagrePadding {
     pub right: u16,
     pub bottom: u16,
     pub left: u16,
+}
+
+impl Mul<f32> for OnagrePadding {
+    type Output = OnagrePadding;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        OnagrePadding {
+            top: (self.top as f32 * rhs) as u16,
+            right: (self.right as f32 * rhs) as u16,
+            bottom: (self.bottom as f32 * rhs) as u16,
+            left: (self.left as f32 * rhs) as u16,
+        }
+    }
+}
+
+impl Scale for OnagrePadding {
+    fn scale(self, scale: f32) -> Self {
+        self * scale
+    }
 }
 
 impl OnagrePadding {

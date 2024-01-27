@@ -1,11 +1,14 @@
-use crate::app::style::rows::generic::GenericContainerStyle;
-use crate::config::color::OnagreColor;
-use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::Length;
 use iced_core::{Background, BorderRadius};
 use iced_style::container::{Appearance, StyleSheet};
+
 use input::SearchInputStyles;
+
+use crate::app::style::rows::generic::GenericContainerStyle;
+use crate::app::style::Scale;
+use crate::config::color::OnagreColor;
+use crate::config::padding::OnagrePadding;
 
 pub mod hint;
 pub mod input;
@@ -30,6 +33,18 @@ pub struct SearchContainerStyles {
     // Children
     pub input: SearchInputStyles,
     pub plugin_hint: Option<GenericContainerStyle>,
+}
+
+impl Scale for SearchContainerStyles {
+    fn scale(mut self, scale: f32) -> Self {
+        self.padding = self.padding.scale(scale);
+        self.border_width = self.border_width.scale(scale);
+        self.spacing = self.spacing.scale(scale);
+        self.width = self.width.scale(scale);
+        self.height = self.height.scale(scale);
+        self.input = self.input.scale(scale);
+        self
+    }
 }
 
 impl Eq for SearchContainerStyles {}
