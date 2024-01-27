@@ -1,4 +1,5 @@
 /target
+.fleet
 .idea
 flamegraph.svg
 perf.data

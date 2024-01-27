@@ -1,3 +1,4 @@
+use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
@@ -23,6 +24,16 @@ pub struct GenericContainerStyle {
     pub height: Length,
 }
 
+impl Scale for GenericContainerStyle {
+    fn scale(mut self, scale: f32) -> Self {
+        self.height = self.height.scale(scale);
+        self.width = self.width.scale(scale);
+        self.font_size = self.font_size.scale(scale);
+        self.border_width = self.border_width.scale(scale);
+        self.padding = self.padding.scale(scale);
+        self
+    }
+}
 impl Default for GenericContainerStyle {
     fn default() -> Self {
         GenericContainerStyle {

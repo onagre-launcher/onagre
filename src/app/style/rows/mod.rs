@@ -1,3 +1,4 @@
+use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use generic::GenericContainerStyle;
@@ -37,6 +38,19 @@ pub struct RowStyles {
     pub category_icon: IconStyle,
 }
 
+impl Scale for RowStyles {
+    fn scale(mut self, scale: f32) -> Self {
+        self.height = self.height.scale(scale);
+        self.width = self.width.scale(scale);
+        self.spacing = self.spacing.scale(scale);
+        self.border_width = self.border_width.scale(scale);
+        self.title = self.title.scale(scale);
+        self.description = self.description.scale(scale);
+        self.icon = self.icon.scale(scale);
+        self.category_icon = self.category_icon.scale(scale);
+        self
+    }
+}
 impl StyleSheet for &RowStyles {
     type Style = iced::Theme;
 

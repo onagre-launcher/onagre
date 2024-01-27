@@ -6,9 +6,10 @@ use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::THEME_PATH;
+use crate::THEME_SCALE;
 use iced::widget::container::Appearance;
 use iced::Background;
-use iced_core::BorderRadius;
+use iced_core::{BorderRadius, Length};
 use tracing::{error, warn};
 
 pub mod app;
@@ -25,8 +26,17 @@ impl Theme {
             warn!("Failing back to default theme");
         };
 
-        theme.unwrap_or_default()
+        let mut theme = theme.unwrap_or_default();
+        if let Some(scale) = THEME_SCALE.get() {
+            theme = theme.scale(*scale)
+        }
+
+        theme
     }
+}
+
+pub(crate) trait Scale {
+    fn scale(self, scale: f32) -> Self;
 }
 
 impl AsRef<Theme> for Theme {
@@ -55,6 +65,39 @@ pub struct Theme {
 
     // Children
     pub app_container: AppContainerStyles,
+}
+
+impl Scale for Theme {
+    fn scale(mut self, scale: f32) -> Self {
+        self.app_container = self.app_container.scale(scale);
+        self.icon_size = (self.icon_size as f32 * scale) as u16;
+        self.size.0 = (self.size.0 as f32 * scale) as u32;
+        self.size.1 = (self.size.1 as f32 * scale) as u32;
+        self.padding = self.padding * scale;
+        self.font_size = (self.font_size as f32 * scale) as u16;
+        self
+    }
+}
+
+impl Scale for Length {
+    fn scale(self, scale: f32) -> Self {
+        match self {
+            Length::Fixed(size) => Length::Fixed(size * scale),
+            _ => self,
+        }
+    }
+}
+
+impl Scale for u16 {
+    fn scale(self, scale: f32) -> Self {
+        (self as f32 * scale) as u16
+    }
+}
+
+impl Scale for f32 {
+    fn scale(self, scale: f32) -> Self {
+        self * scale
+    }
 }
 
 impl Theme {

@@ -1,3 +1,4 @@
+use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
@@ -19,6 +20,17 @@ pub struct IconStyle {
     pub align_x: Horizontal,
     pub align_y: Vertical,
     pub icon_size: u16,
+}
+
+impl Scale for IconStyle {
+    fn scale(mut self, scale: f32) -> Self {
+        self.height = self.height.scale(scale);
+        self.width = self.width.scale(scale);
+        self.padding = self.padding.scale(scale);
+        self.border_width = self.border_width.scale(scale);
+        self.icon_size = self.icon_size.scale(scale);
+        self
+    }
 }
 
 impl Eq for IconStyle {}

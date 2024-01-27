@@ -1,3 +1,4 @@
+use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use iced::widget::scrollable::Scrollbar;
 use iced::Background;
@@ -18,6 +19,17 @@ pub struct ScrollerStyles {
     pub scrollbar_margin: u16,
     pub scrollbar_width: u16,
     pub scroller_width: u16,
+}
+
+impl Scale for ScrollerStyles {
+    fn scale(mut self, scale: f32) -> Self {
+        self.border_width = self.border_width.scale(scale);
+        self.scroller_border_width = self.scroller_border_width.scale(scale);
+        self.scrollbar_margin = self.scrollbar_margin.scale(scale);
+        self.scrollbar_width = self.scrollbar_width.scale(scale);
+        self.scroller_width = self.scroller_width.scale(scale);
+        self
+    }
 }
 
 impl Eq for ScrollerStyles {}
