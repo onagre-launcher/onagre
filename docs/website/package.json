@@ -1,0 +1,20 @@
+{
+  "name": "onagre",
+  "version": "0.0.1",
+  "description": "A general purpose application launcher for X and wayland inspired by rofi/wofi and alfred, build with iced and pop-launcher.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "docs:build": "vuepress build src",
+    "docs:clean-dev": "vuepress dev src --clean-cache",
+    "docs:dev": "vuepress dev src",
+    "docs:update-package": "pnpm dlx vp-update"
+  },
+  "devDependencies": {
+    "@vuepress/client": "^2.0.0-rc.2",
+    "@vuepress/bundler-vite": "^2.0.0-rc.2",
+    "@vuepress/theme-default": "^2.0.0-rc.2",
+    "vue": "^3.4.0",
+    "vuepress": "^2.0.0-rc.2"
+  }
+}
