@@ -1,12 +1,14 @@
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 use anyhow::anyhow;
-use app::style::Theme;
 use clap::Parser;
-use log::{debug, info, LevelFilter};
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
-use systemd_journal_logger::JournalLog;
+use tracing::{debug, info};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+
+use app::style::Theme;
 
 pub mod app;
 pub mod config;
@@ -18,7 +20,7 @@ pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {
     Mutex::new(
         dirs::config_dir()
             .ok_or_else(|| anyhow!("Theme config not found"))
-            .map(|path| path.join("onagre").join("theme.toml"))
+            .map(|path| path.join("onagre").join("theme.scss"))
             .unwrap(),
     )
 });
@@ -40,8 +42,13 @@ struct Cli {
 }
 
 pub fn main() -> iced::Result {
-    JournalLog::new().unwrap().install().unwrap();
-    log::set_max_level(LevelFilter::Info);
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "onagre=info".into()),
+        ))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     info!("Starting onagre");
     let cli = Cli::parse();
     // User defined theme config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise

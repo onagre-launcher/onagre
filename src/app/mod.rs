@@ -12,9 +12,9 @@ use iced::{
 use iced_core::widget::operation::scrollable::RelativeOffset;
 use iced_core::{Event, Font};
 use iced_style::Theme;
-use log::{debug, trace};
 use onagre_launcher_toolkit::launcher::{Request, Response};
 use once_cell::sync::Lazy;
+use tracing::{debug, trace};
 
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::entries::AsEntry;

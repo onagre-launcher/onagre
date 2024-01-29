@@ -1,8 +1,8 @@
 use crate::app::cache::Cache;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::{match_web_plugins, Plugin};
-use log::debug;
 use onagre_launcher_toolkit::launcher::SearchResult;
+use tracing::debug;
 
 use crate::app::{Message, INPUT_ID};
 use crate::icons::IconPath;

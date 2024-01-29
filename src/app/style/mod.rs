@@ -5,9 +5,11 @@ use crate::app::style::search::input::SearchInputStyles;
 use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
+use crate::THEME_PATH;
 use iced::widget::container::Appearance;
 use iced::Background;
 use iced_core::BorderRadius;
+use tracing::{error, warn};
 
 pub mod app;
 pub mod rows;
@@ -16,16 +18,11 @@ pub mod search;
 
 impl Theme {
     pub fn load() -> Self {
-        let buf = dirs::config_dir()
-            .expect("Failed to open `$XDG_CONFIG_HOME`")
-            .join("onagre")
-            .join("theme.scss");
-
-        let theme = crate::config::parse_file(buf);
+        let buf = THEME_PATH.lock().unwrap().clone();
+        let theme = crate::config::parse_file(&buf);
         if let Err(err) = &theme {
-            eprintln!("Failed to parse theme:");
-            eprintln!("{err}");
-            eprintln!("Failing back to default theme");
+            error!("Failed to parse theme {buf:?}: {err}");
+            warn!("Failing back to default theme");
         };
 
         theme.unwrap_or_default()

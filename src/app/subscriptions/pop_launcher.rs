@@ -6,12 +6,12 @@ use iced::Subscription;
 use iced_core::event::Status;
 use iced_runtime::futures::futures::stream;
 use iced_runtime::futures::subscription::Recipe;
-use log::debug;
 use onagre_launcher_toolkit::launcher::{json_input_stream, Request, Response};
 use std::hash::Hash;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdin, ChildStdout, Command};
+use tracing::debug;
 
 // Whenever a message is red from pop-launcher stdout, send it to the subscription receiver
 async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {

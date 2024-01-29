@@ -1,7 +1,7 @@
 use crate::db::{Database, Entity};
-use log::debug;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use tracing::debug;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WebEntity<'a> {

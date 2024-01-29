@@ -1,7 +1,7 @@
-use log::{debug, trace};
 use once_cell::sync::Lazy;
 use std::cmp::Reverse;
 use std::fmt::Debug;
+use tracing::{debug, trace};
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
