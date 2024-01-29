@@ -14,6 +14,8 @@ actions:
 features:
   - title: Fast
     details: Build with Rust, on top of iced and pop-launcher.
+  - title: Simple
+    details: Onagre comes with builtin defaults, it's easy to configure, easy to extend.
   - title: Display server agnostic
     details: Works on x11 and wayland.
   - title: Customizable themes
