@@ -32,7 +32,7 @@ sled = "0.34.7"
 
 onagre-launcher-toolkit = { git = "https://github.com/onagre-launcher/launcher" }
 clap = { version = "^4", features = ["derive"] }
-freedesktop-icons = "0.2.5"
+freedesktop-icons = "0.2.6"
 
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
