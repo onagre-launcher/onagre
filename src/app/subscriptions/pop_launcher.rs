@@ -8,10 +8,10 @@ use iced_runtime::futures::futures::stream;
 use iced_runtime::futures::subscription::Recipe;
 use onagre_launcher_toolkit::launcher::{json_input_stream, Request, Response};
 use std::hash::Hash;
-use std::process::Stdio;
+use std::process::{exit, Stdio};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdin, ChildStdout, Command};
-use tracing::debug;
+use tracing::{debug, error};
 
 // Whenever a message is red from pop-launcher stdout, send it to the subscription receiver
 async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
@@ -69,12 +69,17 @@ impl Recipe for PopLauncherSubscription {
 
     fn stream(self: Box<Self>, _: BoxStream<(iced::Event, Status)>) -> BoxStream<Self::Output> {
         debug!("Starting `pop-launcher` subscription");
-        let child = Command::new("pop-launcher")
+        let Ok(child) = Command::new("pop-launcher")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .unwrap();
+        else {
+            error!("Failed to start pop-launcher backend.");
+            error!("Make sure either pop-launcher or onagre-launcher is installed.");
+            error!("See: https://github.com/pop-os/launcher or https://github.com/onagre-launcher/launcher");
+            exit(1);
+        };
 
         let (response_tx, response_rx) = channel(32);
         let (request_tx, request_rx) = channel(32);
