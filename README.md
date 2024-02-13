@@ -41,7 +41,7 @@ you need Rust and [cargo](https://doc.rust-lang.org/cargo/getting-started/instal
 ```bash
 git clone https://github.com/oknozor/onagre.git
 cd onagre
-cargo build --release
+cargo build --release --locked
 sudo mv target/release/onagre /usr/bin/onagre
 ```
 
