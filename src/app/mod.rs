@@ -80,6 +80,7 @@ pub struct Onagre<'a> {
 pub enum Message {
     Loading,
     InputChanged(String),
+    Click(usize),
     KeyboardEvent(KeyCode),
     SubscriptionResponse(SubscriptionMessage),
     Unfocused,
@@ -135,6 +136,14 @@ impl Application for Onagre<'_> {
                 } else {
                     Command::none()
                 }
+            }
+            Message::Click(row_idx) => {
+                match self.state.get_active_mode() {
+                    ActiveMode::History => self.state.selected = Selection::History(row_idx),
+                    _ => self.state.selected = Selection::PopLauncher(row_idx),
+                }
+
+                self.on_execute()
             }
         }
     }

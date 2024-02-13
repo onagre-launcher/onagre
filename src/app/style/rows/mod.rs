@@ -9,6 +9,7 @@ use iced_core::BorderRadius;
 use iced_style::container::{Appearance, StyleSheet};
 use icon::IconStyle;
 
+pub mod button;
 pub mod generic;
 pub mod icon;
 

@@ -34,6 +34,7 @@ impl Scale for GenericContainerStyle {
         self
     }
 }
+
 impl Default for GenericContainerStyle {
     fn default() -> Self {
         GenericContainerStyle {

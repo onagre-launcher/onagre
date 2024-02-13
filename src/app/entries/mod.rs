@@ -1,9 +1,10 @@
+use crate::app::style::rows::button::ButtonStyle;
 use crate::app::style::rows::icon::IconStyle;
 use crate::app::style::rows::RowStyles;
 use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
-use iced::widget::{column, container, row, text, Container, Image, Row};
+use iced::widget::{column, container, row, text, Button, Container, Image, Row};
 use iced::{Alignment, Length, Renderer};
 use std::borrow::Cow;
 
@@ -35,14 +36,19 @@ pub(crate) trait AsEntry<'a> {
             // See : https://github.com/iced-rs/iced/pull/1044
             .align_items(Alignment::Start);
 
-        self.as_row(row, theme)
+        self.as_row(row, theme, idx)
     }
 
-    fn as_row<'b>(&self, row: Row<'b, Message>, theme: &'static RowStyles) -> Container<'b, Message>
+    fn as_row<'b>(
+        &self,
+        row: Row<'b, Message>,
+        theme: &'static RowStyles,
+        idx: usize,
+    ) -> Container<'b, Message>
     where
         'b: 'a,
     {
-        let title_row: iced::widget::Container<'_, Message, Renderer> =
+        let title_row: Container<'_, Message, Renderer> =
             container(iced::widget::row(vec![text(self.get_display_name())
                 .size(theme.title.font_size)
                 .into()]))
@@ -73,7 +79,11 @@ pub(crate) trait AsEntry<'a> {
             _ => column,
         };
 
-        Container::new(row.push(column))
+        let button = Button::new(row.push(column))
+            .style(iced::theme::Button::Custom(Box::new(&ButtonStyle)))
+            .on_press(Message::Click(idx));
+
+        Container::new(button)
             .style(iced::theme::Container::Custom(Box::new(theme)))
             .padding(theme.padding.to_iced_padding())
             .width(theme.width)
@@ -123,8 +133,8 @@ pub(crate) trait AsEntry<'a> {
                 Extension::Svg => Container::new(
                     icon.as_ref()
                         .to_svg(&theme.color)
-                        .height(iced_core::Length::Fixed(theme.icon_size as f32))
-                        .width(iced_core::Length::Fixed(theme.icon_size as f32)),
+                        .height(Length::Fixed(theme.icon_size as f32))
+                        .width(Length::Fixed(theme.icon_size as f32)),
                 ),
                 Extension::Png => Container::new(
                     Image::new(&icon.as_ref().path)
