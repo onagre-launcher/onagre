@@ -8,6 +8,105 @@ Don't hesitate to send a PR with your fancy theme, we would be happy to share it
 
 ---
 
+## Hollow
+
+<img src="/screenshots/hollow.png" alt="simple-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto;"/>
+
+::: details expand theme.scss
+
+```scss
+.onagre {
+  --exit-unfocused: false;
+  height: 375px;
+  width: 600px;
+  --icon-theme: "Papirus";
+  --icon-size: 28px;
+  --font-family: "Iosevka Nerd Font Mono";
+  background: #1c1e26;
+  color: #cbced0;
+  border-color: #2E3440;
+  border-width: 4px;
+  border-radius: 8.0%;
+  padding: 10px;
+
+  .container {
+    padding: 8px;
+    .search {
+      --spacing: 1;
+      background: #cbced0;
+      border-radius: 10.0%;
+      color: #1c1e26;
+      --height: fill-portion 1;
+
+      .plugin-hint {
+        font-size: 18px;
+        background: #cbced0;
+        color: #e95678;
+        border-color: #e95678;
+        --align-x: center;
+        --align-y: center;
+        --width: fill-portion 1;
+        --height: fill;
+      }
+
+      .input {
+        font-size: 20px;
+        --width: fill-portion 11;
+      }
+    }
+
+    .rows {
+      --height: fill-portion 8;
+      border-radius: 8.0%;
+
+      .row-selected {
+        background: #268bd2;
+        color: #e3e6ee;
+        --spacing: 3px;
+        --align-y: center;
+
+        border-radius: 8.0%;
+        .title {
+          font-size: 22px;
+        }
+
+        .description {
+          font-size: 20px;
+        }
+
+        .category-icon {
+          --icon-size: 15px;
+        }
+      }
+
+      .row {
+        .title {
+          font-size: 22px;
+        }
+
+        .description {
+          font-size: 20px;
+        }
+
+        .category-icon {
+          --icon-size: 15px;
+        }
+      }
+    }
+
+    .scrollable {
+      background: #00000000;
+      .scroller {
+        color: #4c566a00;
+      }
+    }
+  }
+}
+```
+:::
+
+---
+
 ## Murz
 
 <img src="/screenshots/murz.png" alt="simple-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto;"/>
