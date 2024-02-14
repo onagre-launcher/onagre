@@ -39,13 +39,13 @@ jobs:
         run: cog bump --version 1.0.0
 
       - name: Generate Changelog
-        run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
+        run: cog changelog --at 1.0.0 -t full_hash > GITHUB_CHANGELOG.md
 
       - name: Upload github release
         uses: softprops/action-gh-release@v1
         with:
           body_path: GITHUB_CHANGELOG.md
-          tag_name: ${{ steps.release.outputs.version }}
+          tag_name: 1.0.0
 
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v4
