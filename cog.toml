@@ -15,8 +15,6 @@ pre_bump_hooks = [
 post_bump_hooks = [
     "git push",
     "git push origin {{version}}",
-    "cargo package",
-    "cargo publish"
 ]
 
 [git_hooks.commit-msg]

@@ -27,9 +27,6 @@ jobs:
       - run:
           cargo install cargo-edit
 
-      - run:
-          cargo login ${{secrets.CARGO_TOKEN}}
-
       - name: SemVer release
         id: release
         uses: cocogitto/cocogitto-action@v3
