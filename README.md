@@ -98,36 +98,42 @@ For a detailed guide refer to [wiki -> theming](https://github.com/oknozor/onagr
 ## Gallery
 
 ---
-<img src="docs/screenshots/default-theme.png" alt="default-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+<img src="docs/website/src/.vuepress/public/screenshots/default-theme.png" alt="default-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 *Default theme*
 
 ---
-<img src="docs/screenshots/murz.png" alt="murz-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+<img src="docs/website/src/.vuepress/public/screenshots/murz.png" alt="murz-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 [*Murz*](docs/theme_examples/murz.scss) (credit to [murz](https://github.com/Murzchnvok/rofi-collection))
 
 ---
-<img src="docs/screenshots/nord-rounded.png" alt="simple-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+<img src="docs/website/src/.vuepress/public/screenshots/nord-rounded.png" alt="simple-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 [*Nord*](docs/theme_examples/nord-rounded.scss)
 
 ---
-<img src="docs/screenshots/not-adwaita.png" alt="not-adwaita-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+<img src="docs/website/src/.vuepress/public/screenshots/not-adwaita.png" alt="not-adwaita-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 [*Not-Adwaita*](docs/theme_examples/not-adwaita.scss)
 
 ---
-<img src="docs/screenshots/solarized.png" alt="solarized-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+<img src="docs/website/src/.vuepress/public/screenshots/solarized.png" alt="solarized-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 [*Solarized*](docs/theme_examples/solarized.scss)
 
 ---
-<img src="docs/screenshots/darcula.png" alt="darcula-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+<img src="docs/website/src/.vuepress/public/screenshots/darcula.png" alt="darcula-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
 
 *Darcula*
 
+---
+<img src="docs/website/src/.vuepress/public/screenshots/hollow.png" alt="darcula-theme-screenshot" style="display: block; margin-left: auto; margin-right: auto; width: 65%;"/>
+
+*Hollow*
+
 ___
+
 
 
 ## Related projects
