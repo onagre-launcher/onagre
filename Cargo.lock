@@ -2884,9 +2884,9 @@ dependencies = [
 
 [[package]]
 name = "onagre-launcher"
-version = "1.2.3"
+version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56e60d9fbab616fae65d8f2d0a3ea10cbacfc7ddf1befb907c5a68aecefce5a2"
+checksum = "3ba59ef981f75a6240061ddb24e1ed0d1b6b5992525ae8e5f242e8b257b086cb"
 dependencies = [
  "const_format",
  "dirs 4.0.0",
@@ -2900,8 +2900,9 @@ dependencies = [
 
 [[package]]
 name = "onagre-launcher-plugins"
-version = "1.2.3"
-source = "git+https://github.com/onagre-launcher/launcher#56c8cb6e6b4feecae96990dd94c93d5eb790ad3c"
+version = "1.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cf4de7d41a9202a23fb6484a43f3939faa5a903a650ea3ee45fbbd2518d88a2"
 dependencies = [
  "anyhow",
  "async-pidfd",
@@ -2935,8 +2936,9 @@ dependencies = [
 
 [[package]]
 name = "onagre-launcher-service"
-version = "1.2.3"
-source = "git+https://github.com/onagre-launcher/launcher#56c8cb6e6b4feecae96990dd94c93d5eb790ad3c"
+version = "1.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33a5829eb5517bb7e5d487034b5458e94710a5ad9251bc36216e28f5f67464ae"
 dependencies = [
  "anyhow",
  "async-oneshot",
@@ -2964,8 +2966,9 @@ dependencies = [
 
 [[package]]
 name = "onagre-launcher-toolkit"
-version = "0.1.1"
-source = "git+https://github.com/onagre-launcher/launcher#56c8cb6e6b4feecae96990dd94c93d5eb790ad3c"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e39490d04614d785977d02917627b537f6ac84aa8aef4ba4802da205d5a5ddf"
 dependencies = [
  "async-trait",
  "dirs 4.0.0",
