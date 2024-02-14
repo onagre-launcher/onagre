@@ -49,10 +49,10 @@ jobs:
           body_path: GITHUB_CHANGELOG.md
           tag_name: ${{ steps.release.outputs.version }}
 
-#      - name: vuepress-deploy
-#        uses: jenkey2011/vuepress-deploy@master
-#        env:
-#          COMMIT_MESSAGE: "chore: update gh-pages"
-#          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          BUILD_SCRIPT: cd guide && yarn && yarn guide:build
-#          BUILD_DIR: website/.vuepress/dist/
+      - name: Deploy to GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: gh-pages
+          build_dir: docs/website/src/.vuepress/dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
