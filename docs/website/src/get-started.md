@@ -25,7 +25,7 @@ you can build it from source with [cargo](https://doc.rust-lang.org/cargo/gettin
 **Latest stable release:** 
 
 ```bash
-cargo install onagre
+cargo install --git https://github.com/onagre-launcher/onagre --tag 1.0.0
 ```
 
 **Latest upstream:**

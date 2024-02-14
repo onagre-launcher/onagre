@@ -45,11 +45,18 @@ cargo build --release --locked
 sudo mv target/release/onagre /usr/bin/onagre
 ```
 
-**With cargo:**
+**Latest release with cargo:**
 
 ```bash
-cargo install --git https://github.com/oknozor/onagre
+cargo install --git https://github.com/onagre-launcher/onagre --tag 1.0.0
 ```
+
+**Latest upstream with cargo:**
+
+```bash
+cargo install --git https://github.com/onagre-launcher/onagre
+```
+
 
 ## Usage
 
