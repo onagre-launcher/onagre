@@ -34,18 +34,16 @@ jobs:
           check-latest-tag-only: true
           git-user: 'github-actions'
           git-user-email: 'github-actions@github.com'
-
-      - name: Create V1 (remove me after v1.0.0)
-        run: cog bump --version 1.0.0
+          release: true
 
       - name: Generate Changelog
-        run: cog changelog --at 1.0.0 -t full_hash > GITHUB_CHANGELOG.md
+        run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
 
       - name: Upload github release
         uses: softprops/action-gh-release@v1
         with:
           body_path: GITHUB_CHANGELOG.md
-          tag_name: 1.0.0
+          tag_name: ${{ steps.release.outputs.version }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2

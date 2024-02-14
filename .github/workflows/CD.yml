@@ -112,4 +112,27 @@ jobs:
           tag: ${{ github.ref_name }}
           asset_name: onagre-${{ github.ref_name }}-armv7-unknown-linux-musleabihf.tar.gz
 
+  update_pages:
+    name: Deploy pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Build VuePress site
+        working-directory: ./docs/website
+        run: pnpm install && pnpm docs:build
+
+      - name: Deploy to GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: gh-pages
+          build_dir: docs/website/src/.vuepress/dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
