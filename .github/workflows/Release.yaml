@@ -47,6 +47,15 @@ jobs:
           body_path: GITHUB_CHANGELOG.md
           tag_name: 1.0.0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Build VuePress site
+        working-directory: ./docs/website
+        run: pnpm install && pnpm docs:build
+
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v4
         with:

@@ -90,7 +90,7 @@ but only a small subset of scss is supported along with some custom properties p
 
 **Example**:
 
-![not-adwaita.png](.vuepress%2Fpublic%2Fnot-adwaita.png)
+![not-adwaita.png](/screenshots/not-adwaita.png)
 
 ```scss
 .onagre {
