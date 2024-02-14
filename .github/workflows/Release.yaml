@@ -35,9 +35,11 @@ jobs:
         uses: cocogitto/cocogitto-action@v3
         with:
           check-latest-tag-only: true
-          release: true
           git-user: 'github-actions'
           git-user-email: 'github-actions@github.com'
+
+      - name: Create V1 (remove me after v1.0.0)
+        run: cog bump --version 1.0.0
 
       - name: Generate Changelog
         run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
