@@ -11,12 +11,12 @@
     "docs:update-package": "pnpm dlx vp-update"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "^2.0.0-rc.2",
-    "@vuepress/client": "^2.0.0-rc.2",
+    "@vuepress/bundler-vite": "2.0.0-rc.7",
+    "@vuepress/client": "2.0.0-rc.2",
     "@vuepress/plugin-copy-code": "2.0.0-rc.14",
-    "@vuepress/theme-default": "^2.0.0-rc.2",
+    "@vuepress/theme-default": "2.0.0-rc.14",
     "highlight.js": "^11.9.0",
-    "vue": "^3.4.0",
-    "vuepress": "^2.0.0-rc.2"
+    "vue": "^3.4.19",
+    "vuepress": "2.0.0-rc.7"
   }
 }
