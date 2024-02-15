@@ -6,8 +6,42 @@
   />
 </p>
 
-A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with [iced](https://github.com/hecrj/iced/)
-and [pop-launcher](https://github.com/pop-os/launcher).
+
+<p align="center">
+  <a href="https://github.com/onagre-launcher/onagre/actions/workflows/CD.yml"><img
+      src="https://github.com/onagre-launcher/onagre/actions/workflows/CD.yml/badge.svg"
+      alt="GitHub Actions workflow status"
+  /></a>
+    <img
+      src="https://github.com/onagre-launcher/onagre/actions/workflows/Release.yaml/badge.svg"
+      alt="GitHub Actions workflow status"
+  /></a>
+  <br />
+  <a href="https://conventionalcommits.org"
+    ><img
+      src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg"
+      alt="Conventional commits"
+  /></a>
+  <a href="https://github.com/onagre-launcher/onagre/actions/blob/main/LICENSE"
+    ><img
+      src="https://img.shields.io/github/license/onagre-launcher/onagre"
+      alt="Repository license"
+  /></a>
+</p>
+
+<p align="center">
+  <a href="https://docs.onagre.dev">Website</a>
+  ·
+  <a href="https://docs.onagre.dev/get-started.html">Get Started</a>
+</p>
+
+<p align="center"> 
+A general purpose application launcher for X and wayland  inspired <br> 
+by rofi/wofi and alfred,<br>  
+build with <a href ="https://github.com/hecrj/iced/">iced</a>
+and <a href ="https://github.com/pop-os/launcher">pop-launcher</a>.
+</p>
+
 
 ---
 
