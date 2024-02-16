@@ -61,7 +61,7 @@ using any programming language.
 
 ## Install
 
-**Dependencies** :
+**Dependencies:**
 - [pop-launcher](https://github.com/pop-os/launcher) > 1.0.1 (for arch users there is and AUR package out there)
 - [Qalculate](http://qalculate.github.io/) (optional)
 
@@ -199,4 +199,4 @@ All the code in this repository is released under the MIT License, for more info
 
 ## Thanks 
 
-Credit to [@themou3ad](https://github.com/themou3ad) for the logo !
+Credit to [@themou3ad](https://github.com/themou3ad) for the logo!
