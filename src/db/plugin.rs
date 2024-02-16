@@ -26,9 +26,9 @@ impl PluginCommandEntity<'_> {
     }
 }
 
-impl Entity for PluginCommandEntity<'_> {
-    fn get_key(&self) -> Vec<u8> {
-        self.query.as_bytes().to_vec()
+impl<'a> Entity<'a> for PluginCommandEntity<'a> {
+    fn get_key(&self) -> Cow<'a, str> {
+        self.query.clone()
     }
 
     fn get_weight(&self) -> u8 {

@@ -1,8 +1,11 @@
 use once_cell::sync::Lazy;
+use std::borrow::Cow;
 use std::cmp::Reverse;
 use std::fmt::Debug;
+use std::sync::Arc;
 use tracing::{debug, trace};
 
+use redb::{ReadableTable, TableDefinition};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -14,69 +17,82 @@ pub static DB: Lazy<Database> = Lazy::new(Database::default);
 
 #[derive(Clone, Debug)]
 pub struct Database {
-    inner: sled::Db,
+    inner: Arc<redb::Database>,
 }
 
 impl Default for Database {
     fn default() -> Self {
         let path = dirs::data_dir().expect("Cannot open data dir");
 
-        let path = path.join("onagre");
+        let path = path.join("onagre-db");
+        let path = path.as_path();
 
         debug!("Opening database {:?}", path);
 
+        let database = match redb::Database::open(path) {
+            Ok(db) => db,
+            Err(_err) => redb::Database::create(path).expect("failed to create database"),
+        };
+
         Database {
-            inner: sled::open(path).unwrap(),
+            inner: Arc::new(database),
         }
     }
 }
 
 impl Database {
-    pub fn insert<T>(&self, collection: &str, entity: &T) -> sled::Result<()>
+    pub fn insert<'a, T>(&self, collection: &str, entity: &T) -> Result<(), redb::Error>
     where
-        T: Sized + Entity + Serialize,
+        T: Sized + Entity<'a> + Serialize,
     {
         let json = serde_json::to_string(entity).expect("Serialization error");
-
-        let result = self
-            .inner
-            .open_tree(collection)?
-            .insert(entity.get_key(), json.as_bytes())
-            .map(|_res| ());
-
-        self.inner.flush().expect("Failed to flush database");
-        result
+        let db = self.inner.clone();
+        let write_tnx = db.begin_write()?;
+        {
+            let definition = TableDefinition::<&str, &str>::new(collection);
+            let mut table = write_tnx.open_table(definition)?;
+            table.insert(entity.get_key().as_ref(), json.as_str())?;
+        }
+        write_tnx.commit()?;
+        Ok(())
     }
 
-    pub fn get_by_key<T>(&self, collection: &str, key: &str) -> Option<T>
+    pub fn get_by_key<'a, T>(&self, collection: &str, key: &str) -> Option<T>
     where
-        T: Entity + DeserializeOwned,
+        T: Entity<'a> + DeserializeOwned,
     {
-        self.inner
-            .open_tree(collection)
-            .unwrap()
-            .get(key.as_bytes())
+        let definition = TableDefinition::<&str, &str>::new(collection);
+        let db = self.inner.clone();
+        let Ok(read_txn) = db.begin_write() else {
+            return None;
+        };
+
+        let table = read_txn
+            .open_table(definition)
+            .expect("failed to open database");
+        table
+            .get(key)
             .ok()
             .flatten()
-            .map(|data| data.to_vec())
-            .map(String::from_utf8)
-            .map(Result::unwrap)
-            .map(|raw_data| serde_json::from_str(&raw_data))
-            .map(Result::unwrap)
+            .map(|data| serde_json::from_str(data.value()))
+            .and_then(Result::ok)
     }
 
-    pub fn get_all<T>(&self, collection: &str) -> Vec<T>
+    pub fn get_all<'a, T>(&self, collection: &str) -> Vec<T>
     where
-        T: Entity + DeserializeOwned + Debug,
+        T: Entity<'a> + DeserializeOwned + Debug,
     {
-        let mut results: Vec<T> = self
-            .inner
-            .open_tree(collection)
-            .unwrap()
+        let definition = TableDefinition::<&str, &str>::new(collection);
+        let db = self.inner.clone();
+        let Ok(read_txn) = db.begin_write() else {
+            return vec![];
+        };
+        let table = read_txn.open_table(definition).unwrap();
+        let mut results: Vec<T> = table
             .iter()
-            .map(|res| res.expect("Database error"))
-            .map(|(_k, v)| String::from_utf8(v.to_vec()).unwrap())
-            .map(|entity_string| serde_json::from_str(entity_string.as_str()))
+            .unwrap()
+            .filter_map(Result::ok)
+            .map(|(_key, value)| serde_json::from_str(value.value()))
             .flat_map(Result::ok)
             .collect();
 
@@ -90,7 +106,7 @@ impl Database {
     }
 }
 
-pub trait Entity {
-    fn get_key(&self) -> Vec<u8>;
+pub trait Entity<'a> {
+    fn get_key(&self) -> Cow<'a, str>;
     fn get_weight(&self) -> u8;
 }
