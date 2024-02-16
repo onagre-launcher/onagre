@@ -5,7 +5,9 @@ use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::Key;
 use iced::widget::{column, container, scrollable, text_input, Column, Container, Row, Text};
-use iced::{event, window, Application, Command, Element, Length, Settings, Subscription};
+use iced::{
+    event, window, Application, Command, Element, Length, Renderer, Settings, Subscription,
+};
 use iced_core::keyboard::key::Named;
 use iced_core::widget::operation::scrollable::RelativeOffset;
 use iced_core::window::settings::PlatformSpecific;
@@ -158,8 +160,6 @@ impl Application for Onagre<'_> {
                 ..
             } if *history => {
                 // FIXME the .into() doesn't work anymore -- need to check why!
-                vec![]
-                /*
                 let icon = self.state.plugin_matchers.get_plugin_icon(plugin_name);
                 self.state
                     .cache
@@ -168,17 +168,18 @@ impl Application for Onagre<'_> {
                     .enumerate()
                     .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
                     .collect()
-                        */
             }
             ActiveMode::Web { modifier, .. } => {
                 let icon = self.state.plugin_matchers.get_plugin_icon("web");
-                self.state
+                let rows: Vec<Element<'_, Message, Theme, Renderer>> = self
+                    .state
                     .cache
                     .web_history(modifier)
                     .iter()
                     .enumerate()
                     .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
-                    .collect()
+                    .collect();
+                rows
             }
             ActiveMode::History => {
                 let icon = self
@@ -245,7 +246,7 @@ impl Application for Onagre<'_> {
             .align_y(THEME.search_input().align_y);
 
         let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
-        // Either plugin_hint is enabled and we try to display it
+        // Either plugin_hint is enabled, and we try to display it
         // Or we display the normal search input
         let search_bar = match THEME.plugin_hint() {
             None => search_bar.push(search_input),
