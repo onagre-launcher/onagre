@@ -132,7 +132,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v4
         with:
-          domain: docs.onagre.dev
+          fqdn: docs.onagre.dev
           target_branch: gh-pages
           build_dir: docs/website/src/.vuepress/dist
         env:
