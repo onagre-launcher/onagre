@@ -3,14 +3,15 @@ use std::process::exit;
 
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
-use iced::keyboard::KeyCode;
+use iced::keyboard::Key;
 use iced::widget::{column, container, scrollable, text_input, Column, Container, Row, Text};
-use iced::window::PlatformSpecific;
 use iced::{
-    subscription, window, Application, Command, Element, Length, Renderer, Settings, Subscription,
+    event, window, Application, Command, Element, Length, Renderer, Settings, Subscription,
 };
+use iced_core::keyboard::key::Named;
 use iced_core::widget::operation::scrollable::RelativeOffset;
-use iced_core::{Event, Font};
+use iced_core::window::settings::PlatformSpecific;
+use iced_core::{Event, Font, Pixels, Size};
 use iced_style::Theme;
 use onagre_launcher_toolkit::launcher::{Request, Response};
 use once_cell::sync::Lazy;
@@ -49,7 +50,7 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
         id: Some("onagre".to_string()),
         window: window::Settings {
             transparent: true,
-            size: THEME.size,
+            size: Size::new(THEME.size.0 as f32, THEME.size.1 as f32),
             decorations: false,
             resizable: false,
             position: window::Position::Centered,
@@ -61,12 +62,13 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
                 application_id: "onagre".to_string(),
             },
             level: Default::default(),
+            exit_on_close_request: false,
         },
-        default_text_size: THEME.font_size as f32,
+        default_text_size: Pixels(THEME.font_size as f32),
         antialiasing: true,
-        exit_on_close_request: false,
         default_font,
         flags: OnagreFlags { pre_value },
+        fonts: vec![],
     })
 }
 
@@ -81,7 +83,7 @@ pub enum Message {
     Loading,
     InputChanged(String),
     Click(usize),
-    KeyboardEvent(KeyCode),
+    KeyboardEvent(Key),
     SubscriptionResponse(SubscriptionMessage),
     Unfocused,
 }
@@ -148,7 +150,7 @@ impl Application for Onagre<'_> {
         }
     }
 
-    fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
+    fn view(&self) -> Element<'_, Self::Message, Self::Theme> {
         // Build rows from current mode search entries
         let selected = self.selected();
         let rows = match &self.state.get_active_mode() {
@@ -157,6 +159,7 @@ impl Application for Onagre<'_> {
                 history,
                 ..
             } if *history => {
+                // FIXME the .into() doesn't work anymore -- need to check why!
                 let icon = self.state.plugin_matchers.get_plugin_icon(plugin_name);
                 self.state
                     .cache
@@ -168,13 +171,15 @@ impl Application for Onagre<'_> {
             }
             ActiveMode::Web { modifier, .. } => {
                 let icon = self.state.plugin_matchers.get_plugin_icon("web");
-                self.state
+                let rows: Vec<Element<'_, Message, Theme, Renderer>> = self
+                    .state
                     .cache
                     .web_history(modifier)
                     .iter()
                     .enumerate()
                     .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
-                    .collect()
+                    .collect();
+                rows
             }
             ActiveMode::History => {
                 let icon = self
@@ -208,7 +213,6 @@ impl Application for Onagre<'_> {
                 })
                 .collect(),
         };
-
         // Scrollable element containing the rows
         let scrollable =
             scrollable(column(rows))
@@ -242,7 +246,7 @@ impl Application for Onagre<'_> {
             .align_y(THEME.search_input().align_y);
 
         let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
-        // Either plugin_hint is enabled and we try to display it
+        // Either plugin_hint is enabled, and we try to display it
         // Or we display the normal search input
         let search_bar = match THEME.plugin_hint() {
             None => search_bar.push(search_input),
@@ -408,24 +412,24 @@ impl Onagre<'_> {
         exit(0);
     }
 
-    fn handle_input(&mut self, key_code: KeyCode) -> Command<Message> {
-        match key_code {
-            KeyCode::Up => {
+    fn handle_input(&mut self, key: Key) -> Command<Message> {
+        match key {
+            Key::Named(Named::ArrowUp) => {
                 trace!("Selected line : {:?}", self.selected());
                 return self.dec_selected();
             }
-            KeyCode::Down => {
+            Key::Named(Named::ArrowDown) => {
                 trace!("Selected line : {:?}", self.selected());
                 return self.inc_selected();
             }
-            KeyCode::Enter => return self.on_execute(),
-            KeyCode::Tab => {
+            Key::Named(Named::Enter) => return self.on_execute(),
+            Key::Named(Named::Tab) => {
                 if let Some(selected) = self.selected() {
                     self.pop_request(Request::Complete(selected as u32))
                         .expect("Unable to send request to pop-launcher");
                 }
             }
-            KeyCode::Escape => {
+            Key::Named(Named::Escape) => {
                 exit(0);
             }
             _ => {}
@@ -627,12 +631,11 @@ impl Onagre<'_> {
     }
 
     fn keyboard_event() -> Subscription<Message> {
-        subscription::events_with(|event, _status| match event {
-            Event::Window(window::Event::Unfocused) => Some(Message::Unfocused),
-            Event::Keyboard(iced::keyboard::Event::KeyPressed {
-                modifiers: _,
-                key_code,
-            }) => Some(Message::KeyboardEvent(key_code)),
+        event::listen_with(|event, _status| match event {
+            Event::Window(_window_id, window::Event::Unfocused) => Some(Message::Unfocused),
+            Event::Keyboard(iced::keyboard::Event::KeyPressed { key, .. }) => {
+                Some(Message::KeyboardEvent(key))
+            }
             _ => None,
         })
     }

@@ -3,7 +3,7 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::Length;
-use iced_core::{Background, BorderRadius};
+use iced_core::{border::Radius as BorderRadius, Background, Border};
 use iced_style::container::{Appearance, StyleSheet};
 
 pub mod scroller;
@@ -48,9 +48,12 @@ impl StyleSheet for &RowContainerStyle {
         Appearance {
             text_color: Some(self.color.into()),
             background: Some(Background::Color(self.background.into())),
-            border_radius: BorderRadius::from(self.border_radius),
-            border_width: self.border_width,
-            border_color: self.border_color.into(),
+            border: Border {
+                radius: BorderRadius::from(self.border_radius),
+                width: self.border_width,
+                color: self.border_color.into(),
+            },
+            ..Default::default()
         }
     }
 }

@@ -3,7 +3,8 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::Length;
-use iced_core::{Background, BorderRadius, Color};
+use iced_core::Border;
+use iced_core::{border::Radius as BorderRadius, Background, Color};
 use iced_style::text_input::{Appearance, StyleSheet};
 
 #[derive(Debug, PartialEq)]
@@ -46,9 +47,11 @@ impl StyleSheet for &SearchInputStyles {
     fn active(&self, _: &Self::Style) -> Appearance {
         Appearance {
             background: Background::Color(self.background.into()),
-            border_radius: BorderRadius::from(self.border_radius),
-            border_width: self.border_width,
-            border_color: self.border_color.into(),
+            border: Border {
+                radius: BorderRadius::from(self.border_radius),
+                width: self.border_width,
+                color: self.border_color.into(),
+            },
             icon_color: Default::default(),
         }
     }
@@ -76,9 +79,11 @@ impl StyleSheet for &SearchInputStyles {
     fn disabled(&self, _style: &Self::Style) -> Appearance {
         Appearance {
             background: Background::Color(self.background.into()),
-            border_radius: BorderRadius::from(self.border_radius),
-            border_width: self.border_width,
-            border_color: self.border_color.into(),
+            border: Border {
+                radius: BorderRadius::from(self.border_radius),
+                width: self.border_width,
+                color: self.border_color.into(),
+            },
             icon_color: Default::default(),
         }
     }
