@@ -34,9 +34,9 @@ impl WebEntity<'_> {
     }
 }
 
-impl Entity for WebEntity<'_> {
-    fn get_key(&self) -> Vec<u8> {
-        self.query().as_bytes().to_vec()
+impl<'a> Entity<'a> for WebEntity<'a> {
+    fn get_key(&self) -> Cow<'a, str> {
+        self.query.clone()
     }
 
     fn get_weight(&self) -> u8 {

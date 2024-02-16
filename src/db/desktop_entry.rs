@@ -17,9 +17,9 @@ pub struct DesktopEntryEntity<'a> {
     pub weight: u8,
 }
 
-impl Entity for DesktopEntryEntity<'_> {
-    fn get_key(&self) -> Vec<u8> {
-        self.name.as_bytes().to_vec()
+impl<'a> Entity<'a> for DesktopEntryEntity<'a> {
+    fn get_key(&self) -> Cow<'a, str> {
+        self.name.clone()
     }
     fn get_weight(&self) -> u8 {
         self.weight
