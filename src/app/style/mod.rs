@@ -9,7 +9,8 @@ use crate::THEME_PATH;
 use crate::THEME_SCALE;
 use iced::widget::container::Appearance;
 use iced::Background;
-use iced_core::{BorderRadius, Length};
+use iced_core::{Border, Length};
+use iced_core::border::Radius;
 use tracing::{error, warn};
 
 pub mod app;
@@ -149,10 +150,13 @@ impl iced::widget::container::StyleSheet for &Theme {
     fn appearance(&self, _: &Self::Style) -> Appearance {
         Appearance {
             background: Some(Background::Color(self.background.into())),
-            border_radius: BorderRadius::from(self.border_radius),
-            border_width: self.border_width,
+            border: Border {
+                color: self.border_color.into(),
+                width: self.border_width,
+                radius: Radius::from(self.border_radius),
+            },
             text_color: Some(self.color.into()),
-            border_color: self.border_color.into(),
+            shadow: Default::default(),
         }
     }
 }
