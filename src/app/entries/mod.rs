@@ -5,7 +5,7 @@ use crate::app::Message;
 use crate::icons::{fallback_icon, Extension, IconPath};
 use crate::THEME;
 use iced::widget::{column, container, row, text, Button, Container, Image, Row};
-use iced::{Alignment, Length, Renderer};
+use iced::{Alignment, Length};
 use std::borrow::Cow;
 
 pub(crate) mod db_entry;
@@ -48,7 +48,7 @@ pub(crate) trait AsEntry<'a> {
     where
         'b: 'a,
     {
-        let title_row: Container<'_, Message, Renderer> =
+        let title_row: Container<Message> =
             container(iced::widget::row(vec![text(self.get_display_name())
                 .size(theme.title.font_size)
                 .into()]))
@@ -59,7 +59,7 @@ pub(crate) trait AsEntry<'a> {
             .align_x(theme.title.align_x)
             .align_y(theme.title.align_y);
 
-        let description_row: Option<Container<'_, Message, Renderer>> =
+        let description_row: Option<Container<Message>> =
             self.get_description().map(|description| {
                 container(row!(
                     text(description.as_ref()).size(theme.description.font_size)
