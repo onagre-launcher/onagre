@@ -30,7 +30,7 @@ pub(crate) trait AsEntry<'a> {
         };
 
         let row = row
-            .height(Length::Fill)
+            .height(Length::Shrink)
             .width(Length::Fill)
             .spacing(theme.spacing)
             // See : https://github.com/iced-rs/iced/pull/1044
