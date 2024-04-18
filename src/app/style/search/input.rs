@@ -3,8 +3,8 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::Length;
-use iced_core::{Background, Border, Color};
 use iced_core::border::Radius;
+use iced_core::{Background, Border, Color};
 use iced_style::text_input::{Appearance, StyleSheet};
 
 #[derive(Debug, PartialEq)]

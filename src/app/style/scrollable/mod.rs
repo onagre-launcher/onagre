@@ -3,8 +3,8 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::Length;
-use iced_core::{Background, Border};
 use iced_core::border::Radius;
+use iced_core::{Background, Border};
 use iced_style::container::{Appearance, StyleSheet};
 
 pub mod scroller;

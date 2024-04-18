@@ -4,12 +4,12 @@ use std::process::exit;
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::widget::{column, container, scrollable, text_input, Column, Container, Row, Text};
-use iced::{window, Application, Command, Element, Length, Settings, Subscription, event};
-use iced_core::widget::operation::scrollable::RelativeOffset;
-use iced_core::{Event, Font, Pixels, Size};
-use iced_core::keyboard::Key;
+use iced::{event, window, Application, Command, Element, Length, Settings, Subscription};
 use iced_core::keyboard::key::Named;
+use iced_core::keyboard::Key;
+use iced_core::widget::operation::scrollable::RelativeOffset;
 use iced_core::window::settings::PlatformSpecific;
+use iced_core::{Event, Font, Pixels, Size};
 use iced_style::Theme;
 use onagre_launcher_toolkit::launcher::{Request, Response};
 use once_cell::sync::Lazy;
@@ -631,12 +631,12 @@ impl Onagre<'_> {
 
     fn keyboard_event() -> Subscription<Message> {
         event::listen_with(|event, _status| match event {
-            Event::Window(_, event) if event == window::Event::Unfocused => Some(Message::Unfocused),
+            Event::Window(_, window::Event::Unfocused) => Some(Message::Unfocused),
             Event::Keyboard(iced::keyboard::Event::KeyPressed {
                 modifiers: _,
                 text: _,
                 key,
-                location: _ 
+                location: _,
             }) => Some(Message::KeyboardEvent(key)),
             _ => None,
         })
