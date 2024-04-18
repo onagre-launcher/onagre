@@ -2,8 +2,8 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use iced::widget::scrollable::Scrollbar;
 use iced::Background;
-use iced_core::Border;
 use iced_core::border::Radius;
+use iced_core::Border;
 use iced_style::scrollable::{Appearance, StyleSheet};
 use iced_style::theme::Scrollable;
 
@@ -78,7 +78,7 @@ impl StyleSheet for &ScrollerStyles {
                         color: self.scroller_border_color.into(),
                         width: self.scroller_border_width,
                         radius: Radius::from(self.scroller_border_radius),
-                    }
+                    },
                 },
             },
             gap: None,
