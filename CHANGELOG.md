@@ -2,6 +2,26 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [1.1.0](https://github.com/onagre-launcher/onagre/compare/1.0.0..1.1.0) - 2024-04-18
+#### Bug Fixes
+- fix row height on iced 0.12 - ([0cd8a2a](https://github.com/onagre-launcher/onagre/commit/0cd8a2a5b6a10e304f7cecd85f2249a7856a9b46)) - [@oknozor](https://github.com/oknozor)
+#### Continuous Integration
+- revert manual bump for v1 and add docs deploy from main - ([faa1468](https://github.com/onagre-launcher/onagre/commit/faa1468888e8ac525b994c6ed2b39247527b89c1)) - [@oknozor](https://github.com/oknozor)
+#### Documentation
+- Unnecessary spaces removed from the README.md - ([0136c54](https://github.com/onagre-launcher/onagre/commit/0136c54fb8e60c27e67d1f49e336f65df729d579)) - Doom-Git
+- fix gh-pages domain - ([c57141f](https://github.com/onagre-launcher/onagre/commit/c57141f916bca8e2399b5a33b146ace973ac75cd)) - [@oknozor](https://github.com/oknozor)
+- add gh page deployment custom domain - ([bb8e2be](https://github.com/onagre-launcher/onagre/commit/bb8e2bef513f139324d6e36c0d4d1e2b82b81546)) - [@oknozor](https://github.com/oknozor)
+- update readme head - ([d9c2859](https://github.com/onagre-launcher/onagre/commit/d9c2859c25bc016e596f6f3a59547e90c9015f5f)) - [@oknozor](https://github.com/oknozor)
+- update install instruction for stable release - ([ce87cfe](https://github.com/onagre-launcher/onagre/commit/ce87cfecc29f224bd49ed2ea3711163d57b78a64)) - [@oknozor](https://github.com/oknozor)
+#### Features
+- update iced to 0.12.1 - ([35248d4](https://github.com/onagre-launcher/onagre/commit/35248d444175d9893e6a63911212ad8ed5c73a60)) - [@oknozor](https://github.com/oknozor)
+- switch to redb for cache performance - ([33655e3](https://github.com/onagre-launcher/onagre/commit/33655e33586818946377515945abb415ab105de5)) - [@oknozor](https://github.com/oknozor)
+#### Miscellaneous Chores
+- clippy + fmt - ([2fecf42](https://github.com/onagre-launcher/onagre/commit/2fecf423494d331ccec354204363c40aa787233b)) - [@oknozor](https://github.com/oknozor)
+- add logo - ([63da9a9](https://github.com/onagre-launcher/onagre/commit/63da9a97fb65fe5b96f8d1a1936edec3a6851cf1)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [1.0.0](https://github.com/onagre-launcher/onagre/compare/4f7605b84e2bb0ba55b3caa9e3cf701b5bc03cb9..1.0.0) - 2024-02-14
 #### Bug Fixes
 - **(config)** make modes optional - ([77f0663](https://github.com/onagre-launcher/onagre/commit/77f0663aeaa2b2ca7d1e78593402b976eef0d46c)) - [@oknozor](https://github.com/oknozor)
