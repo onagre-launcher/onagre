@@ -1,6 +1,6 @@
 use crate::config::error::ConfigError;
 use iced::Color;
-use std::num::ParseIntError;
+use std::{fmt::Display, num::ParseIntError};
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct OnagreColor {
@@ -111,8 +111,8 @@ impl OnagreColor {
     }
 }
 
-impl ToString for OnagreColor {
-    fn to_string(&self) -> String {
+impl Display for OnagreColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let r = (self.color.r * 255.0) as u32;
         let g = (self.color.g * 255.0) as u32;
         let b = (self.color.b * 255.0) as u32;
@@ -122,7 +122,7 @@ impl ToString for OnagreColor {
         let g = to_lower_gex_with_leading_zero(g);
         let b = to_lower_gex_with_leading_zero(b);
         let a = to_lower_gex_with_leading_zero(a);
-        format!("#{}{}{}{}", r, g, b, a)
+        write!(f, "#{}{}{}{}", r, g, b, a)
     }
 }
 

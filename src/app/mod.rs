@@ -323,13 +323,11 @@ impl Onagre<'_> {
             ActiveMode::Plugin { plugin_name, .. } => {
                 // Get user input as pop-entry
                 match selected {
-                    None => {
-                        return self
-                            .state
-                            .pop_search
-                            .first()
-                            .map(|entry| entry.name.clone());
-                    }
+                    None => self
+                        .state
+                        .pop_search
+                        .first()
+                        .map(|entry| entry.name.clone()),
                     Some(selected) => self
                         .state
                         .cache
@@ -341,13 +339,11 @@ impl Onagre<'_> {
             ActiveMode::Web { modifier, .. } => {
                 // Get user input as pop-entry
                 match selected {
-                    None => {
-                        return self
-                            .state
-                            .pop_search
-                            .first()
-                            .map(|entry| entry.name.clone());
-                    }
+                    None => self
+                        .state
+                        .pop_search
+                        .first()
+                        .map(|entry| entry.name.clone()),
                     Some(selected) => self
                         .state
                         .cache

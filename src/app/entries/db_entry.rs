@@ -12,7 +12,7 @@ use crate::db::web::WebEntity;
 use crate::icons::{Extension, IconPath};
 use crate::THEME;
 
-impl<'a> AsEntry<'a> for DesktopEntryEntity<'_> {
+impl AsEntry<'_> for DesktopEntryEntity<'_> {
     fn get_display_name(&self) -> &str {
         self.name.as_ref()
     }
@@ -106,7 +106,7 @@ fn ico_to_png(path: PathBuf) {
             for entry in icon.entries() {
                 if !entry.is_png() {
                     let image = entry.decode().unwrap();
-                    let file = std::fs::File::create(&path.with_extension("png")).unwrap();
+                    let file = std::fs::File::create(path.with_extension("png")).unwrap();
                     image.write_png(file).unwrap();
                 }
             }

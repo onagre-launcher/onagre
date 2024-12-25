@@ -199,7 +199,7 @@ mod test {
         asserting!("Should parse 'border-color' attribute")
             .that(&border_color)
             .is_ok()
-            .is_equal_to(&OnagreColor::from("#ffffff").unwrap());
+            .is_equal_to(OnagreColor::from("#ffffff").unwrap());
     }
 
     #[test]
@@ -214,7 +214,7 @@ mod test {
         asserting!("Should parse 'color' attribute")
             .that(&color)
             .is_ok()
-            .is_equal_to(&OnagreColor::from("#ffffff").unwrap());
+            .is_equal_to(OnagreColor::from("#ffffff").unwrap());
     }
 
     #[test]
@@ -229,7 +229,7 @@ mod test {
         asserting!("Should parse 'background' attribute")
             .that(&background)
             .is_ok()
-            .is_equal_to(&OnagreColor::from("#ffffff").unwrap());
+            .is_equal_to(OnagreColor::from("#ffffff").unwrap());
     }
 
     #[test]
