@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [1.1.1](https://github.com/onagre-launcher/onagre/compare/7c4285534d2e68853e1d79eb17dac7bef749b47d..1.1.1) - 2024-12-25
+#### Bug Fixes
+- fix onagre crashing on pop-launcher stderr - ([7c42855](https://github.com/onagre-launcher/onagre/commit/7c4285534d2e68853e1d79eb17dac7bef749b47d)) - [@oknozor](https://github.com/oknozor)
+#### Miscellaneous Chores
+- thanks clippy - ([5431bf9](https://github.com/onagre-launcher/onagre/commit/5431bf9b7550b793174b9648985afb71d526a807)) - [@oknozor](https://github.com/oknozor)
+
+- - -
+
 ## [1.1.0](https://github.com/onagre-launcher/onagre/compare/1.0.0..1.1.0) - 2024-04-18
 #### Bug Fixes
 - fix row height on iced 0.12 - ([0cd8a2a](https://github.com/onagre-launcher/onagre/commit/0cd8a2a5b6a10e304f7cecd85f2249a7856a9b46)) - [@oknozor](https://github.com/oknozor)
