@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content="VuePress 2.0.0-rc.7" />
+    <style>
+      :root {
+        --c-bg: #fff;
+      }
+      html.dark {
+        --c-bg: #22272e;
+      }
+      html,
+      body {
+        background-color: var(--c-bg);
+      }
+    </style>
+    <script>
+      const userMode = localStorage.getItem('vuepress-color-scheme')
+      const systemDarkMode =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (userMode === 'dark' || (userMode !== 'light' && systemDarkMode)) {
+        document.documentElement.classList.toggle('dark', true)
+      }
+    </script>
+    <link rel="icon" href="/favicon.png"><meta name="theme-color" content="#ff9595"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta property="og:title" content="Onagre"><meta property="og:image" content="https://onagre-launcher.github.io/onagre/onagre.png"><meta property="twitter:card" content="https://onagre-launcher.github.io/onagre/onagre.png"><meta property="og:description" content="A general purpose application launcher for X and wayland  inspired by rofi/wofi and alfred, build with iced and pop-launcher."><meta property="og:width" content="100"><title>Gallery |  </title><meta name="description" content="A general purpose application launcher for X and wayland inspired by rofi/wofi and alfred, build with iced and pop-launcher.">
+    <link rel="preload" href="/assets/style-DzzantHI.css" as="style"><link rel="stylesheet" href="/assets/style-DzzantHI.css">
+    <link rel="modulepreload" href="/assets/app-Dj7meDOY.js"><link rel="modulepreload" href="/assets/gallery.html-BE2ecBC0.js"><link rel="modulepreload" href="/assets/not-adwaita-D2Y_w_wh.js">
+    <link rel="prefetch" href="/assets/index.html-Bgy1uvSv.js" as="script"><link rel="prefetch" href="/assets/get-started.html-BWAOVQLk.js" as="script"><link rel="prefetch" href="/assets/theming-reference.html-Vi7_Vr51.js" as="script"><link rel="prefetch" href="/assets/404.html-D5dAAwdL.js" as="script">
+  </head>
+  <body>
+    <div id="app"><!--[--><div class="theme-container"><!--[--><header class="navbar"><div class="toggle-sidebar-button" title="toggle sidebar" aria-expanded="false" role="button" tabindex="0"><div class="icon" aria-hidden="true"><span></span><span></span><span></span></div></div><span><a class="route-link" href="/"><img class="logo" src="/onagre.png" alt=" "><span class="site-name can-hide" aria-hidden="true"> </span></a></span><div class="navbar-items-wrapper" style=""><!--[--><!--]--><nav class="navbar-items can-hide" aria-label="site navigation"><!--[--><div class="navbar-item"><a class="route-link" href="/" aria-label="Onagre"><!--[--><!--]--> Onagre <!--[--><!--]--></a></div><div class="navbar-item"><a class="route-link" href="/get-started.html" aria-label="Get Started"><!--[--><!--]--> Get Started <!--[--><!--]--></a></div><div class="navbar-item"><a class="route-link" href="/theming-reference.html" aria-label="Configuration reference"><!--[--><!--]--> Configuration reference <!--[--><!--]--></a></div><div class="navbar-item"><a class="route-link route-link-active" href="/gallery.html" aria-label="Gallery"><!--[--><!--]--> Gallery <!--[--><!--]--></a></div><div class="navbar-item"><a class="external-link" href="https://github.com/onagre-launcher/onagre" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><!--[--><!--]--> GitHub <span><svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path><polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg><span class="external-link-icon-sr-only">open in new window</span></span><!--[--><!--]--></a></div><!--]--></nav><!--[--><!--]--><button class="toggle-color-mode-button" title="toggle color mode"><svg style="" class="icon" focusable="false" viewBox="0 0 32 32"><path d="M16 12.005a4 4 0 1 1-4 4a4.005 4.005 0 0 1 4-4m0-2a6 6 0 1 0 6 6a6 6 0 0 0-6-6z" fill="currentColor"></path><path d="M5.394 6.813l1.414-1.415l3.506 3.506L8.9 10.318z" fill="currentColor"></path><path d="M2 15.005h5v2H2z" fill="currentColor"></path><path d="M5.394 25.197L8.9 21.691l1.414 1.415l-3.506 3.505z" fill="currentColor"></path><path d="M15 25.005h2v5h-2z" fill="currentColor"></path><path d="M21.687 23.106l1.414-1.415l3.506 3.506l-1.414 1.414z" fill="currentColor"></path><path d="M25 15.005h5v2h-5z" fill="currentColor"></path><path d="M21.687 8.904l3.506-3.506l1.414 1.415l-3.506 3.505z" fill="currentColor"></path><path d="M15 2.005h2v5h-2z" fill="currentColor"></path></svg><svg style="display:none;" class="icon" focusable="false" viewBox="0 0 32 32"><path d="M13.502 5.414a15.075 15.075 0 0 0 11.594 18.194a11.113 11.113 0 0 1-7.975 3.39c-.138 0-.278.005-.418 0a11.094 11.094 0 0 1-3.2-21.584M14.98 3a1.002 1.002 0 0 0-.175.016a13.096 13.096 0 0 0 1.825 25.981c.164.006.328 0 .49 0a13.072 13.072 0 0 0 10.703-5.555a1.01 1.01 0 0 0-.783-1.565A13.08 13.08 0 0 1 15.89 4.38A1.015 1.015 0 0 0 14.98 3z" fill="currentColor"></path></svg></button><!----></div></header><!--]--><div class="sidebar-mask"></div><!--[--><aside class="sidebar"><nav class="navbar-items" aria-label="site navigation"><!--[--><div class="navbar-item"><a class="route-link" href="/" aria-label="Onagre"><!--[--><!--]--> Onagre <!--[--><!--]--></a></div><div class="navbar-item"><a class="route-link" href="/get-started.html" aria-label="Get Started"><!--[--><!--]--> Get Started <!--[--><!--]--></a></div><div class="navbar-item"><a class="route-link" href="/theming-reference.html" aria-label="Configuration reference"><!--[--><!--]--> Configuration reference <!--[--><!--]--></a></div><div class="navbar-item"><a class="route-link route-link-active" href="/gallery.html" aria-label="Gallery"><!--[--><!--]--> Gallery <!--[--><!--]--></a></div><div class="navbar-item"><a class="external-link" href="https://github.com/onagre-launcher/onagre" rel="noopener noreferrer" target="_blank" aria-label="GitHub"><!--[--><!--]--> GitHub <span><svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path><polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg><span class="external-link-icon-sr-only">open in new window</span></span><!--[--><!--]--></a></div><!--]--></nav><!--[--><!--]--><ul class="sidebar-items"><!--[--><li><p tabindex="0" class="sidebar-item sidebar-heading">Gallery <!----></p><ul style="" class="sidebar-item-children"><!--[--><li><a class="route-link sidebar-item" href="/#default-theme" aria-label="Default theme"><!--[--><!--]--> Default theme <!--[--><!--]--></a><!----></li><li><a class="route-link sidebar-item" href="/#hollow" aria-label="Hollow"><!--[--><!--]--> Hollow <!--[--><!--]--></a><!----></li><li><a class="route-link sidebar-item" href="/#murz" aria-label="Murz"><!--[--><!--]--> Murz <!--[--><!--]--></a><!----></li><li><a class="route-link sidebar-item" href="/#nord" aria-label="Nord"><!--[--><!--]--> Nord <!--[--><!--]--></a><!----></li><li><a class="route-link sidebar-item" href="/#not-adwaita" aria-label="Not-Adwaita"><!--[--><!--]--> Not-Adwaita <!--[--><!--]--></a><!----></li><li><a class="route-link sidebar-item" href="/#solarized" aria-label="Solarized"><!--[--><!--]--> Solarized <!--[--><!--]--></a><!----></li><!--]--></ul></li><!--]--></ul><!--[--><!--]--></aside><!--]--><!--[--><main class="page"><!--[--><!--]--><div class="theme-default-content"><!--[--><!--]--><div><h1 id="gallery" tabindex="-1"><a class="header-anchor" href="#gallery"><span>Gallery</span></a></h1><p>Don&#39;t hesitate to send a PR with your fancy theme, we would be happy to share it to the community.</p><h2 id="default-theme" tabindex="-1"><a class="header-anchor" href="#default-theme"><span>Default theme</span></a></h2><img src="/screenshots/default-theme.png" alt="murz-theme-screenshot" style="display:block;margin-left:auto;margin-right:auto;"><hr><h2 id="hollow" tabindex="-1"><a class="header-anchor" href="#hollow"><span>Hollow</span></a></h2><img src="/screenshots/hollow.png" alt="simple-theme-screenshot" style="display:block;margin-left:auto;margin-right:auto;"><details class="custom-container details"><summary>expand theme.scss</summary><div class="language-scss" data-ext="scss" data-title="scss"><pre class="language-scss"><code><span class="hljs-selector-class">.onagre</span> {
+  <span class="hljs-attr">--exit-unfocused</span>: false;
+  <span class="hljs-attribute">height</span>: <span class="hljs-number">375px</span>;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">600px</span>;
+  <span class="hljs-attr">--icon-theme</span>: <span class="hljs-string">&quot;Papirus&quot;</span>;
+  <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">28px</span>;
+  <span class="hljs-attr">--font-family</span>: <span class="hljs-string">&quot;Iosevka Nerd Font Mono&quot;</span>;
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#1c1e26</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#cbced0</span>;
+  <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#2E3440</span>;
+  <span class="hljs-attribute">border-width</span>: <span class="hljs-number">4px</span>;
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8.0%</span>;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span>;
+
+  <span class="hljs-selector-class">.container</span> {
+    <span class="hljs-attribute">padding</span>: <span class="hljs-number">8px</span>;
+    <span class="hljs-selector-class">.search</span> {
+      <span class="hljs-attr">--spacing</span>: <span class="hljs-number">1</span>;
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#cbced0</span>;
+      <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">10.0%</span>;
+      <span class="hljs-attribute">color</span>: <span class="hljs-number">#1c1e26</span>;
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">1</span>;
+
+      <span class="hljs-selector-class">.plugin-hint</span> {
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">18px</span>;
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#cbced0</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#e95678</span>;
+        <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#e95678</span>;
+        <span class="hljs-attr">--align-x</span>: center;
+        <span class="hljs-attr">--align-y</span>: center;
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">1</span>;
+        <span class="hljs-attr">--height</span>: fill;
+      }
+
+      <span class="hljs-selector-class">.input</span> {
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">11</span>;
+      }
+    }
+
+    <span class="hljs-selector-class">.rows</span> {
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">8</span>;
+      <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8.0%</span>;
+
+      <span class="hljs-selector-class">.row-selected</span> {
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#268bd2</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#e3e6ee</span>;
+        <span class="hljs-attr">--spacing</span>: <span class="hljs-number">3px</span>;
+        <span class="hljs-attr">--align-y</span>: center;
+
+        <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8.0%</span>;
+        <span class="hljs-selector-class">.title</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">22px</span>;
+        }
+
+        <span class="hljs-selector-class">.description</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+        }
+
+        <span class="hljs-selector-class">.category-icon</span> {
+          <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">15px</span>;
+        }
+      }
+
+      <span class="hljs-selector-class">.row</span> {
+        <span class="hljs-selector-class">.title</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">22px</span>;
+        }
+
+        <span class="hljs-selector-class">.description</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+        }
+
+        <span class="hljs-selector-class">.category-icon</span> {
+          <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">15px</span>;
+        }
+      }
+    }
+
+    <span class="hljs-selector-class">.scrollable</span> {
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#00000000</span>;
+      <span class="hljs-selector-class">.scroller</span> {
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#4c566a00</span>;
+      }
+    }
+  }
+}
+</code></pre></div></details><hr><h2 id="murz" tabindex="-1"><a class="header-anchor" href="#murz"><span>Murz</span></a></h2><img src="/screenshots/murz.png" alt="simple-theme-screenshot" style="display:block;margin-left:auto;margin-right:auto;"><details class="custom-container details"><summary>expand theme.scss</summary><p>credit to <a href="https://github.com/Murzchnvok/rofi-collection" target="_blank" rel="noopener noreferrer">murz<span><svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path><polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg><span class="external-link-icon-sr-only">open in new window</span></span></a></p><div class="language-scss" data-ext="scss" data-title="scss"><pre class="language-scss"><code><span class="hljs-selector-class">.onagre</span> {
+  <span class="hljs-attr">--exit-unfocused</span>: false;
+  <span class="hljs-attribute">height</span>: <span class="hljs-number">250px</span>;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">400px</span>;
+  <span class="hljs-attr">--font-family</span>: <span class="hljs-string">&quot;Iosevka,Iosevka Nerd Font&quot;</span>;
+  <span class="hljs-attribute">font-size</span>: <span class="hljs-number">12px</span>;
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#18181b</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#a0a0ab</span>;
+  <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#5d5e72</span>;
+  <span class="hljs-attribute">border-width</span>: <span class="hljs-number">4px</span>;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span>;
+
+  <span class="hljs-selector-class">.container</span> {
+    <span class="hljs-selector-class">.search</span> {
+      <span class="hljs-attr">--spacing</span>: <span class="hljs-number">1</span>;
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#d8dee9</span>;
+      <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">0</span>;
+      <span class="hljs-attribute">color</span>: <span class="hljs-number">#18181b</span>;
+      <span class="hljs-attribute">padding</span>: <span class="hljs-number">4px</span>;
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">1</span>;
+      <span class="hljs-selector-class">.plugin-hint</span> {
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">9px</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#d8dee9</span>;
+        <span class="hljs-attribute">padding</span>: <span class="hljs-number">4px</span>;
+        <span class="hljs-attribute">border-width</span>: <span class="hljs-number">2px</span>;
+        <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#5d5e72</span>;
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#18181b</span>;
+        <span class="hljs-attr">--align-x</span>: center;
+        <span class="hljs-attr">--align-y</span>: center;
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">2</span>;
+        <span class="hljs-attr">--height</span>: fill;
+      }
+
+      <span class="hljs-selector-class">.input</span> {
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">11</span>;
+      }
+
+    }
+
+    <span class="hljs-selector-class">.rows</span> {
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">6</span>;
+      <span class="hljs-selector-class">.row-selected</span> {
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#20212c</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#5d5e72</span>;
+        <span class="hljs-attr">--spacing</span>: <span class="hljs-number">3px</span>;
+      }
+    }
+
+    <span class="hljs-selector-class">.scrollable</span> {
+      <span class="hljs-selector-class">.scroller</span> {
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#A0A0AB</span>;
+        <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#18181b</span>;
+      }
+    }
+  }
+}
+</code></pre></div></details><hr><h2 id="nord" tabindex="-1"><a class="header-anchor" href="#nord"><span>Nord</span></a></h2><img src="/screenshots/nord-rounded.png" alt="simple-theme-screenshot" style="display:block;margin-left:auto;margin-right:auto;"><details class="custom-container details"><summary>expand theme.scss</summary><div class="language-scss" data-ext="scss" data-title="scss"><pre class="language-scss"><code><span class="hljs-selector-class">.onagre</span> {
+  <span class="hljs-attr">--exit-unfocused</span>: false;
+  <span class="hljs-attribute">height</span>: <span class="hljs-number">250px</span>;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">400px</span>;
+  <span class="hljs-attr">--icon-theme</span>: <span class="hljs-string">&quot;Papirus&quot;</span>;
+  <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">22px</span>;
+  <span class="hljs-attr">--font-family</span>: <span class="hljs-string">&quot;Iosevka Nerd Font Mono&quot;</span>;
+  <span class="hljs-attribute">font-size</span>: <span class="hljs-number">12px</span>;
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#2E3440</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#81a1c1</span>;
+  <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#2E3440</span>;
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">25%</span>;
+  <span class="hljs-attribute">border-width</span>: <span class="hljs-number">4px</span>;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span>;
+
+  <span class="hljs-selector-class">.container</span> {
+    <span class="hljs-selector-class">.search</span> {
+      <span class="hljs-attr">--spacing</span>: <span class="hljs-number">1</span>;
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#3b4252</span>;
+      <span class="hljs-attribute">color</span>: <span class="hljs-number">#d8dee9</span>;
+      <span class="hljs-attribute">padding</span>: <span class="hljs-number">4px</span>;
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">1</span>;
+      <span class="hljs-selector-class">.plugin-hint</span> {
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">9px</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#bf616a</span>;
+        <span class="hljs-attribute">padding</span>: <span class="hljs-number">4px</span>;
+        <span class="hljs-attribute">border-width</span>: <span class="hljs-number">2px</span>;
+        <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#bf616a</span>;
+        <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">5%</span>;
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#4c566a</span>;
+        <span class="hljs-attr">--align-x</span>: center;
+        <span class="hljs-attr">--align-y</span>: center;
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">2</span>;
+        <span class="hljs-attr">--height</span>: fill;
+      }
+
+      <span class="hljs-selector-class">.input</span> {
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">11</span>;
+      }
+
+    }
+
+    <span class="hljs-selector-class">.rows</span> {
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">5</span>;
+      <span class="hljs-selector-class">.row-selected</span> {
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#2E3440</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#ebcb8b</span>;
+        <span class="hljs-attr">--spacing</span>: <span class="hljs-number">3px</span>;
+        <span class="hljs-attr">--align-y</span>: center;
+      }
+    }
+
+    <span class="hljs-selector-class">.scrollable</span> {
+      <span class="hljs-selector-class">.scroller</span> {
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#4c566a</span>;
+      }
+    }
+  }
+}
+</code></pre></div></details><hr><h2 id="not-adwaita" tabindex="-1"><a class="header-anchor" href="#not-adwaita"><span>Not-Adwaita</span></a></h2><img src="/screenshots/not-adwaita.png" alt="simple-theme-screenshot" style="display:block;margin-left:auto;margin-right:auto;"><details class="custom-container details"><summary>expand theme.scss</summary><div class="language-scss" data-ext="scss" data-title="scss"><pre class="language-scss"><code><span class="hljs-selector-class">.onagre</span> {
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#d6d6d6</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#000000</span>;
+  <span class="hljs-attr">--icon-theme</span>: <span class="hljs-string">&quot;Papirus&quot;</span>;
+  <span class="hljs-attr">--font-family</span>: <span class="hljs-string">&quot;DejaVuSans&quot;</span>;
+  <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">24</span>;
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8%</span>;
+  <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#d6d6d6</span>;
+  <span class="hljs-attribute">border-width</span>: <span class="hljs-number">4px</span>;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">5px</span>;
+
+  <span class="hljs-selector-class">.container</span> {
+    <span class="hljs-selector-class">.rows</span> {
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">6</span>;
+      <span class="hljs-selector-class">.row</span> {
+        <span class="hljs-attr">--width</span>: <span class="hljs-number">392</span>;
+
+        <span class="hljs-selector-class">.icon</span> {
+          <span class="hljs-attribute">padding-top</span>: <span class="hljs-number">4px</span>;
+        }
+
+        <span class="hljs-selector-class">.category-icon</span> {
+          <span class="hljs-attribute">padding-left</span>: <span class="hljs-number">5px</span>;
+          <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">11</span>;
+        }
+
+        <span class="hljs-selector-class">.title</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">18px</span>;
+        }
+
+        <span class="hljs-selector-class">.description</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">12px</span>;
+        }
+      }
+
+      <span class="hljs-selector-class">.row-selected</span> {
+        <span class="hljs-attr">--width</span>: <span class="hljs-number">392</span>;
+        <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8%</span>;
+        <span class="hljs-attribute">background</span>:  <span class="hljs-number">#c0c0c0</span>;
+
+        <span class="hljs-selector-class">.icon</span> {
+          <span class="hljs-attribute">padding-top</span>: <span class="hljs-number">4px</span>;
+        }
+
+        <span class="hljs-selector-class">.category-icon</span> {
+          <span class="hljs-attribute">padding-left</span>: <span class="hljs-number">5px</span>;
+          <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">11</span>;
+        }
+
+        <span class="hljs-selector-class">.title</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+        }
+
+        <span class="hljs-selector-class">.description</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">12px</span>;
+        }
+      }
+    }
+
+    <span class="hljs-selector-class">.search</span> {
+      <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">5%</span>;
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#ffffff</span>;
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">1</span>;
+      <span class="hljs-attribute">padding</span>: <span class="hljs-number">4px</span>;
+      <span class="hljs-selector-class">.input</span> {
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+      }
+    }
+
+    <span class="hljs-selector-class">.scrollable</span> {
+      <span class="hljs-attribute">width</span>: <span class="hljs-number">2px</span>;
+      <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">5%</span>;
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#c0c0c0</span>;
+      <span class="hljs-selector-class">.scroller</span> {
+        <span class="hljs-attribute">width</span>: <span class="hljs-number">4px</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#a1a1a1</span>;
+      }
+    }
+  }
+}
+</code></pre></div></details><hr><h2 id="solarized" tabindex="-1"><a class="header-anchor" href="#solarized"><span>Solarized</span></a></h2><img src="/screenshots/solarized.png" alt="simple-theme-screenshot" style="display:block;margin-left:auto;margin-right:auto;"><details class="custom-container details"><summary>expand theme.scss</summary><div class="language-scss" data-ext="scss" data-title="scss"><pre class="language-scss"><code><span class="hljs-selector-class">.onagre</span> {
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#fdf6e3</span>;
+  <span class="hljs-attribute">color</span>: <span class="hljs-number">#657b83</span>;
+  <span class="hljs-attr">--icon-theme</span>: <span class="hljs-string">&quot;Papirus&quot;</span>;
+  <span class="hljs-attr">--font-family</span>: <span class="hljs-string">&quot;Monaco&quot;</span>;
+  <span class="hljs-attr">--icon-size</span>: <span class="hljs-number">24</span>;
+  <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">0</span>;
+  <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#a9b7c6</span>;
+  <span class="hljs-attribute">border-width</span>: <span class="hljs-number">0</span>;
+  <span class="hljs-attribute">height</span>: <span class="hljs-number">250px</span>;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">440px</span>;
+
+  <span class="hljs-selector-class">.container</span> {
+    <span class="hljs-selector-class">.rows</span> {
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">6</span>;
+      <span class="hljs-selector-class">.row</span> {
+
+        <span class="hljs-selector-class">.icon</span> {
+          <span class="hljs-attribute">padding-top</span>: <span class="hljs-number">4px</span>;
+        }
+
+        <span class="hljs-selector-class">.title</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">18px</span>;
+        }
+
+        <span class="hljs-selector-class">.description</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">12px</span>;
+        }
+      }
+
+      <span class="hljs-selector-class">.row-selected</span> {
+        <span class="hljs-attr">--width</span>: <span class="hljs-number">435</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#268bd2</span>;
+
+        <span class="hljs-selector-class">.icon</span> {
+          <span class="hljs-attribute">padding-top</span>: <span class="hljs-number">4px</span>;
+        }
+
+        <span class="hljs-selector-class">.title</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+        }
+
+        <span class="hljs-selector-class">.description</span> {
+          <span class="hljs-attribute">font-size</span>: <span class="hljs-number">12px</span>;
+        }
+      }
+    }
+
+    <span class="hljs-selector-class">.search</span> {
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#fdf6e3</span>;
+      <span class="hljs-attr">--height</span>: fill-portion <span class="hljs-number">1</span>;
+      <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">0</span>;
+      <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#073642</span>;
+      <span class="hljs-attribute">border-width</span>: <span class="hljs-number">3px</span>;
+      <span class="hljs-attribute">padding</span>: <span class="hljs-number">4px</span>;
+      <span class="hljs-selector-class">.input</span> {
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#002b36</span>;
+        <span class="hljs-attr">--placeholder-color</span>: <span class="hljs-number">#657b83</span>;
+        <span class="hljs-attr">--selection-color</span>: <span class="hljs-number">#2aa198</span>;
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">13</span>;
+      }
+      <span class="hljs-selector-class">.plugin-hint</span> {
+        <span class="hljs-attribute">font-size</span>: <span class="hljs-number">11px</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#002b36</span>;
+        <span class="hljs-attribute">padding</span>: <span class="hljs-number">6px</span>;
+        <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#859900</span>;
+        <span class="hljs-attribute">background</span>: <span class="hljs-number">#fdf6e3</span>;
+        <span class="hljs-attribute">border-width</span>: <span class="hljs-number">3px</span>;
+        <span class="hljs-attr">--align-x</span>: center;
+        <span class="hljs-attr">--align-y</span>: center;
+        <span class="hljs-attr">--width</span>: fill-portion <span class="hljs-number">2</span>;
+        <span class="hljs-attr">--height</span>: fill;
+      }
+    }
+
+    <span class="hljs-selector-class">.scrollable</span> {
+      <span class="hljs-attribute">width</span>: <span class="hljs-number">2px</span>;
+      <span class="hljs-attribute">background</span>: <span class="hljs-number">#839496</span>;
+      <span class="hljs-selector-class">.scroller</span> {
+        <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">0</span>;
+        <span class="hljs-attribute">width</span>: <span class="hljs-number">2px</span>;
+        <span class="hljs-attribute">color</span>: <span class="hljs-number">#268bd2</span>;
+      }
+    }
+  }
+}
+</code></pre></div></details></div><!--[--><!--]--></div><footer class="page-meta"><div class="meta-item edit-link"><a class="external-link meta-item-label" href="https://github.com/onagre-launcher/onagre/edit/main/gallery.md" rel="noopener noreferrer" target="_blank" aria-label="Edit this page"><!--[--><!--]--> Edit this page <span><svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path><polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg><span class="external-link-icon-sr-only">open in new window</span></span><!--[--><!--]--></a></div><div class="meta-item last-updated"><span class="meta-item-label">Last Updated: </span><!----></div><div class="meta-item contributors"><span class="meta-item-label">Contributors: </span><span class="meta-item-info"><!--[--><!--[--><span class="contributor" title="email: paul.delafosse@protonmail.com">Paul Delafosse</span><!----><!--]--><!--]--></span></div></footer><!----><!--[--><!--]--></main><!--]--></div><!--[--><!----><!--]--><!--]--></div>
+    <script type="module" src="/assets/app-Dj7meDOY.js" defer></script>
+  </body>
+</html>
