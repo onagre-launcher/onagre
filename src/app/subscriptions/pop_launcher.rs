@@ -20,7 +20,12 @@ async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
     while let Some(response) = stream.next().await {
         debug!("Got a response from pop-launcher");
         debug!("{:?}", response);
-        sender.send(response.unwrap()).await.unwrap();
+        if let Err(err) = sender.send(response.unwrap()).await {
+            error!(
+                "Failed to send response to subscription receiver: {:?}",
+                err
+            );
+        }
     }
 }
 
@@ -28,8 +33,8 @@ async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
 async fn handle_stderr(stderr: ChildStderr) {
     let mut lines = BufReader::new(stderr).lines();
 
-    while let Ok(line) = lines.next_line().await {
-        debug!("line : {}", line.unwrap());
+    while let Ok(Some(line)) = lines.next_line().await {
+        debug!("line : {}", line);
     }
 }
 
@@ -41,7 +46,6 @@ async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: mpsc::Receiver<Requ
         let request = format!("{}\n", request);
         stdin.write_all(request.as_bytes()).await.unwrap();
         debug!("Wrote request {:?} to pop-launcher stdin", request);
-        stdin.flush().await.unwrap();
     }
 }
 

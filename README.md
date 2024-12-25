@@ -35,9 +35,9 @@
   <a href="https://docs.onagre.dev/get-started.html">Get Started</a>
 </p>
 
-<p align="center"> 
-A general purpose application launcher for X and wayland  inspired <br> 
-by rofi/wofi and alfred,<br>  
+<p align="center">
+A general purpose application launcher for X and wayland  inspired <br>
+by rofi/wofi and alfred,<br>
 build with <a href ="https://github.com/hecrj/iced/">iced</a>
 and <a href ="https://github.com/pop-os/launcher">pop-launcher</a>.
 </p>
@@ -50,7 +50,7 @@ https://user-images.githubusercontent.com/24563836/170211716-7822ec0b-94d1-414e-
 
 Onagre is build on top of [pop-launcher](https://github.com/pop-os/launcher) which makes it very versatile.
 The pop-launcher plugin system allow you to extend Onagre with plugins from the community or even write your own
-using any programming language. 
+using any programming language.
 
 ## Features
 
@@ -62,12 +62,14 @@ using any programming language.
 ## Install
 
 **Dependencies:**
-- [pop-launcher](https://github.com/pop-os/launcher) > 1.0.1 (for arch users there is and AUR package out there)
+- ⚠️ [pop-launcher](https://github.com/pop-os/launcher) > 1.2.4
+    **Rust 1.8 introduced a breaking change in the way sorting is handled, onagre will unexpectedly crash with older version of pop launcher.**
+    **Currently, for arch users, the only way to get the latest version of pop-launcher is to build it from source.**
 - [Qalculate](http://qalculate.github.io/) (optional)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/onagre.svg)](https://repology.org/project/onagre/versions)
 
-If there is no distro package available for Onagre in your preferred manager, 
+If there is no distro package available for Onagre in your preferred manager,
 you need Rust and [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to build it.
 
 **From source:**
@@ -97,12 +99,12 @@ cargo install --git https://github.com/onagre-launcher/onagre
 **1. Key bindings:**
 
 
-| Key             | Action                       | 
+| Key             | Action                       |
 |:----------------|:-----------------------------|
 | `Arrow up/down` | Change selection             |
-| `Tab`           | Autocomplete (in files mode) | 
-| `Esc`           | Quit without launching       | 
-| `Enter`         | Launch selection             | 
+| `Tab`           | Autocomplete (in files mode) |
+| `Esc`           | Quit without launching       |
+| `Enter`         | Launch selection             |
 
 **2. Plugins:**
 
@@ -120,7 +122,7 @@ Plugin with no prefix are enabled by default, there entry will be mixed in the s
 | PopLauncher | Search for desktop entries                                    |                  |                                                          |
 | Pulse       | Control PulseAudio devices and volume                         |                  |                                                          |
 | Script      | Shell scripts as launcher options                             |                  | `$HOME/.local/share/pop-launcher/scripts`                |
-| Terminal    | Terminal or background commands                               | 'run '           |                                                          | 
+| Terminal    | Terminal or background commands                               | 'run '           |                                                          |
 | Web         | Web search                                                    | 'ddg ', 'g', ... | `$HOME/.local/share/pop-launcher/plugins/web/config.ron` |
 | Files       | Find files using fd/find                                      | 'find '          |                                                          |
 | Recent      | Recently-opened document search                               | 'recent '        |                                                          |
@@ -130,7 +132,7 @@ Plugin with no prefix are enabled by default, there entry will be mixed in the s
 
 ## Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fallback to the default theme if none 
+Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fallback to the default theme if none
 is found or if your theme contains syntax errors. To ensure your theme is correctly formatted run `onagre` from the terminal.
 
 For a detailed guide refer to [wiki -> theming](https://github.com/oknozor/onagre/wiki/Theming)
@@ -190,13 +192,13 @@ This project is bound by a [code of conduct](CODE_OF_CONDUCT.md) based on the [c
 ## Contributing
 
 Having a question or suggestion for a new feature ? Feel free to open an issue or submit a PR.
-Currently, what we need the most is feedback from users using different window managers and hardware. 
+Currently, what we need the most is feedback from users using different window managers and hardware.
 If Onagre does not work out of the box for you *please let us know*, so we can fix it.
 
-## License 
+## License
 
 All the code in this repository is released under the MIT License, for more information take a look at the [LICENSE](LICENSE) file.
 
-## Thanks 
+## Thanks
 
 Credit to [@themou3ad](https://github.com/themou3ad) for the logo!
