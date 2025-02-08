@@ -15,6 +15,8 @@ and pop-launcher.
 """
 
 [profile.release]
+panic = "abort"
+opt-level = "s"
 codegen-units = 1
 lto = true
 
@@ -23,7 +25,13 @@ default = ["iced/wgpu", "iced/palette"]
 debug = ["iced/debug"]
 
 [dependencies]
-iced = { version = "0.12.1", features = ["wgpu", "palette", "svg", "image", "tokio"] }
+iced = { version = "0.12.1", features = [
+    "wgpu",
+    "palette",
+    "svg",
+    "image",
+    "tokio",
+] }
 iced_core = "0.12.3"
 iced_runtime = "0.12.1"
 iced_style = "0.12.1"
@@ -32,7 +40,7 @@ redb = "1.5.0"
 
 onagre-launcher-toolkit = "0.1.2"
 clap = { version = "^4", features = ["derive"] }
-freedesktop-icons = "0.2.6"
+freedesktop-icons = "0.3.1"
 
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
