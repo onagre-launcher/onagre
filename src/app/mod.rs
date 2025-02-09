@@ -93,190 +93,187 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
         .run()
 }
 
-fn view(state: &State) -> Element<Message> {
-    // Build rows from current mode search entries
-    let selected = state.selected();
-    let rows = match state.get_active_mode() {
-        ActiveMode::Plugin {
-            plugin_name,
-            history,
-            ..
-        } if *history => {
-            let icon = state.plugin_matchers.get_plugin_icon(plugin_name);
-            state
-                .cache
-                .plugin_history(plugin_name)
+impl State {
+    fn view(&self) -> Element<Message> {
+        // Build rows from current mode search entries
+        let selected = self.selected();
+        let rows = match self.get_active_mode() {
+            ActiveMode::Plugin {
+                plugin_name,
+                history,
+                ..
+            } if *history => {
+                let icon = self.plugin_matchers.get_plugin_icon(plugin_name);
+                self.cache
+                    .plugin_history(plugin_name)
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .collect::<Vec<Element<'_, Message>>>()
+            }
+            ActiveMode::Web { modifier, .. } => {
+                let icon = self.plugin_matchers.get_plugin_icon("web");
+                self.cache
+                    .web_history(modifier)
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .collect()
+            }
+            ActiveMode::History => {
+                let icon = self.plugin_matchers.get_plugin_icon("desktop_entries");
+                self.cache
+                    .de_history()
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .collect()
+            }
+            _ => self
+                .pop_search
                 .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
-                .collect::<Vec<Element<'_, Message>>>()
-        }
-        ActiveMode::Web { modifier, .. } => {
-            let icon = state.plugin_matchers.get_plugin_icon("web");
-            state
-                .cache
-                .web_history(modifier)
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
-                .collect()
-        }
-        ActiveMode::History => {
-            let icon = state.plugin_matchers.get_plugin_icon("desktop_entries");
-            state
-                .cache
-                .de_history()
-                .iter()
-                .enumerate()
-                .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
-                .collect()
-        }
-        _ => state
-            .pop_search
-            .iter()
-            .map(|entry| {
-                let icon = match &THEME.icon_theme {
-                    Some(theme) => entry
-                        .category_icon
-                        .as_ref()
-                        .and_then(|source| IconPath::from_source(source, theme)),
-                    _ => None,
-                };
+                .map(|entry| {
+                    let icon = match &THEME.icon_theme {
+                        Some(theme) => entry
+                            .category_icon
+                            .as_ref()
+                            .and_then(|source| IconPath::from_source(source, theme)),
+                        _ => None,
+                    };
 
-                PopSearchResult(entry)
-                    .to_row(selected, entry.id as usize, icon.as_ref())
-                    .into()
-            })
-            .collect(),
-    };
+                    PopSearchResult(entry)
+                        .to_row(selected, entry.id as usize, icon.as_ref())
+                        .into()
+                })
+                .collect(),
+        };
 
-    // Scrollable element containing the rows
-    let scrollable = scrollable(column(rows));
-    // .id(self.clone())
-    //  .style(&THEME.scrollable());
+        // Scrollable element containing the rows
+        let scrollable = scrollable(column(rows));
+        // .id(self.clone())
+        //  .style(&THEME.scrollable());
 
-    let scrollable = container(scrollable)
-        .style(row_container_style)
-        .padding(THEME.app_container.rows.padding.to_iced_padding())
-        .width(THEME.app_container.rows.width)
-        .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
+        let scrollable = container(scrollable)
+            .style(row_container_style)
+            .padding(THEME.app_container.rows.padding.to_iced_padding())
+            .width(THEME.app_container.rows.width)
+            .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
 
-    let text_input = text_input("Search", &state.input_value.input_display)
-        .on_input(Message::InputChanged)
-        .id(INPUT_ID.clone())
-        // .style(&THEME.search_input())
-        .padding(THEME.search_input().padding.to_iced_padding())
-        .width(THEME.search_input().text_width)
-        .size(THEME.search_input().font_size);
+        let text_input = text_input("Search", &self.input_value.input_display)
+            .on_input(Message::InputChanged)
+            .id(INPUT_ID.clone())
+            // .style(&THEME.search_input())
+            .padding(THEME.search_input().padding.to_iced_padding())
+            .width(THEME.search_input().text_width)
+            .size(THEME.search_input().font_size);
 
-    let search_input = container(text_input)
-        .width(THEME.search_input().width)
-        .height(THEME.search_input().height)
-        .align_x(THEME.search_input().align_x)
-        .align_y(THEME.search_input().align_y);
+        let search_input = container(text_input)
+            .width(THEME.search_input().width)
+            .height(THEME.search_input().height)
+            .align_x(THEME.search_input().align_x)
+            .align_y(THEME.search_input().align_y);
 
-    let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
-    // Either plugin_hint is enabled and we try to display it
-    // Or we display the normal search input
-    let search_bar = match THEME.plugin_hint() {
-        None => search_bar.push(search_input),
-        Some(plugin_hint_style) => if !state.input_value.modifier_display.is_empty() {
-            let plugin_hint = Container::new(
-                Text::new(&state.input_value.modifier_display)
-                    .align_y(Vertical::Center)
-                    .align_x(Horizontal::Center)
-                    .size(plugin_hint_style.font_size),
-            )
-            .style(|_| plugin_hint_style.into())
-            .width(plugin_hint_style.width)
-            .height(plugin_hint_style.height)
-            .align_y(plugin_hint_style.align_y)
-            .align_x(plugin_hint_style.align_x)
-            .padding(plugin_hint_style.padding.to_iced_padding());
+        let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
+        // Either plugin_hint is enabled and we try to display it
+        // Or we display the normal search input
+        let search_bar = match THEME.plugin_hint() {
+            None => search_bar.push(search_input),
+            Some(plugin_hint_style) => if !self.input_value.modifier_display.is_empty() {
+                let plugin_hint = Container::new(
+                    Text::new(&self.input_value.modifier_display)
+                        .align_y(Vertical::Center)
+                        .align_x(Horizontal::Center)
+                        .size(plugin_hint_style.font_size),
+                )
+                .style(|_| plugin_hint_style.into())
+                .width(plugin_hint_style.width)
+                .height(plugin_hint_style.height)
+                .align_y(plugin_hint_style.align_y)
+                .align_x(plugin_hint_style.align_x)
+                .padding(plugin_hint_style.padding.to_iced_padding());
 
-            search_bar.push(plugin_hint).push(search_input)
-        } else {
-            search_bar.push(search_input)
-        }
-        .spacing(THEME.search().spacing),
-    };
+                search_bar.push(plugin_hint).push(search_input)
+            } else {
+                search_bar.push(search_input)
+            }
+            .spacing(THEME.search().spacing),
+        };
 
-    let search_bar = Container::new(search_bar)
-        .style(|_| THEME.search().into())
-        .align_x(THEME.search().align_x)
-        .align_y(THEME.search().align_y)
-        .padding(THEME.search().padding.to_iced_padding())
-        .width(THEME.search().width)
-        .height(THEME.search().height);
+        let search_bar = Container::new(search_bar)
+            .style(|_| THEME.search().into())
+            .align_x(THEME.search().align_x)
+            .align_y(THEME.search().align_y)
+            .padding(THEME.search().padding.to_iced_padding())
+            .width(THEME.search().width)
+            .height(THEME.search().height);
 
-    let app_container = Container::new(
-        Column::new().push(search_bar).push(scrollable),
-        //           .align_items(iced_core::Alignment::Start),
-    )
-    .padding(THEME.app().padding.to_iced_padding())
-    //    .style(&THEME.app())
-    .center_y(Length::Fill)
-    .center_x(Length::Fill);
-
-    let app_wrapper = Container::new(app_container)
+        let app_container = Container::new(
+            Column::new().push(search_bar).push(scrollable),
+            //           .align_items(iced_core::Alignment::Start),
+        )
+        .padding(THEME.app().padding.to_iced_padding())
+        //    .style(&THEME.app())
         .center_y(Length::Fill)
-        .center_x(Length::Fill)
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .padding(THEME.padding.to_iced_padding());
-    // .style(|_| &*THEME);
+        .center_x(Length::Fill);
 
-    app_wrapper.into()
-}
+        let app_wrapper = Container::new(app_container)
+            .center_y(Length::Fill)
+            .center_x(Length::Fill)
+            .height(Length::Fill)
+            .width(Length::Fill)
+            .padding(THEME.padding.to_iced_padding());
+        // .style(|_| &*THEME);
 
-fn update<'a>(state: &'a mut State, event: Message) -> Task<Message> {
-    match event {
-        Message::Loading => text_input::focus(INPUT_ID.clone()),
-        Message::InputChanged(input) => state.on_input_changed(input),
-        Message::KeyboardEvent(event) => state.handle_input(event),
-        Message::PopLauncherReady(sender) => {
-            state.request_tx = Some(sender);
-            Task::none()
-        }
-        Message::PopMessage(response) => {
-            match response {
-                Response::Close => exit(0),
-                Response::Context { .. } => todo!("Discrete graphics is not implemented"),
-                Response::DesktopEntry { path, .. } => {
-                    debug!("Launch DesktopEntry {path:?} via run_command");
-                    let _ = state.run_command(path);
-                }
-                Response::Update(search_updates) => {
-                    if state.exec_on_next_search {
-                        debug!("Launch entry 0 via PopRequest::Activate");
-                        state
-                            .pop_request(Request::Activate(0))
-                            .expect("Unable to send Activate request to pop-launcher");
-                        return Task::none();
+        app_wrapper.into()
+    }
+
+    fn update(&mut self, event: Message) -> Task<Message> {
+        match event {
+            Message::Loading => text_input::focus(INPUT_ID.clone()),
+            Message::InputChanged(input) => self.on_input_changed(input),
+            Message::KeyboardEvent(event) => self.handle_input(event),
+            Message::PopLauncherReady(sender) => {
+                self.request_tx = Some(sender);
+                Task::none()
+            }
+            Message::PopMessage(response) => {
+                match response {
+                    Response::Close => exit(0),
+                    Response::Context { .. } => todo!("Discrete graphics is not implemented"),
+                    Response::DesktopEntry { path, .. } => {
+                        debug!("Launch DesktopEntry {path:?} via run_command");
+                        let _ = self.run_command(path);
                     }
-                    state.pop_search = search_updates;
+                    Response::Update(search_updates) => {
+                        if self.exec_on_next_search {
+                            debug!("Launch entry 0 via PopRequest::Activate");
+                            self.pop_request(Request::Activate(0))
+                                .expect("Unable to send Activate request to pop-launcher");
+                            return Task::none();
+                        }
+                        self.pop_search = search_updates;
+                    }
+                    Response::Fill(fill) => self.complete(fill),
+                };
+                Task::none()
+            }
+            Message::Unfocused => {
+                if THEME.exit_unfocused {
+                    exit(0);
                 }
-                Response::Fill(fill) => state.complete(fill),
-            };
-            Task::none()
-        }
-        Message::Unfocused => {
-            if THEME.exit_unfocused {
-                exit(0);
+                Task::none()
             }
-            Task::none()
-        }
-        Message::Click(row_idx) => {
-            match state.get_active_mode() {
-                ActiveMode::History => state.selected = Selection::History(row_idx),
-                _ => state.selected = Selection::PopLauncher(row_idx),
-            }
+            Message::Click(row_idx) => {
+                match self.get_active_mode() {
+                    ActiveMode::History => self.selected = Selection::History(row_idx),
+                    _ => self.selected = Selection::PopLauncher(row_idx),
+                }
 
-            state.on_execute()
+                self.on_execute()
+            }
         }
     }
 }
-
 /* fn new(flags: OnagreFlags) -> (Self, Command<Self::Message>) {
         let onagre;
         if let Some(pre_value) = flags.pre_value {
@@ -309,7 +306,7 @@ fn subscription(_: &State) -> Subscription<Message> {
     Subscription::batch(subs)
 }
 
-impl State<'_> {
+impl State {
     // Only call this if we are using entries from the database
     // in order to re-ask pop-launcher for the exact same entry
     fn current_entry(&self) -> Option<String> {

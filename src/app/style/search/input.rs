@@ -3,7 +3,7 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::border::Radius;
-use iced::widget::text_input::{self, Style};
+use iced::widget::text_input;
 use iced::Length;
 use iced::{Background, Border};
 

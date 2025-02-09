@@ -11,14 +11,14 @@ use std::sync::Mutex;
 type History<T> = Mutex<HashMap<String, Rc<Vec<T>>>>;
 
 #[derive(Debug)]
-pub struct Cache<'a> {
+pub struct Cache {
     pub db: Database,
-    de_history: OnceCell<Vec<DesktopEntryEntity<'a>>>,
-    web_history: History<WebEntity<'a>>,
-    plugin_history: History<PluginCommandEntity<'a>>,
+    de_history: OnceCell<Vec<DesktopEntryEntity<'static>>>,
+    web_history: History<WebEntity<'static>>,
+    plugin_history: History<PluginCommandEntity<'static>>,
 }
 
-impl Default for Cache<'_> {
+impl Default for Cache {
     fn default() -> Self {
         Self {
             db: Database::default(),
@@ -29,7 +29,7 @@ impl Default for Cache<'_> {
     }
 }
 
-impl Cache<'_> {
+impl Cache {
     pub fn de_history(&self) -> &Vec<DesktopEntryEntity> {
         self.de_history.get_or_init(|| {
             self.db

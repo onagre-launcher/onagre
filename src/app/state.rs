@@ -12,17 +12,17 @@ use std::collections::HashMap;
 use tracing::debug;
 
 #[derive(Debug)]
-pub struct State<'a> {
+pub struct State {
     pub input_value: SearchInput,
     pub selected: Selection,
-    pub cache: Cache<'a>,
+    pub cache: Cache,
     pub pop_search: Vec<SearchResult>,
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
     pub request_tx: Option<Sender<Request>>,
 }
 
-impl Default for State<'_> {
+impl Default for State {
     fn default() -> Self {
         Self {
             input_value: SearchInput::default(),
@@ -96,7 +96,7 @@ pub enum Selection {
     PopLauncher(usize),
 }
 
-impl State<'_> {
+impl State {
     pub fn get_active_mode(&self) -> &ActiveMode {
         &self.input_value.mode
     }
