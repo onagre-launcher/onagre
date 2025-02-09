@@ -2,10 +2,8 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
-use iced::Length;
-use iced_core::border::Radius;
-use iced_core::{Background, Border};
-use iced_style::container::{Appearance, StyleSheet};
+use iced::widget::container::Style;
+use iced::{Length, Vector};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct GenericContainerStyle {
@@ -54,19 +52,21 @@ impl Default for GenericContainerStyle {
     }
 }
 
-impl StyleSheet for &GenericContainerStyle {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
+impl Into<Style> for &GenericContainerStyle {
+    fn into(self) -> Style {
+        Style {
             text_color: Some(self.color.into()),
-            background: Some(Background::Color(self.background.into())),
-            border: Border {
+            background: Some(iced::Background::Color(self.background.into())),
+            border: iced::Border {
                 color: self.border_color.into(),
                 width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                radius: iced::border::Radius::from(self.border_radius),
             },
-            shadow: Default::default(),
+            shadow: iced::Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
         }
     }
 }

@@ -2,10 +2,10 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
+use iced::border::Radius;
+use iced::widget::text_input::{self, Style};
 use iced::Length;
-use iced_core::border::Radius;
-use iced_core::{Background, Border, Color};
-use iced_style::text_input::{Appearance, StyleSheet};
+use iced::{Background, Border};
 
 #[derive(Debug, PartialEq)]
 pub struct SearchInputStyles {
@@ -39,55 +39,35 @@ impl Scale for SearchInputStyles {
     }
 }
 
-impl Eq for SearchInputStyles {}
-
-impl StyleSheet for &SearchInputStyles {
-    type Style = iced::Theme;
-
-    fn active(&self, _: &Self::Style) -> Appearance {
-        Appearance {
+impl Into<text_input::Style> for SearchInputStyles {
+    fn into(self) -> text_input::Style {
+        text_input::Style {
             background: Background::Color(self.background.into()),
             border: Border {
                 color: self.border_color.into(),
                 width: self.border_width,
                 radius: Radius::from(self.border_radius),
             },
-            icon_color: Default::default(),
-        }
-    }
-
-    fn focused(&self, style: &Self::Style) -> Appearance {
-        self.active(style)
-    }
-
-    fn placeholder_color(&self, _: &Self::Style) -> Color {
-        self.placeholder_color.into()
-    }
-
-    fn value_color(&self, _: &Self::Style) -> Color {
-        self.value_color.into()
-    }
-
-    fn disabled_color(&self, _style: &Self::Style) -> Color {
-        Color::TRANSPARENT
-    }
-
-    fn selection_color(&self, _: &Self::Style) -> Color {
-        self.selection_color.into()
-    }
-
-    fn disabled(&self, _style: &Self::Style) -> Appearance {
-        Appearance {
-            background: Background::Color(self.background.into()),
-            border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
-            },
-            icon_color: Default::default(),
+            icon: Default::default(),
+            placeholder: self.placeholder_color.into(),
+            value: self.value_color.into(),
+            selection: self.selection_color.into(),
         }
     }
 }
+
+/*     fn disabled(&self, _style: &Self::Style) -> Appearance {
+        Appearance {
+            background: Background::Color(self.background.into()),
+            border: Border {
+                color: self.border_color.into(),
+                width: self.border_width,
+                radius: Radius::from(self.border_radius),
+            },
+            icon_color: Default::default(),
+        }
+    }
+*/
 
 impl Default for SearchInputStyles {
     fn default() -> Self {

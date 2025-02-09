@@ -7,10 +7,9 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::THEME_PATH;
 use crate::THEME_SCALE;
-use iced::widget::container::Appearance;
-use iced::Background;
-use iced_core::border::Radius;
-use iced_core::{Border, Length};
+use iced::widget::container::Style;
+use iced::Length;
+use iced::Vector;
 use tracing::{error, warn};
 
 pub mod app;
@@ -143,20 +142,21 @@ impl Default for Theme {
         }
     }
 }
-
-impl iced::widget::container::StyleSheet for &Theme {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
-            background: Some(Background::Color(self.background.into())),
-            border: Border {
+impl Into<Style> for &Theme {
+    fn into(self) -> Style {
+        Style {
+            text_color: Some(self.color.into()),
+            background: Some(iced::Background::Color(self.background.into())),
+            border: iced::Border {
                 color: self.border_color.into(),
                 width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                radius: iced::border::Radius::from(self.border_radius),
             },
-            text_color: Some(self.color.into()),
-            shadow: Default::default(),
+            shadow: iced::Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
         }
     }
 }

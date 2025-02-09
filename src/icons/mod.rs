@@ -4,8 +4,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use anyhow::anyhow;
+use iced::widget::svg::Handle;
 use iced::widget::Svg;
-use iced_core::svg::Handle;
 use onagre_launcher_toolkit::launcher::IconSource;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};

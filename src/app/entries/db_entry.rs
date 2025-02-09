@@ -40,7 +40,7 @@ impl<'a> AsEntry<'a> for PluginCommandEntity<'a> {
         style: &'static RowStyles,
     ) -> Row<'b, Message>
     where
-        'b: 'a,
+        'a: 'b,
     {
         let icon = Self::build_icon(&style.icon, category_icon);
         Row::new().push(icon)

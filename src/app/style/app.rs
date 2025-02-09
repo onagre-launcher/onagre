@@ -4,9 +4,9 @@ use crate::app::style::search::SearchContainerStyles;
 use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use iced_core::border::Radius;
-use iced_core::{Background, Border};
-use iced_style::container::{Appearance, StyleSheet};
+use iced::border::Radius;
+use iced::widget::container;
+use iced::{Background, Border};
 
 // The top level container wrapping the app
 // We don't want to edit this style, it's here only to provide rounded
@@ -43,11 +43,9 @@ impl Scale for AppContainerStyles {
     }
 }
 
-impl StyleSheet for &AppContainerStyles {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
+impl Into<container::Style> for &AppContainerStyles {
+    fn into(self) -> container::Style {
+        container::Style {
             text_color: Some(self.color.into()),
             background: Some(Background::Color(self.background.into())),
             border: Border {

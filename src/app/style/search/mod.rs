@@ -1,8 +1,8 @@
 use iced::alignment::{Horizontal, Vertical};
+use iced::border::Radius;
+use iced::widget::container;
 use iced::Length;
-use iced_core::border::Radius;
-use iced_core::{Background, Border};
-use iced_style::container::{Appearance, StyleSheet};
+use iced::{Background, Border};
 
 use input::SearchInputStyles;
 
@@ -50,11 +50,9 @@ impl Scale for SearchContainerStyles {
 
 impl Eq for SearchContainerStyles {}
 
-impl StyleSheet for &SearchContainerStyles {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
+impl Into<container::Style> for &SearchContainerStyles {
+    fn into(self) -> container::Style {
+        container::Style {
             text_color: Some(self.color.into()),
             background: Some(Background::Color(self.background.into())),
             border: Border {

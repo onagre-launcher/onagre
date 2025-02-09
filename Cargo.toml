@@ -21,20 +21,12 @@ codegen-units = 1
 lto = true
 
 [features]
-default = ["iced/wgpu", "iced/palette"]
+default = ["iced/wgpu"]
 debug = ["iced/debug"]
 
 [dependencies]
-iced = { version = "0.12.1", features = [
-    "wgpu",
-    "palette",
-    "svg",
-    "image",
-    "tokio",
-] }
-iced_core = "0.12.3"
-iced_runtime = "0.12.1"
-iced_style = "0.12.1"
+iced = { version = "0.13.1", features = ["wgpu", "svg", "image", "tokio"] }
+iced_runtime = "0.13.1"
 tokio = { version = "1.29.1", features = ["process", "macros", "io-util"] }
 redb = "1.5.0"
 

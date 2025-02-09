@@ -1,14 +1,15 @@
 use crate::app::cache::Cache;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::{match_web_plugins, Plugin};
-use onagre_launcher_toolkit::launcher::SearchResult;
-use tracing::debug;
-
 use crate::app::{Message, INPUT_ID};
 use crate::icons::IconPath;
 use crate::THEME;
-use iced::widget::{scrollable, text_input};
+use iced::futures::channel::mpsc::Sender;
+use iced::widget::text_input;
+use iced::Task;
+use onagre_launcher_toolkit::launcher::{Request, SearchResult};
 use std::collections::HashMap;
+use tracing::debug;
 
 #[derive(Debug)]
 pub struct State<'a> {
@@ -16,9 +17,23 @@ pub struct State<'a> {
     pub selected: Selection,
     pub cache: Cache<'a>,
     pub pop_search: Vec<SearchResult>,
-    pub scroll: scrollable::State,
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
+    pub request_tx: Option<Sender<Request>>,
+}
+
+impl Default for State<'_> {
+    fn default() -> Self {
+        Self {
+            input_value: SearchInput::default(),
+            selected: Selection::Reset,
+            cache: Cache::default(),
+            pop_search: Vec::new(),
+            exec_on_next_search: false,
+            plugin_matchers: PluginConfigCache::load(),
+            request_tx: None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -120,7 +135,6 @@ impl State<'_> {
             selected: Selection::History(0),
             cache: Default::default(),
             pop_search: Default::default(),
-            scroll: Default::default(),
             input_value: SearchInput {
                 mode,
                 modifier_display,                  // dgg
@@ -129,6 +143,7 @@ impl State<'_> {
             },
             exec_on_next_search: false,
             plugin_matchers,
+            request_tx: Default::default(),
         }
     }
 
@@ -199,7 +214,7 @@ impl State<'_> {
                 previous_modi
             };
             self.input_value.mode = ActiveMode::DesktopEntry;
-            let _: iced::Command<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
+            let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
         } else {
             self.input_value.input_display = input.to_string();
         }
@@ -212,18 +227,4 @@ pub struct SearchInput {
     pub modifier_display: String,
     pub input_display: String,
     pub pop_query: String,
-}
-
-impl Default for State<'_> {
-    fn default() -> Self {
-        State {
-            selected: Selection::History(0),
-            cache: Default::default(),
-            pop_search: Default::default(),
-            scroll: Default::default(),
-            input_value: SearchInput::default(),
-            exec_on_next_search: false,
-            plugin_matchers: PluginConfigCache::load(),
-        }
-    }
 }

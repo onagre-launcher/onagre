@@ -1,8 +1,11 @@
 use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use iced::alignment::{Horizontal, Vertical};
-use iced::Length;
+use iced::{
+    alignment::{Horizontal, Vertical},
+    widget::container::Style,
+    Length, Vector,
+};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct IconStyle {
@@ -57,6 +60,25 @@ impl Default for IconStyle {
             align_x: Horizontal::Center,
             align_y: Vertical::Center,
             icon_size: 22,
+        }
+    }
+}
+
+impl Into<Style> for &IconStyle {
+    fn into(self) -> Style {
+        Style {
+            text_color: Some(self.color.into()),
+            background: Some(iced::Background::Color(self.background.into())),
+            border: iced::Border {
+                color: self.border_color.into(),
+                width: self.border_width,
+                radius: iced::border::Radius::from(self.border_radius),
+            },
+            shadow: iced::Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
         }
     }
 }

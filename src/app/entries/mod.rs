@@ -1,4 +1,3 @@
-use crate::app::style::rows::button::ButtonStyle;
 use crate::app::style::rows::icon::IconStyle;
 use crate::app::style::rows::RowStyles;
 use crate::app::Message;
@@ -7,6 +6,8 @@ use crate::THEME;
 use iced::widget::{column, container, row, text, Button, Container, Image, Row};
 use iced::{Alignment, Length};
 use std::borrow::Cow;
+
+use super::style::rows::button::no_style;
 
 pub(crate) mod db_entry;
 pub(crate) mod pop_entry;
@@ -34,7 +35,7 @@ pub(crate) trait AsEntry<'a> {
             .width(Length::Fill)
             .spacing(theme.spacing)
             // See : https://github.com/iced-rs/iced/pull/1044
-            .align_items(Alignment::Start);
+            .align_y(Alignment::Start);
 
         self.as_row(row, theme, idx)
     }
@@ -52,7 +53,7 @@ pub(crate) trait AsEntry<'a> {
             container(iced::widget::row(vec![text(self.get_display_name())
                 .size(theme.title.font_size)
                 .into()]))
-            .style(iced::theme::Container::Custom(Box::new(&theme.title)))
+            .style(|_| theme.title.into())
             .padding(theme.title.padding.to_iced_padding())
             .width(theme.title.width)
             .height(theme.title.height)
@@ -64,7 +65,7 @@ pub(crate) trait AsEntry<'a> {
                 container(row!(
                     text(description.as_ref()).size(theme.description.font_size)
                 ))
-                .style(iced::theme::Container::Custom(Box::new(&theme.description)))
+                .style(theme.description.into())
                 .padding(theme.description.padding.to_iced_padding())
                 .width(theme.description.width)
                 .height(theme.description.height)
@@ -80,11 +81,11 @@ pub(crate) trait AsEntry<'a> {
         };
 
         let button = Button::new(row.push(column))
-            .style(iced::theme::Button::Custom(Box::new(&ButtonStyle)))
+            .style(|_, _| no_style())
             .on_press(Message::Click(idx));
 
         Container::new(button)
-            .style(iced::theme::Container::Custom(Box::new(theme)))
+            .style(|_| theme.into())
             .padding(theme.padding.to_iced_padding())
             .width(theme.width)
             .height(theme.height)
@@ -107,7 +108,7 @@ pub(crate) trait AsEntry<'a> {
         style: &'static RowStyles,
     ) -> Row<'b, Message>
     where
-        'b: 'a,
+        'a: 'b,
     {
         let icon = self.get_icon();
         let icon = Self::build_icon(&style.icon, icon);
@@ -121,7 +122,7 @@ pub(crate) trait AsEntry<'a> {
         row.push(icon)
     }
 
-    fn build_icon<'b, I: AsRef<IconPath>>(
+    fn build_icon<'b, I: AsRef<IconPath> + 'b>(
         theme: &'static IconStyle,
         icon: Option<I>,
     ) -> Container<'b, Message>
@@ -149,8 +150,7 @@ pub(crate) trait AsEntry<'a> {
             ),
         };
 
-        icon
-            //.style(theme)
+        icon.style(move |_| theme.into())
             .align_y(theme.align_y)
             .align_x(theme.align_x)
             .width(theme.width)
