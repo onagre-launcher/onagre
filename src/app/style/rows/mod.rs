@@ -3,15 +3,17 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use generic::GenericContainerStyle;
 use iced::alignment::{Horizontal, Vertical};
-use iced::Length;
-use iced_core::border::Radius;
-use iced_core::{Background, Border};
-use iced_style::container::{Appearance, StyleSheet};
+
+use iced::widget::container::Style;
+use iced::{Length, Vector};
 use icon::IconStyle;
 
-pub mod button;
 pub mod generic;
 pub mod icon;
+
+pub fn row_style(_: &iced::Theme) -> Style {
+    todo!()
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct RowStyles {
@@ -39,6 +41,25 @@ pub struct RowStyles {
     pub category_icon: IconStyle,
 }
 
+impl From<&RowStyles> for Style {
+    fn from(val: &RowStyles) -> Self {
+        Style {
+            text_color: Some(val.color.into()),
+            background: Some(iced::Background::Color(val.background.into())),
+            border: iced::Border {
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: iced::border::Radius::from(val.border_radius),
+            },
+            shadow: iced::Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
+        }
+    }
+}
+
 impl Scale for RowStyles {
     fn scale(mut self, scale: f32) -> Self {
         self.height = self.height.scale(scale);
@@ -50,22 +71,6 @@ impl Scale for RowStyles {
         self.icon = self.icon.scale(scale);
         self.category_icon = self.category_icon.scale(scale);
         self
-    }
-}
-impl StyleSheet for &RowStyles {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
-            text_color: Some(self.color.into()),
-            background: Some(Background::Color(self.background.into())),
-            border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
-            },
-            shadow: Default::default(),
-        }
     }
 }
 

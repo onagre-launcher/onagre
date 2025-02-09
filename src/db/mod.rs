@@ -1,3 +1,4 @@
+use onagre_launcher_toolkit::launcher::IconSource;
 use once_cell::sync::Lazy;
 use std::borrow::Cow;
 use std::cmp::Reverse;
@@ -5,13 +6,10 @@ use std::fmt::Debug;
 use std::sync::Arc;
 use tracing::{debug, trace};
 
+use crate::db::desktop_entry::DesktopEntryEntity;
 use redb::{ReadableTable, TableDefinition};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
 
 pub mod desktop_entry;
-pub mod plugin;
-pub mod web;
 
 pub static DB: Lazy<Database> = Lazy::new(Database::default);
 
@@ -41,26 +39,20 @@ impl Default for Database {
 }
 
 impl Database {
-    pub fn insert<'a, T>(&self, collection: &str, entity: &T) -> Result<(), redb::Error>
-    where
-        T: Sized + Entity<'a> + Serialize,
-    {
+    pub fn insert(&self, collection: &str, entity: &DesktopEntryEntity) -> Result<(), redb::Error> {
         let json = serde_json::to_string(entity).expect("Serialization error");
         let db = self.inner.clone();
         let write_tnx = db.begin_write()?;
         {
             let definition = TableDefinition::<&str, &str>::new(collection);
             let mut table = write_tnx.open_table(definition)?;
-            table.insert(entity.get_key().as_ref(), json.as_str())?;
+            table.insert(entity.name.as_ref(), json.as_str())?;
         }
         write_tnx.commit()?;
         Ok(())
     }
 
-    pub fn get_by_key<'a, T>(&self, collection: &str, key: &str) -> Option<T>
-    where
-        T: Entity<'a> + DeserializeOwned,
-    {
+    pub fn get_by_key<'a>(&self, collection: &str, key: &str) -> Option<DesktopEntryEntity<'a>> {
         let definition = TableDefinition::<&str, &str>::new(collection);
         let db = self.inner.clone();
         let Ok(read_txn) = db.begin_write() else {
@@ -78,17 +70,14 @@ impl Database {
             .and_then(Result::ok)
     }
 
-    pub fn get_all<'a, T>(&self, collection: &str) -> Vec<T>
-    where
-        T: Entity<'a> + DeserializeOwned + Debug,
-    {
+    pub fn get_all<'a>(&self, collection: &str) -> Vec<DesktopEntryEntity<'a>> {
         let definition = TableDefinition::<&str, &str>::new(collection);
         let db = self.inner.clone();
         let Ok(read_txn) = db.begin_write() else {
             return vec![];
         };
         let table = read_txn.open_table(definition).unwrap();
-        let mut results: Vec<T> = table
+        let mut results: Vec<DesktopEntryEntity<'a>> = table
             .iter()
             .unwrap()
             .filter_map(Result::ok)
@@ -96,7 +85,7 @@ impl Database {
             .flat_map(Result::ok)
             .collect();
 
-        results.sort_by_key(|b| Reverse(b.get_weight()));
+        results.sort_by_key(|b| Reverse(b.weight));
         debug!(
             "Got {} database entries from for '{collection}'",
             results.len()
@@ -106,7 +95,8 @@ impl Database {
     }
 }
 
-pub trait Entity<'a> {
-    fn get_key(&self) -> Cow<'a, str>;
-    fn get_weight(&self) -> u8;
+fn icon_to_str(i: Option<&IconSource>) -> Option<Cow<str>> {
+    i.map(|i| match i {
+        IconSource::Name(name) | IconSource::Mime(name) => name.clone(),
+    })
 }
