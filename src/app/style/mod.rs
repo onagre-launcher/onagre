@@ -7,7 +7,9 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::THEME_PATH;
 use crate::THEME_SCALE;
+use iced::widget::container;
 use iced::widget::container::Style;
+use iced::widget::text;
 use iced::Length;
 use iced::Vector;
 use tracing::{error, warn};
@@ -142,8 +144,9 @@ impl Default for Theme {
         }
     }
 }
-impl Into<Style> for &Theme {
-    fn into(self) -> Style {
+
+impl Into<container::Style> for &Theme {
+    fn into(self) -> container::Style {
         Style {
             text_color: Some(self.color.into()),
             background: Some(iced::Background::Color(self.background.into())),
@@ -157,6 +160,14 @@ impl Into<Style> for &Theme {
                 offset: Vector::ZERO,
                 blur_radius: 0.,
             },
+        }
+    }
+}
+
+impl Into<text::Style> for &Theme {
+    fn into(self) -> text::Style {
+        text::Style {
+            color: Some(self.color.into()),
         }
     }
 }

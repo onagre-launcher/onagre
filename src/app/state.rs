@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use tracing::debug;
 
 #[derive(Debug)]
-pub struct State {
+pub struct Onagre {
     pub input_value: SearchInput,
     pub selected: Selection,
     pub cache: Cache,
@@ -22,7 +22,7 @@ pub struct State {
     pub request_tx: Option<Sender<Request>>,
 }
 
-impl Default for State {
+impl Default for Onagre {
     fn default() -> Self {
         Self {
             input_value: SearchInput::default(),
@@ -96,7 +96,7 @@ pub enum Selection {
     PopLauncher(usize),
 }
 
-impl State {
+impl Onagre {
     pub fn get_active_mode(&self) -> &ActiveMode {
         &self.input_value.mode
     }
@@ -131,7 +131,7 @@ impl State {
             .map(|query_data| query_data.query)
             .unwrap_or_default();
 
-        State {
+        Onagre {
             selected: Selection::History(0),
             cache: Default::default(),
             pop_search: Default::default(),

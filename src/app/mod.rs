@@ -17,11 +17,11 @@ use once_cell::sync::Lazy;
 use style::scrollable::row_container_style;
 use subscriptions::pop_launcher::pop_launcher;
 use tracing::{debug, trace};
+use widgets::row::LauncherEntry;
 
 use crate::app::entries::pop_entry::PopSearchResult;
-use crate::app::entries::AsEntry;
 use crate::app::mode::ActiveMode;
-use crate::app::state::{Selection, State};
+use crate::app::state::{Onagre, Selection};
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
@@ -36,6 +36,7 @@ pub mod plugin_matchers;
 pub mod state;
 pub mod style;
 pub mod subscriptions;
+pub mod widgets;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -60,7 +61,7 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
         .map(|font| Font::with_name(font))
         .unwrap_or_default();
 
-    iced::application("Onagre", update, view)
+    iced::application("Onagre", Onagre::update, Onagre::view)
         .decorations(false)
         .settings(Settings {
             id: Some("onagre".to_string()),
@@ -90,10 +91,17 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
             exit_on_close_request: true,
         })
         .subscription(subscription)
-        .run()
+        .run_with(|| {
+            let onagre = if let Some(pre) = pre_value {
+                Onagre::with_mode(&pre)
+            } else {
+                Onagre::default()
+            };
+            (onagre, Task::perform(async {}, |_| Message::Loading))
+        })
 }
 
-impl State {
+impl Onagre {
     fn view(&self) -> Element<Message> {
         // Build rows from current mode search entries
         let selected = self.selected();
@@ -108,8 +116,8 @@ impl State {
                     .plugin_history(plugin_name)
                     .iter()
                     .enumerate()
-                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
-                    .collect::<Vec<Element<'_, Message>>>()
+                    .map(|(idx, entry)| LauncherEntry::new(Box::new(entry), idx, selected))
+                    .collect::<Vec<LauncherEntry>>()
             }
             ActiveMode::Web { modifier, .. } => {
                 let icon = self.plugin_matchers.get_plugin_icon("web");
@@ -117,7 +125,7 @@ impl State {
                     .web_history(modifier)
                     .iter()
                     .enumerate()
-                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .map(|(idx, entry)| LauncherEntry::new(entry, idx, selected))
                     .collect()
             }
             ActiveMode::History => {
@@ -126,7 +134,7 @@ impl State {
                     .de_history()
                     .iter()
                     .enumerate()
-                    .map(|(idx, entry)| entry.to_row(selected, idx, icon.as_ref()).into())
+                    .map(|(idx, entry)| LauncherEntry::new(entry, idx, selected))
                     .collect()
             }
             _ => self
@@ -299,14 +307,14 @@ impl State {
     }
 } */
 
-fn subscription(_: &State) -> Subscription<Message> {
+fn subscription(_: &Onagre) -> Subscription<Message> {
     let keyboard_event = keyboard_event();
     let pop_launcher = Subscription::run(pop_launcher);
     let subs = vec![keyboard_event, pop_launcher];
     Subscription::batch(subs)
 }
 
-impl State {
+impl Onagre {
     // Only call this if we are using entries from the database
     // in order to re-ask pop-launcher for the exact same entry
     fn current_entry(&self) -> Option<String> {

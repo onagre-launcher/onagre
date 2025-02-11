@@ -1126,6 +1126,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "derive_setters"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e8ef033054e131169b8f0f9a7af8f5533a9436fadf3c500ed547f730f07090d"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
+]
+
+[[package]]
 name = "detect-desktop-environment"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3379,6 +3391,7 @@ version = "1.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "derive_setters",
  "dirs 5.0.1",
  "freedesktop-icons",
  "iced",
