@@ -1,12 +1,13 @@
 use std::path::Path;
 use std::process::exit;
 
+use entries::entry2::Entry2;
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::key::Named;
 use iced::keyboard::Key;
 use iced::widget::scrollable::RelativeOffset;
-use iced::widget::{column, container, scrollable, text_input, Column, Container, Row, Text};
+use iced::widget::{container, scrollable, text_input, Column, Container, Row, Text};
 use iced::window::settings::PlatformSpecific;
 use iced::{
     event, keyboard, window, Element, Event, Font, Length, Pixels, Settings, Size, Subscription,
@@ -14,10 +15,10 @@ use iced::{
 };
 use onagre_launcher_toolkit::launcher::{Request, Response};
 use once_cell::sync::Lazy;
-use style::scrollable::row_container_style;
 use subscriptions::pop_launcher::pop_launcher;
 use tracing::{debug, trace};
-use widgets::row::LauncherEntry;
+use widgets::row::theme::Class;
+use widgets::row::to_scrollable;
 
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::mode::ActiveMode;
@@ -102,67 +103,16 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
 }
 
 impl Onagre {
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<Message, crate::Theme> {
         // Build rows from current mode search entries
-        let selected = self.selected();
-        let rows = match self.get_active_mode() {
-            ActiveMode::Plugin {
-                plugin_name,
-                history,
-                ..
-            } if *history => {
-                let icon = self.plugin_matchers.get_plugin_icon(plugin_name);
-                self.cache
-                    .plugin_history(plugin_name)
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, entry)| LauncherEntry::new(Box::new(entry), idx, selected))
-                    .collect::<Vec<LauncherEntry>>()
-            }
-            ActiveMode::Web { modifier, .. } => {
-                let icon = self.plugin_matchers.get_plugin_icon("web");
-                self.cache
-                    .web_history(modifier)
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, entry)| LauncherEntry::new(entry, idx, selected))
-                    .collect()
-            }
-            ActiveMode::History => {
-                let icon = self.plugin_matchers.get_plugin_icon("desktop_entries");
-                self.cache
-                    .de_history()
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, entry)| LauncherEntry::new(entry, idx, selected))
-                    .collect()
-            }
-            _ => self
-                .pop_search
-                .iter()
-                .map(|entry| {
-                    let icon = match &THEME.icon_theme {
-                        Some(theme) => entry
-                            .category_icon
-                            .as_ref()
-                            .and_then(|source| IconPath::from_source(source, theme)),
-                        _ => None,
-                    };
+        let scroll = to_scrollable(
+            None,
+            &THEME.app().rows.row,
+            self.entries.as_slice(),
+            self.selected().unwrap_or(0),
+        );
 
-                    PopSearchResult(entry)
-                        .to_row(selected, entry.id as usize, icon.as_ref())
-                        .into()
-                })
-                .collect(),
-        };
-
-        // Scrollable element containing the rows
-        let scrollable = scrollable(column(rows));
-        // .id(self.clone())
-        //  .style(&THEME.scrollable());
-
-        let scrollable = container(scrollable)
-            .style(row_container_style)
+        let scrollable = container(scroll)
             .padding(THEME.app_container.rows.padding.to_iced_padding())
             .width(THEME.app_container.rows.width)
             .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
@@ -193,7 +143,7 @@ impl Onagre {
                         .align_x(Horizontal::Center)
                         .size(plugin_hint_style.font_size),
                 )
-                .style(|_| plugin_hint_style.into())
+                .class(Class::PluginHint)
                 .width(plugin_hint_style.width)
                 .height(plugin_hint_style.height)
                 .align_y(plugin_hint_style.align_y)
@@ -208,7 +158,6 @@ impl Onagre {
         };
 
         let search_bar = Container::new(search_bar)
-            .style(|_| THEME.search().into())
             .align_x(THEME.search().align_x)
             .align_y(THEME.search().align_y)
             .padding(THEME.search().padding.to_iced_padding())
@@ -236,7 +185,7 @@ impl Onagre {
     }
 
     fn update(&mut self, event: Message) -> Task<Message> {
-        match event {
+        let message = match event {
             Message::Loading => text_input::focus(INPUT_ID.clone()),
             Message::InputChanged(input) => self.on_input_changed(input),
             Message::KeyboardEvent(event) => self.handle_input(event),
@@ -279,33 +228,63 @@ impl Onagre {
 
                 self.on_execute()
             }
-        }
+        };
+        self.entries = match self.get_active_mode() {
+            ActiveMode::Plugin {
+                plugin_name,
+                history,
+                ..
+            } if *history => {
+                let icon = self.plugin_matchers.get_plugin_icon(plugin_name);
+                self.cache
+                    .plugin_history(plugin_name)
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| Box::new(entry.clone()) as Box<dyn Entry2>)
+                    .collect::<Vec<Box<dyn Entry2>>>()
+            }
+            ActiveMode::Web { modifier, .. } => {
+                let icon = self.plugin_matchers.get_plugin_icon("web");
+                self.cache
+                    .web_history(modifier)
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| Box::new(entry.clone()) as Box<dyn Entry2>)
+                    .collect()
+            }
+            ActiveMode::History => {
+                let icon = self.plugin_matchers.get_plugin_icon("desktop_entries");
+                self.cache
+                    .de_history()
+                    .iter()
+                    .cloned()
+                    .enumerate()
+                    .map(|(idx, entry)| Box::new(entry.clone()) as Box<dyn Entry2>)
+                    .collect()
+            }
+            _ => self
+                .pop_search
+                .iter()
+                .cloned()
+                .map(|entry| {
+                    let icon = match &THEME.icon_theme {
+                        Some(theme) => entry
+                            .category_icon
+                            .as_ref()
+                            .and_then(|source| IconPath::from_source(source, theme)),
+                        _ => None,
+                    };
+
+                    let idx = entry.id as usize;
+                    let entry = Box::new(PopSearchResult(entry)) as Box<dyn Entry2>;
+                    entry
+                })
+                .collect(),
+        };
+
+        message
     }
 }
-/* fn new(flags: OnagreFlags) -> (Self, Command<Self::Message>) {
-        let onagre;
-        if let Some(pre_value) = flags.pre_value {
-            onagre = Onagre {
-                state: State::with_mode(&pre_value),
-                request_tx: Default::default(),
-            };
-        } else {
-            onagre = Onagre {
-                state: Default::default(),
-                request_tx: Default::default(),
-            };
-        }
-
-        (
-            onagre,
-            Command::perform(async {}, move |()| Message::Loading),
-        )
-    }
-
-    fn title(&self) -> String {
-        "Onagre".to_string()
-    }
-} */
 
 fn subscription(_: &Onagre) -> Subscription<Message> {
     let keyboard_event = keyboard_event();
@@ -460,7 +439,11 @@ impl Onagre {
                 history,
                 ..
             } if *history => {
-                PluginCommandEntity::persist(plugin_name, &self.get_input(), &self.cache.db);
+                PluginCommandEntity::persist(
+                    plugin_name.as_str(),
+                    &self.get_input(),
+                    &self.cache.db,
+                );
 
                 // Running the user input query at index zero
                 if self.selected().is_none() {
@@ -478,7 +461,7 @@ impl Onagre {
             ActiveMode::Web { modifier, .. } => {
                 let query = self.get_input();
                 let query = query.strip_prefix(modifier).unwrap();
-                WebEntity::persist(query, modifier, &self.cache.db);
+                WebEntity::persist(query, modifier.as_str(), &self.cache.db);
                 // Running the user input query at index zero
                 if self.selected().is_none() {
                     self.pop_request(Request::Activate(0))
@@ -521,14 +504,14 @@ impl Onagre {
                 ..
             } => {
                 if *history {
-                    self.cache.plugin_history_len(plugin_name)
+                    self.cache.history_len(plugin_name)
                 } else {
                     self.pop_search.len()
                 }
             }
             ActiveMode::History => self.cache.de_len(),
             ActiveMode::DesktopEntry => self.pop_search.len(),
-            ActiveMode::Web { modifier, .. } => self.cache.web_history_len(modifier),
+            ActiveMode::Web { modifier, .. } => self.cache.history_len(modifier),
         }
     }
 

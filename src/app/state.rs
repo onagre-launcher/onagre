@@ -11,6 +11,8 @@ use onagre_launcher_toolkit::launcher::{Request, SearchResult};
 use std::collections::HashMap;
 use tracing::debug;
 
+use super::entries::entry2::Entry2;
+
 #[derive(Debug)]
 pub struct Onagre {
     pub input_value: SearchInput,
@@ -20,6 +22,7 @@ pub struct Onagre {
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
     pub request_tx: Option<Sender<Request>>,
+    pub entries: Vec<Box<dyn Entry2>>,
 }
 
 impl Default for Onagre {
@@ -32,6 +35,7 @@ impl Default for Onagre {
             exec_on_next_search: false,
             plugin_matchers: PluginConfigCache::load(),
             request_tx: None,
+            entries: vec![],
         }
     }
 }
@@ -144,6 +148,7 @@ impl Onagre {
             exec_on_next_search: false,
             plugin_matchers,
             request_tx: Default::default(),
+            entries: vec![],
         }
     }
 

@@ -7,6 +7,7 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use crate::THEME_PATH;
 use crate::THEME_SCALE;
+use iced::daemon::DefaultStyle;
 use iced::widget::container;
 use iced::widget::container::Style;
 use iced::widget::text;
@@ -67,6 +68,15 @@ pub struct Theme {
 
     // Children
     pub app_container: AppContainerStyles,
+}
+
+impl DefaultStyle for Theme {
+    fn default_style(&self) -> iced::daemon::Appearance {
+        iced::daemon::Appearance {
+            background_color: self.background.into(),
+            text_color: self.color.into(),
+        }
+    }
 }
 
 impl Scale for Theme {

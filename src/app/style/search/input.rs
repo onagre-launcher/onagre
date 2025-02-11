@@ -39,7 +39,7 @@ impl Scale for SearchInputStyles {
     }
 }
 
-impl Into<text_input::Style> for SearchInputStyles {
+impl Into<text_input::Style> for &SearchInputStyles {
     fn into(self) -> text_input::Style {
         text_input::Style {
             background: Background::Color(self.background.into()),

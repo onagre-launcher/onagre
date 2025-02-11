@@ -9,6 +9,5 @@ use std::borrow::Cow;
 
 use super::style::rows::button::no_style;
 
-pub(crate) mod db_entry;
 pub mod entry2;
 pub(crate) mod pop_entry;

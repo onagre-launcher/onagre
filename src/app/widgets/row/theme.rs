@@ -1,6 +1,8 @@
 use iced::widget::button;
 use iced::widget::container;
+use iced::widget::scrollable;
 use iced::widget::text;
+use iced::widget::text_input;
 use iced::Border;
 use iced::Color;
 
@@ -12,6 +14,7 @@ pub enum Class {
     Title { selected: bool },
     RowClickable,
     Row,
+    PluginHint,
 }
 
 impl container::Catalog for style::Theme {
@@ -31,6 +34,10 @@ impl container::Catalog for style::Theme {
             Class::Description { .. } => (&self.app().rows.row.description).into(),
             Class::Title { .. } => (&self.app().rows.row.title).into(),
             Class::Row { .. } => (&self.app().rows.row).into(),
+            Class::PluginHint { .. } => match self.app().search.plugin_hint.as_ref() {
+                Some(style) => style.into(),
+                None => (&self.app().search).into(),
+            },
             _ => unreachable!(),
         }
     }
@@ -55,6 +62,31 @@ impl button::Catalog for style::Theme {
         }
     }
 }
+
+impl scrollable::Catalog for style::Theme {
+    type Class<'a> = Class;
+
+    fn default<'a>() -> Self::Class<'a> {
+        Class::RowClickable
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: scrollable::Status) -> scrollable::Style {
+        (&self.app().scrollable).into()
+    }
+}
+
+impl text_input::Catalog for style::Theme {
+    type Class<'a> = Class;
+
+    fn default<'a>() -> Self::Class<'a> {
+        Class::RowClickable
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: text_input::Status) -> text_input::Style {
+        (&self.app().search.input).into()
+    }
+}
+
 impl text::Catalog for style::Theme {
     type Class<'a> = text::StyleFn<'a, Self>;
 
