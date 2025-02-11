@@ -276,8 +276,8 @@ impl Onagre {
                     };
 
                     let idx = entry.id as usize;
-                    let entry = Box::new(PopSearchResult(entry)) as Box<dyn Entry2>;
-                    entry
+                    
+                    Box::new(PopSearchResult(entry)) as Box<dyn Entry2>
                 })
                 .collect(),
         };

@@ -5,7 +5,6 @@ use crate::db::web::WebEntity;
 use crate::db::Database;
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 use std::sync::Mutex;
 
 type History<T> = Mutex<HashMap<String, Vec<T>>>;

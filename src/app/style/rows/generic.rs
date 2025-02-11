@@ -52,15 +52,15 @@ impl Default for GenericContainerStyle {
     }
 }
 
-impl Into<Style> for &GenericContainerStyle {
-    fn into(self) -> Style {
+impl From<&GenericContainerStyle> for Style {
+    fn from(val: &GenericContainerStyle) -> Self {
         Style {
-            text_color: Some(self.color.into()),
-            background: Some(iced::Background::Color(self.background.into())),
+            text_color: Some(val.color.into()),
+            background: Some(iced::Background::Color(val.background.into())),
             border: iced::Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: iced::border::Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: iced::border::Radius::from(val.border_radius),
             },
             shadow: iced::Shadow {
                 color: iced::Color::TRANSPARENT,

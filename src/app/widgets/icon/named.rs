@@ -78,7 +78,7 @@ impl Named {
 
         let theme = &THEME.icon_theme.clone().unwrap_or("Adwaita".to_string());
 
-        let mut result = locate(&theme, name);
+        let mut result = locate(theme, name);
 
         // On failure, attempt to locate fallback icon.
         if result.is_none() {
@@ -135,7 +135,7 @@ impl From<Named> for Icon {
     }
 }
 
-impl<'a, Message: 'static> From<Named> for iced::Element<'a, Message, crate::Theme> {
+impl<Message: 'static> From<Named> for iced::Element<'_, Message, crate::Theme> {
     fn from(builder: Named) -> Self {
         builder.icon().into()
     }

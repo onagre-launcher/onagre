@@ -1,20 +1,12 @@
-use std::rc::Rc;
 
-use iced::{
-    futures::future::lazy,
-    widget::{column, container, row, scrollable, text, Button, Container, Scrollable},
-};
+use iced::widget::{column, container, row, scrollable, text, Button, Container, Scrollable};
 use theme::{text_default, Class};
 
-use crate::{
-    app::{
+use crate::app::{
         entries::entry2::Entry2,
         style::{self, rows::RowStyles},
         Message,
-    },
-    icons::IconPath,
-    THEME,
-};
+    };
 
 use super::icon::Named;
 
@@ -58,13 +50,13 @@ fn description<'a>(
     selected: bool,
     entry: &'a Box<dyn Entry2>,
 ) -> Option<Container<'a, Message, crate::Theme>> {
-    let class = Class::Description { selected: selected };
+    let class = Class::Description { selected };
 
     entry.get_description().map(|description| {
         container(row!(text(description).style(text_default)))
             .class(class)
             .padding(layout.description.padding.to_iced_padding())
-            .width(layout.description.width.clone())
+            .width(layout.description.width)
             .height(layout.description.height)
             .align_x(layout.description.align_x)
             .align_y(layout.description.align_y)
@@ -78,7 +70,7 @@ pub fn to_container<'a>(
     entry: &'a Box<dyn Entry2>,
     category_icon: Option<&'a str>,
 ) -> Container<'a, Message, style::Theme> {
-    let column = iced::widget::column(vec![title(layout, &entry).into()]);
+    let column = iced::widget::column(vec![title(layout, entry).into()]);
     let column = match description(layout, selected, entry) {
         Some(description) if !layout.hide_description => column.push(description),
         _ => column,

@@ -39,19 +39,19 @@ impl Scale for SearchInputStyles {
     }
 }
 
-impl Into<text_input::Style> for &SearchInputStyles {
-    fn into(self) -> text_input::Style {
+impl From<&SearchInputStyles> for text_input::Style {
+    fn from(val: &SearchInputStyles) -> Self {
         text_input::Style {
-            background: Background::Color(self.background.into()),
+            background: Background::Color(val.background.into()),
             border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: Radius::from(val.border_radius),
             },
             icon: Default::default(),
-            placeholder: self.placeholder_color.into(),
-            value: self.value_color.into(),
-            selection: self.selection_color.into(),
+            placeholder: val.placeholder_color.into(),
+            value: val.value_color.into(),
+            selection: val.selection_color.into(),
         }
     }
 }

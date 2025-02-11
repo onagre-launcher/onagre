@@ -52,40 +52,40 @@ impl Default for ScrollerStyles {
     }
 }
 
-impl Into<scrollable::Style> for &ScrollerStyles {
-    fn into(self) -> scrollable::Style {
+impl From<&ScrollerStyles> for scrollable::Style {
+    fn from(val: &ScrollerStyles) -> Self {
         scrollable::Style {
             container: Default::default(),
             gap: None,
             vertical_rail: Rail {
-                background: Some(Background::Color(self.background.into())),
+                background: Some(Background::Color(val.background.into())),
                 border: Border {
-                    color: self.border_color.into(),
-                    width: self.border_width,
-                    radius: Radius::from(self.border_radius),
+                    color: val.border_color.into(),
+                    width: val.border_width,
+                    radius: Radius::from(val.border_radius),
                 },
                 scroller: scrollable::Scroller {
-                    color: self.scroller_color.into(),
+                    color: val.scroller_color.into(),
                     border: Border {
-                        color: self.scroller_border_color.into(),
-                        width: self.scroller_border_width,
-                        radius: Radius::from(self.scroller_border_radius),
+                        color: val.scroller_border_color.into(),
+                        width: val.scroller_border_width,
+                        radius: Radius::from(val.scroller_border_radius),
                     },
                 },
             },
             horizontal_rail: Rail {
-                background: Some(Background::Color(self.background.into())),
+                background: Some(Background::Color(val.background.into())),
                 border: Border {
-                    color: self.border_color.into(),
-                    width: self.border_width,
-                    radius: Radius::from(self.border_radius),
+                    color: val.border_color.into(),
+                    width: val.border_width,
+                    radius: Radius::from(val.border_radius),
                 },
                 scroller: scrollable::Scroller {
-                    color: self.scroller_color.into(),
+                    color: val.scroller_color.into(),
                     border: Border {
-                        color: self.scroller_border_color.into(),
-                        width: self.scroller_border_width,
-                        radius: Radius::from(self.scroller_border_radius),
+                        color: val.scroller_border_color.into(),
+                        width: val.scroller_border_width,
+                        radius: Radius::from(val.scroller_border_radius),
                     },
                 },
             },

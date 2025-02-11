@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt::Debug};
+use std::fmt::Debug;
 
 use onagre_launcher_toolkit::launcher::IconSource;
 

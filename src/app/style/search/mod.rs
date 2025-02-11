@@ -50,15 +50,15 @@ impl Scale for SearchContainerStyles {
 
 impl Eq for SearchContainerStyles {}
 
-impl Into<container::Style> for &SearchContainerStyles {
-    fn into(self) -> container::Style {
+impl From<&SearchContainerStyles> for container::Style {
+    fn from(val: &SearchContainerStyles) -> Self {
         container::Style {
-            text_color: Some(self.color.into()),
-            background: Some(Background::Color(self.background.into())),
+            text_color: Some(val.color.into()),
+            background: Some(Background::Color(val.background.into())),
             border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: Radius::from(val.border_radius),
             },
             shadow: Default::default(),
         }

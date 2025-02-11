@@ -81,7 +81,7 @@ impl Icon {
                     self.height
                         .unwrap_or_else(|| Length::Fixed(f32::from(self.size))),
                 )
-                .rotation(self.rotation.unwrap_or_else(Rotation::default))
+                .rotation(self.rotation.unwrap_or_default())
                 .content_fit(self.content_fit)
                 .into()
         };
@@ -96,7 +96,7 @@ impl Icon {
                     self.height
                         .unwrap_or_else(|| Length::Fixed(f32::from(self.size))),
                 )
-                .rotation(self.rotation.unwrap_or_else(Rotation::default))
+                .rotation(self.rotation.unwrap_or_default())
                 .content_fit(self.content_fit)
                 .into()
         };
@@ -115,8 +115,8 @@ impl Icon {
                 }
             }
 
-            Data::Image(handle) => from_image(&handle),
-            Data::Svg(handle) => from_svg(&handle),
+            Data::Image(handle) => from_image(handle),
+            Data::Svg(handle) => from_svg(handle),
         }
     }
 }

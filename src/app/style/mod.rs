@@ -155,15 +155,15 @@ impl Default for Theme {
     }
 }
 
-impl Into<container::Style> for &Theme {
-    fn into(self) -> container::Style {
+impl From<&Theme> for container::Style {
+    fn from(val: &Theme) -> Self {
         Style {
-            text_color: Some(self.color.into()),
-            background: Some(iced::Background::Color(self.background.into())),
+            text_color: Some(val.color.into()),
+            background: Some(iced::Background::Color(val.background.into())),
             border: iced::Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: iced::border::Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: iced::border::Radius::from(val.border_radius),
             },
             shadow: iced::Shadow {
                 color: iced::Color::TRANSPARENT,
@@ -174,10 +174,10 @@ impl Into<container::Style> for &Theme {
     }
 }
 
-impl Into<text::Style> for &Theme {
-    fn into(self) -> text::Style {
+impl From<&Theme> for text::Style {
+    fn from(val: &Theme) -> Self {
         text::Style {
-            color: Some(self.color.into()),
+            color: Some(val.color.into()),
         }
     }
 }
