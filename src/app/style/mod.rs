@@ -13,6 +13,7 @@ use iced::widget::container::Style;
 use iced::widget::text;
 use iced::Length;
 use iced::Vector;
+use rows::icon::IconStyle;
 use rows::RowStyles;
 use scrollable::RowContainerStyle;
 use tracing::{error, warn};
@@ -157,6 +158,14 @@ impl Theme {
     pub fn description(&self, selected: bool) -> &GenericContainerStyle {
         &self.row(selected).description
     }
+
+    pub fn icon(&self, selected: bool) -> &IconStyle {
+        &self.row(selected).icon
+    }
+
+    pub fn category_icon(&self, selected: bool) -> &IconStyle {
+        &self.row(selected).category_icon
+    }
 }
 
 impl Default for Theme {
@@ -166,8 +175,7 @@ impl Default for Theme {
             size: (450, 300),
             font: None,
             font_size: 18,
-            // TODO: default icon theme ?
-            icon_theme: Some("Papirus".to_string()),
+            icon_theme: freedesktop_icons::default_theme_gtk(),
             icon_size: 24,
             background: OnagreColor::DEFAULT_BACKGROUND,
             color: OnagreColor::DEFAULT_TEXT,

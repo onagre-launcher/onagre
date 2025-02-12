@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use onagre_launcher_toolkit::launcher::IconSource;
 use pop_entry::PopSearchResult;
+use tracing::info;
 
 use crate::db::{desktop_entry::DesktopEntryEntity, plugin::PluginCommandEntity, web::WebEntity};
 
@@ -62,7 +63,7 @@ impl Entry for WebEntity<'static> {
     }
 
     fn get_icon(&self) -> Option<IconSource> {
-        None
+        self.icon.as_ref().map(|i| IconSource::Name(i.clone()))
     }
 
     fn get_description(&self) -> Option<String> {

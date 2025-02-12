@@ -8,7 +8,6 @@ use iced::widget::container::Style;
 use iced::{Length, Vector};
 use icon::IconStyle;
 
-pub mod button;
 pub mod generic;
 pub mod icon;
 

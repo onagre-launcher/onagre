@@ -15,10 +15,10 @@ use iced::{
     event, keyboard, window, Element, Event, Font, Length, Pixels, Settings, Size, Subscription,
     Task,
 };
-use onagre_launcher_toolkit::launcher::{Request, Response};
+use onagre_launcher_toolkit::launcher::{IconSource, Request, Response};
 use once_cell::sync::{Lazy, OnceCell};
 use subscriptions::pop_launcher::pop_launcher;
-use tracing::{debug, trace};
+use tracing::{debug, info, trace};
 use widgets::row::theme::Class;
 use widgets::row::to_scrollable;
 
@@ -68,7 +68,11 @@ static FONT: OnceCell<Option<String>> = OnceCell::new();
 pub fn run(pre_value: Option<String>, theme: OnagreTheme) -> iced::Result {
     debug!("Starting Onagre in debug mode");
     let font = FONT.get_or_init(|| theme.0.font.clone());
-    let default_font = font.as_deref().map(Font::with_name).unwrap_or_default();
+    info!("using font {font:?}");
+    let default_font = font
+        .as_deref()
+        .map(Font::with_name)
+        .unwrap_or_else(|| Font::default());
 
     iced::application("Onagre", Onagre::update, Onagre::view)
         .decorations(false)
@@ -366,7 +370,12 @@ impl Onagre {
     fn run_command<P: AsRef<Path>>(&self, desktop_entry_path: P) -> Task<Message> {
         let desktop_entry = DesktopEntry::from_path(&desktop_entry_path).unwrap();
 
-        DesktopEntryEntity::persist(&desktop_entry, desktop_entry_path.as_ref(), &self.cache.db);
+        DesktopEntryEntity::persist(
+            &desktop_entry,
+            desktop_entry_path.as_ref(),
+            &self.cache.db,
+            self.get_theme().icon_theme.as_deref(),
+        );
 
         let argv = shell_words::split(&desktop_entry.exec);
         let args = argv.unwrap();
@@ -468,7 +477,11 @@ impl Onagre {
             ActiveMode::Web { modifier, .. } => {
                 let query = self.get_input();
                 let query = query.strip_prefix(modifier).unwrap();
-                WebEntity::persist(query, modifier.as_str(), &self.cache.db);
+                let entry = &self.entries[self.selected().unwrap_or(0)];
+                let icon = entry.get_icon().map(|i| match i {
+                    IconSource::Name(i) | IconSource::Mime(i) => i,
+                });
+                WebEntity::persist(query, modifier.as_str(), icon, &self.cache.db);
                 // Running the user input query at index zero
                 if self.selected().is_none() {
                     self.pop_request(Request::Activate(0))

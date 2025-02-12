@@ -20,6 +20,7 @@ pub enum Class {
     PluginHint,
     SearchInput,
     Icon { selected: bool },
+    CategoryIcon { selected: bool },
 }
 
 impl container::Catalog for OnagreTheme {
@@ -37,6 +38,8 @@ impl container::Catalog for OnagreTheme {
             Class::Title { selected } => self.0.title(*selected).into(),
             Class::Rows => self.0.rows().into(),
             Class::Row { selected } => self.0.row(*selected).into(),
+            Class::Icon { selected } => self.0.icon(*selected).into(),
+            Class::CategoryIcon { selected } => self.0.category_icon(*selected).into(),
             Class::PluginHint { .. } => match self.0.app().search.plugin_hint.as_ref() {
                 Some(style) => style.into(),
                 None => self.0.search().into(),

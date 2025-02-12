@@ -1,23 +1,19 @@
 // Copyright 2022 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
-
-mod named;
-mod theme;
-use std::ffi::OsStr;
-
-pub use named::{IconFallback, Named};
-
-mod handle;
-pub use handle::{from_svg_bytes, Data, Handle};
-
+use super::row::theme::Class;
+use crate::app::OnagreTheme;
 use derive_setters::Setters;
 use iced::Rotation;
 use iced::{ContentFit, Length, Rectangle};
+use std::ffi::OsStr;
 
-use crate::app::OnagreTheme;
+mod handle;
+mod named;
+mod theme;
 
-use super::row::theme::Class;
-
+pub use handle::{from_svg_bytes, Data, Handle};
+pub use named::{IconFallback, Named};
+///
 /// Create an [`Icon`] from a pre-existing [`Handle`]
 pub fn icon(handle: Handle, selected: bool) -> Icon {
     Icon {
@@ -129,16 +125,16 @@ pub fn draw(renderer: &mut iced::Renderer, handle: &Handle, icon_bounds: Rectang
     };
 
     match iced_handle {
-        Some(IcedHandle::Svg(handle)) => iced_runtime::core::svg::Renderer::draw_svg(
+        Some(IcedHandle::Svg(handle)) => iced::advanced::svg::Renderer::draw_svg(
             renderer,
-            iced_runtime::core::Svg::new(handle),
+            iced::advanced::svg::Svg::new(handle),
             icon_bounds,
         ),
 
         Some(IcedHandle::Image(handle)) => {
-            iced_runtime::core::image::Renderer::draw_image(
+            iced::advanced::image::Renderer::draw_image(
                 renderer,
-                iced_runtime::core::Image::from(&handle),
+                iced::advanced::image::Image::from(&handle),
                 icon_bounds,
             );
         }

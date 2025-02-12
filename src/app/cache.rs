@@ -23,9 +23,12 @@ impl Default for Cache {
 
 impl Cache {
     pub fn de_history(&self) -> Vec<DesktopEntryEntity<'static>> {
-        let history = self
+        let history: Vec<_> = self
             .db
-            .get_all::<DesktopEntryEntity>(db::desktop_entry::COLLECTION);
+            .get_all::<DesktopEntryEntity>(db::desktop_entry::COLLECTION)
+            .into_iter()
+            .take(12)
+            .collect();
         let mut len = self.history_lenght.lock().unwrap();
         len.insert(db::desktop_entry::COLLECTION.to_string(), history.len());
         history

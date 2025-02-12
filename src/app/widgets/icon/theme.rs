@@ -10,12 +10,14 @@ impl svg::Catalog for OnagreTheme {
     }
 
     fn style(&self, class: &Self::Class<'_>, _status: svg::Status) -> svg::Style {
-        let Class::Icon { selected } = class else {
+        let Class::Icon { .. } = class else {
             panic!("attempted to set an invalid icon class")
         };
 
         svg::Style {
-            color: Some(self.0.row(*selected).icon.color.into()),
+            // TODO: a style dedicated to symbolic icons
+            color: None,
+            // color: Some(self.0.row(*selected).icon.color.into()),
         }
     }
 }

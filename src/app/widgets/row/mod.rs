@@ -90,10 +90,28 @@ where
     let icon = entry
         .get_icon()
         .map(|source| Named::from_icon_source(source, icon_theme))
-        .map(|i| Named::icon(i, selected).size(layout.icon.icon_size));
+        .map(|i| Named::icon(i, selected).size(layout.icon.icon_size))
+        .map(|icon| {
+            container(icon)
+                .class(Class::Icon { selected })
+                .align_y(layout.icon.align_y)
+                .align_x(layout.icon.align_x)
+                .height(layout.icon.height)
+                .width(layout.icon.width)
+                .padding(layout.icon.padding.to_iced_padding())
+        });
     let category_icon = category_icon
         .map(|source| Named::from_icon_source(source, icon_theme))
-        .map(|i| Named::icon(i, selected).size(layout.icon.icon_size));
+        .map(|i| Named::icon(i, selected).size(layout.category_icon.icon_size))
+        .map(|icon| {
+            container(icon)
+                .class(Class::CategoryIcon { selected })
+                .align_y(layout.category_icon.align_y)
+                .align_x(layout.category_icon.align_x)
+                .height(layout.category_icon.height)
+                .width(layout.category_icon.width)
+                .padding(layout.category_icon.padding.to_iced_padding())
+        });
     let row = match (category_icon, icon) {
         (Some(category_icon), Some(icon)) => row![category_icon, icon, column],
         (None, Some(icon)) => row![icon, column],
