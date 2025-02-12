@@ -4,33 +4,31 @@
 mod named;
 mod theme;
 use std::ffi::OsStr;
-use std::sync::Arc;
 
 pub use named::{IconFallback, Named};
 
 mod handle;
-pub use handle::{from_path, from_raster_bytes, from_raster_pixels, from_svg_bytes, Data, Handle};
+pub use handle::{from_svg_bytes, Data, Handle};
 
 use derive_setters::Setters;
 use iced::Rotation;
 use iced::{ContentFit, Length, Rectangle};
 
+use crate::app::OnagreTheme;
+
+use super::row::theme::Class;
+
 /// Create an [`Icon`] from a pre-existing [`Handle`]
-pub fn icon(handle: Handle) -> Icon {
+pub fn icon(handle: Handle, selected: bool) -> Icon {
     Icon {
         content_fit: ContentFit::Fill,
         handle,
         height: None,
         size: 16,
-        class: (),
+        class: Class::Icon { selected },
         rotation: None,
         width: None,
     }
-}
-
-/// Create an icon handle from its XDG icon name.
-pub fn from_name(name: impl Into<Arc<str>>) -> Named {
-    Named::new(name)
 }
 
 /// An image which may be an SVG or PNG.
@@ -39,7 +37,7 @@ pub fn from_name(name: impl Into<Arc<str>>) -> Named {
 pub struct Icon {
     #[setters(skip)]
     handle: Handle,
-    class: (),
+    class: Class,
     pub(super) size: u16,
     content_fit: ContentFit,
     #[setters(strip_option)]
@@ -52,25 +50,7 @@ pub struct Icon {
 
 impl Icon {
     #[must_use]
-    pub fn into_svg_handle(self) -> Option<iced::widget::svg::Handle> {
-        match self.handle.data {
-            Data::Name(named) => {
-                if let Some(path) = named.path() {
-                    if path.extension().is_some_and(|ext| ext == OsStr::new("svg")) {
-                        return Some(iced::widget::svg::Handle::from_path(path));
-                    }
-                }
-            }
-
-            Data::Image(_) => (),
-            Data::Svg(handle) => return Some(handle),
-        }
-
-        None
-    }
-
-    #[must_use]
-    fn view<'a, Message: 'a>(self) -> iced::Element<'a, Message, crate::Theme> {
+    fn view<'a, Message: 'a>(self) -> iced::Element<'a, Message, OnagreTheme> {
         let from_image = |handle: &iced::widget::image::Handle| {
             iced::widget::Image::new(handle)
                 .width(
@@ -87,7 +67,7 @@ impl Icon {
         };
 
         let from_svg = |handle: &iced::widget::svg::Handle| {
-            iced::widget::svg::Svg::<crate::Theme>::new(handle.clone())
+            iced::widget::svg::Svg::<OnagreTheme>::new(handle.clone())
                 .width(
                     self.width
                         .unwrap_or_else(|| Length::Fixed(f32::from(self.size))),
@@ -98,6 +78,7 @@ impl Icon {
                 )
                 .rotation(self.rotation.unwrap_or_default())
                 .content_fit(self.content_fit)
+                .class(self.class.clone())
                 .into()
         };
 
@@ -121,7 +102,7 @@ impl Icon {
     }
 }
 
-impl<'a, Message: 'a> From<Icon> for iced::Element<'a, Message, crate::Theme> {
+impl<'a, Message: 'a> From<Icon> for iced::Element<'a, Message, OnagreTheme> {
     fn from(icon: Icon) -> Self {
         icon.view::<Message>()
     }

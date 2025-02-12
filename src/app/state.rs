@@ -2,16 +2,17 @@ use crate::app::cache::Cache;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::{match_web_plugins, Plugin};
 use crate::app::{Message, INPUT_ID};
-use crate::icons::IconPath;
-use crate::THEME;
+
 use iced::futures::channel::mpsc::Sender;
 use iced::widget::text_input;
 use iced::Task;
-use onagre_launcher_toolkit::launcher::{Request, SearchResult};
+use onagre_launcher_toolkit::launcher::{IconSource, Request, SearchResult};
 use std::collections::HashMap;
+use std::sync::Arc;
 use tracing::debug;
 
-use super::entries::entry2::Entry2;
+use super::entries::Entry;
+use super::OnagreTheme;
 
 #[derive(Debug)]
 pub struct Onagre {
@@ -22,11 +23,13 @@ pub struct Onagre {
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
     pub request_tx: Option<Sender<Request>>,
-    pub entries: Vec<Box<dyn Entry2>>,
+    pub entries: Vec<Box<dyn Entry>>,
+    pub plugin_icon: Option<IconSource>,
+    pub theme: OnagreTheme,
 }
 
-impl Default for Onagre {
-    fn default() -> Self {
+impl Onagre {
+    pub fn new(theme: OnagreTheme) -> Self {
         Self {
             input_value: SearchInput::default(),
             selected: Selection::Reset,
@@ -36,7 +39,17 @@ impl Default for Onagre {
             plugin_matchers: PluginConfigCache::load(),
             request_tx: None,
             entries: vec![],
+            plugin_icon: None,
+            theme,
         }
+    }
+
+    pub fn get_theme(&self) -> &crate::Theme {
+        self.theme.0.as_ref()
+    }
+
+    pub fn clone_theme(&self) -> Arc<crate::Theme> {
+        self.theme.0.clone()
     }
 }
 
@@ -49,14 +62,6 @@ impl PluginConfigCache {
     pub fn load() -> Self {
         let mut cache = HashMap::new();
         for (path, config, regex) in onagre_launcher_toolkit::service::load::from_paths() {
-            let icon: Option<IconPath> = THEME.icon_theme.as_ref().and_then(|theme| {
-                config
-                    .icon
-                    .as_ref()
-                    .map(|source| (source, theme))
-                    .and_then(|(source, theme)| IconPath::from_source(source, theme))
-            });
-
             let name = path
                 .parent()
                 .expect("Plugin config should have a parent directory")
@@ -67,7 +72,7 @@ impl PluginConfigCache {
 
             let plugin = Plugin {
                 name: name.clone(),
-                icon,
+                icon: config.icon,
                 history: config.history,
                 help: config.query.help.map(|h| h.to_string()),
                 regex,
@@ -78,7 +83,7 @@ impl PluginConfigCache {
 
         PluginConfigCache { inner: cache }
     }
-    pub fn get_plugin_icon(&self, plugin_name: &str) -> Option<IconPath> {
+    pub fn get_plugin_icon(&self, plugin_name: &str) -> Option<IconSource> {
         self.inner.get(plugin_name).and_then(|de| de.icon.clone())
     }
 
@@ -106,14 +111,14 @@ impl Onagre {
     }
 
     pub fn get_input(&self) -> String {
-        if THEME.plugin_hint().is_none() {
+        if self.get_theme().plugin_hint().is_none() {
             self.input_value.input_display.clone()
         } else {
             self.input_value.pop_query.clone()
         }
     }
 
-    pub fn with_mode(mode_query: &str) -> Self {
+    pub fn with_mode(mode_query: &str, theme: OnagreTheme) -> Self {
         let plugin_matchers = PluginConfigCache::load();
         let plugin_split = match_web_plugins(mode_query).or_else(|| {
             plugin_matchers
@@ -149,6 +154,8 @@ impl Onagre {
             plugin_matchers,
             request_tx: Default::default(),
             entries: vec![],
+            plugin_icon: None,
+            theme,
         }
     }
 
@@ -194,7 +201,7 @@ impl Onagre {
             self.input_value.mode = ActiveMode::from(query_data.clone());
             // If plugin-hint is disabled use the full input,
             // otherwise use the split value
-            self.input_value.input_display = if THEME.plugin_hint().is_none() {
+            self.input_value.input_display = if self.get_theme().plugin_hint().is_none() {
                 input.to_string()
             } else {
                 query_data.query
@@ -213,7 +220,7 @@ impl Onagre {
     fn set_input_with_modifier(&mut self, input: &str, previous_modi: String) {
         if input.is_empty() {
             self.input_value.modifier_display = "".to_string();
-            self.input_value.input_display = if THEME.plugin_hint().is_none() {
+            self.input_value.input_display = if self.get_theme().plugin_hint().is_none() {
                 input.to_string()
             } else {
                 previous_modi

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::app::style::app::AppContainerStyles;
 use crate::app::style::rows::generic::GenericContainerStyle;
 use crate::app::style::scrollable::scroller::ScrollerStyles;
@@ -5,36 +7,39 @@ use crate::app::style::search::input::SearchInputStyles;
 use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use crate::THEME_PATH;
-use crate::THEME_SCALE;
 use iced::daemon::DefaultStyle;
 use iced::widget::container;
 use iced::widget::container::Style;
 use iced::widget::text;
 use iced::Length;
 use iced::Vector;
+use rows::RowStyles;
+use scrollable::RowContainerStyle;
 use tracing::{error, warn};
+
+use super::state::Onagre;
+use super::OnagreTheme;
 
 pub mod app;
 pub mod rows;
 pub mod scrollable;
 pub mod search;
 
+impl Onagre {
+    pub fn load_theme(&self) -> OnagreTheme {
+        self.theme.clone()
+    }
+}
+
 impl Theme {
-    pub fn load() -> Self {
-        let buf = THEME_PATH.lock().unwrap().clone();
-        let theme = crate::config::parse_file(&buf);
+    pub fn load(path: PathBuf) -> Self {
+        let theme = crate::config::parse_file(&path);
         if let Err(err) = &theme {
-            error!("Failed to parse theme {buf:?}: {err}");
+            error!("Failed to parse theme {path:?}: {err}");
             warn!("Failing back to default theme");
         };
 
-        let mut theme = theme.unwrap_or_default();
-        if let Some(scale) = THEME_SCALE.get() {
-            theme = theme.scale(*scale)
-        }
-
-        theme
+        theme.unwrap_or_default()
     }
 }
 
@@ -70,11 +75,11 @@ pub struct Theme {
     pub app_container: AppContainerStyles,
 }
 
-impl DefaultStyle for Theme {
+impl DefaultStyle for OnagreTheme {
     fn default_style(&self) -> iced::daemon::Appearance {
         iced::daemon::Appearance {
-            background_color: self.background.into(),
-            text_color: self.color.into(),
+            background_color: self.0.background.into(),
+            text_color: self.0.color.into(),
         }
     }
 }
@@ -131,6 +136,26 @@ impl Theme {
 
     pub fn app(&self) -> &AppContainerStyles {
         &self.app_container
+    }
+
+    pub fn rows(&self) -> &RowContainerStyle {
+        &self.app_container.rows
+    }
+
+    pub fn row(&self, selected: bool) -> &RowStyles {
+        if selected {
+            &self.app_container.rows.row_selected
+        } else {
+            &self.app_container.rows.row
+        }
+    }
+
+    pub fn title(&self, selected: bool) -> &GenericContainerStyle {
+        &self.row(selected).title
+    }
+
+    pub fn description(&self, selected: bool) -> &GenericContainerStyle {
+        &self.row(selected).description
     }
 }
 

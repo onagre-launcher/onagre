@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::THEME;
+use onagre_launcher_toolkit::launcher::IconSource;
 
 use super::{Handle, Icon};
 use std::{borrow::Cow, path::PathBuf, sync::Arc};
@@ -22,6 +22,9 @@ pub struct Named {
     /// Name of icon to locate in an XDG icon path.
     pub(super) name: Arc<str>,
 
+    /// Name of theme in which locate icon
+    pub(super) theme: Option<Arc<str>>,
+
     /// Checks for a fallback if the icon was not found.
     pub fallback: Option<IconFallback>,
 
@@ -41,8 +44,16 @@ pub struct Named {
 }
 
 impl Named {
-    pub fn new(name: impl Into<Arc<str>>) -> Self {
+    pub fn from_icon_source(value: IconSource, theme: Option<impl Into<Arc<str>>>) -> Self {
+        match value {
+            IconSource::Name(name) | IconSource::Mime(name) => Named::new(name, theme),
+        }
+    }
+
+    pub fn new(name: impl Into<Arc<str>>, theme: Option<impl Into<Arc<str>>>) -> Self {
         let name = name.into();
+        let theme = theme.map(Into::into);
+
         Self {
             symbolic: name.ends_with("-symbolic"),
             name,
@@ -50,12 +61,14 @@ impl Named {
             size: None,
             scale: None,
             prefer_svg: false,
+            theme,
         }
     }
 
     #[must_use]
     pub fn path(&self) -> Option<PathBuf> {
         let name = &*self.name;
+        let theme = &*self.theme.as_deref().unwrap();
         let fallback = &self.fallback;
         let locate = |theme: &str, name| {
             let mut lookup = freedesktop_icons::lookup(name)
@@ -75,8 +88,6 @@ impl Named {
             }
             lookup.find()
         };
-
-        let theme = &THEME.icon_theme.clone().unwrap_or("Adwaita".to_string());
 
         let mut result = locate(theme, name);
 
@@ -111,10 +122,10 @@ impl Named {
         }
     }
 
-    pub fn icon(self) -> Icon {
+    pub fn icon(self, selected: bool) -> Icon {
         let size = self.size;
 
-        let icon = super::icon(self.handle());
+        let icon = super::icon(self.handle(), selected);
 
         match size {
             Some(size) => icon.size(size),
@@ -126,17 +137,5 @@ impl Named {
 impl From<Named> for Handle {
     fn from(builder: Named) -> Self {
         builder.handle()
-    }
-}
-
-impl From<Named> for Icon {
-    fn from(builder: Named) -> Self {
-        builder.icon()
-    }
-}
-
-impl<Message: 'static> From<Named> for iced::Element<'_, Message, crate::Theme> {
-    fn from(builder: Named) -> Self {
-        builder.icon().into()
     }
 }

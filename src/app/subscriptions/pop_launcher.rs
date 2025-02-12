@@ -78,7 +78,9 @@ pub fn pop_launcher() -> impl Stream<Item = Message> {
             join!(stdout_handle, stderr_handle, stdin_handle);
         });
 
-        output.send(Message::PopLauncherReady(request_tx)).await;
+        if let Err(err) = output.send(Message::PopLauncherReady(request_tx)).await {
+            error!("Pop launcher subscription error: {err}");
+        }
 
         while let Some(message) = response_rx.next().await {
             if let Err(err) = output.send(Message::PopMessage(message)).await {

@@ -1,20 +1,22 @@
 use std::path::Path;
 use std::process::exit;
+use std::sync::Arc;
 
-use entries::entry2::Entry2;
+use entries::Entry;
 use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::key::Named;
 use iced::keyboard::Key;
-use iced::widget::scrollable::RelativeOffset;
-use iced::widget::{container, scrollable, text_input, Column, Container, Row, Text};
+use iced::widget::column;
+use iced::widget::scrollable::{self, RelativeOffset};
+use iced::widget::{container, text_input, Row, Text};
 use iced::window::settings::PlatformSpecific;
 use iced::{
     event, keyboard, window, Element, Event, Font, Length, Pixels, Settings, Size, Subscription,
     Task,
 };
 use onagre_launcher_toolkit::launcher::{Request, Response};
-use once_cell::sync::Lazy;
+use once_cell::sync::{Lazy, OnceCell};
 use subscriptions::pop_launcher::pop_launcher;
 use tracing::{debug, trace};
 use widgets::row::theme::Class;
@@ -23,12 +25,11 @@ use widgets::row::to_scrollable;
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::mode::ActiveMode;
 use crate::app::state::{Onagre, Selection};
+use crate::db;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
 use crate::db::web::WebEntity;
 use crate::freedesktop::desktop::DesktopEntry;
-use crate::icons::IconPath;
-use crate::THEME;
 
 pub mod cache;
 pub mod entries;
@@ -53,20 +54,27 @@ pub enum Message {
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 
-pub fn run(pre_value: Option<String>) -> iced::Result {
-    debug!("Starting Onagre in debug mode");
+#[derive(Clone, Debug)]
+pub struct OnagreTheme(pub Arc<crate::Theme>);
 
-    let default_font = THEME
-        .font
-        .as_ref()
-        .map(|font| Font::with_name(font))
-        .unwrap_or_default();
+impl Default for OnagreTheme {
+    fn default() -> Self {
+        unreachable!()
+    }
+}
+
+static FONT: OnceCell<Option<String>> = OnceCell::new();
+
+pub fn run(pre_value: Option<String>, theme: OnagreTheme) -> iced::Result {
+    debug!("Starting Onagre in debug mode");
+    let font = FONT.get_or_init(|| theme.0.font.clone());
+    let default_font = font.as_deref().map(Font::with_name).unwrap_or_default();
 
     iced::application("Onagre", Onagre::update, Onagre::view)
         .decorations(false)
         .settings(Settings {
             id: Some("onagre".to_string()),
-            default_text_size: Pixels::from(THEME.font_size),
+            default_text_size: Pixels::from(theme.0.font_size),
             antialiasing: true,
             default_font,
             fonts: vec![],
@@ -74,8 +82,8 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
         .window(window::Settings {
             transparent: true,
             size: Size {
-                width: THEME.size.0 as f32,
-                height: THEME.size.1 as f32,
+                width: theme.0.size.0 as f32,
+                height: theme.0.size.1 as f32,
             },
             decorations: false,
             resizable: false,
@@ -92,52 +100,64 @@ pub fn run(pre_value: Option<String>) -> iced::Result {
             exit_on_close_request: true,
         })
         .subscription(subscription)
+        .theme(Onagre::load_theme)
         .run_with(|| {
             let onagre = if let Some(pre) = pre_value {
-                Onagre::with_mode(&pre)
+                Onagre::with_mode(&pre, theme)
             } else {
-                Onagre::default()
+                Onagre::new(theme)
             };
             (onagre, Task::perform(async {}, |_| Message::Loading))
         })
 }
 
 impl Onagre {
-    fn view(&self) -> Element<Message, crate::Theme> {
+    fn view(&self) -> Element<Message, OnagreTheme> {
         // Build rows from current mode search entries
+        let layout = &self.theme.0.app_container.rows.row;
+
         let scroll = to_scrollable(
-            None,
-            &THEME.app().rows.row,
+            self.plugin_icon.clone(),
+            layout,
             self.entries.as_slice(),
             self.selected().unwrap_or(0),
+            self.get_theme().icon_theme.as_deref(),
         );
 
         let scrollable = container(scroll)
-            .padding(THEME.app_container.rows.padding.to_iced_padding())
-            .width(THEME.app_container.rows.width)
-            .height(THEME.app_container.rows.height); // TODO: add this to stylesheet
+            .class(Class::Rows)
+            .padding(
+                self.get_theme()
+                    .app_container
+                    .rows
+                    .padding
+                    .to_iced_padding(),
+            )
+            .width(self.get_theme().app_container.rows.width)
+            .height(self.get_theme().app_container.rows.height); // TODO: add this to stylesheet
 
         let text_input = text_input("Search", &self.input_value.input_display)
             .on_input(Message::InputChanged)
             .id(INPUT_ID.clone())
-            // .style(&THEME.search_input())
-            .padding(THEME.search_input().padding.to_iced_padding())
-            .width(THEME.search_input().text_width)
-            .size(THEME.search_input().font_size);
+            // .style(&self.get_theme().search_input())
+            .padding(self.get_theme().search_input().padding.to_iced_padding())
+            .width(self.get_theme().search_input().text_width)
+            .size(self.get_theme().search_input().font_size);
 
         let search_input = container(text_input)
-            .width(THEME.search_input().width)
-            .height(THEME.search_input().height)
-            .align_x(THEME.search_input().align_x)
-            .align_y(THEME.search_input().align_y);
+            .width(self.get_theme().search_input().width)
+            .height(self.get_theme().search_input().height)
+            .align_x(self.get_theme().search_input().align_x)
+            .align_y(self.get_theme().search_input().align_y)
+            .class(Class::SearchInput);
 
         let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
         // Either plugin_hint is enabled and we try to display it
         // Or we display the normal search input
-        let search_bar = match THEME.plugin_hint() {
+        let search_bar = match self.get_theme().plugin_hint() {
             None => search_bar.push(search_input),
             Some(plugin_hint_style) => if !self.input_value.modifier_display.is_empty() {
-                let plugin_hint = Container::new(
+                let plugin_hint = container(
                     Text::new(&self.input_value.modifier_display)
                         .align_y(Vertical::Center)
                         .align_x(Horizontal::Center)
@@ -154,32 +174,29 @@ impl Onagre {
             } else {
                 search_bar.push(search_input)
             }
-            .spacing(THEME.search().spacing),
+            .spacing(self.get_theme().search().spacing),
         };
 
-        let search_bar = Container::new(search_bar)
-            .align_x(THEME.search().align_x)
-            .align_y(THEME.search().align_y)
-            .padding(THEME.search().padding.to_iced_padding())
-            .width(THEME.search().width)
-            .height(THEME.search().height);
+        let search_bar = container(search_bar)
+            .align_x(self.get_theme().search().align_x)
+            .align_y(self.get_theme().search().align_y)
+            .padding(self.get_theme().search().padding.to_iced_padding())
+            .width(self.get_theme().search().width)
+            .height(self.get_theme().search().height);
 
-        let app_container = Container::new(
-            Column::new().push(search_bar).push(scrollable),
-            //           .align_items(iced_core::Alignment::Start),
-        )
-        .padding(THEME.app().padding.to_iced_padding())
-        //    .style(&THEME.app())
-        .center_y(Length::Fill)
-        .center_x(Length::Fill);
+        let app_container = container(column![search_bar, scrollable])
+            .padding(self.get_theme().app().padding.to_iced_padding())
+            .class(Class::AppContainer)
+            .center_y(Length::Fill)
+            .center_x(Length::Fill);
 
-        let app_wrapper = Container::new(app_container)
+        let app_wrapper = container(app_container)
             .center_y(Length::Fill)
             .center_x(Length::Fill)
             .height(Length::Fill)
             .width(Length::Fill)
-            .padding(THEME.padding.to_iced_padding());
-        // .style(|_| &*THEME);
+            .padding(self.get_theme().padding.to_iced_padding())
+            .class(Class::Main);
 
         app_wrapper.into()
     }
@@ -215,7 +232,7 @@ impl Onagre {
                 Task::none()
             }
             Message::Unfocused => {
-                if THEME.exit_unfocused {
+                if self.get_theme().exit_unfocused {
                     exit(0);
                 }
                 Task::none()
@@ -229,58 +246,48 @@ impl Onagre {
                 self.on_execute()
             }
         };
-        self.entries = match self.get_active_mode() {
+        let (icon, entries) = match self.get_active_mode() {
             ActiveMode::Plugin {
                 plugin_name,
                 history,
                 ..
-            } if *history => {
-                let icon = self.plugin_matchers.get_plugin_icon(plugin_name);
+            } if *history => (
+                self.plugin_matchers.get_plugin_icon(plugin_name),
                 self.cache
                     .plugin_history(plugin_name)
                     .iter()
-                    .enumerate()
-                    .map(|(idx, entry)| Box::new(entry.clone()) as Box<dyn Entry2>)
-                    .collect::<Vec<Box<dyn Entry2>>>()
-            }
-            ActiveMode::Web { modifier, .. } => {
-                let icon = self.plugin_matchers.get_plugin_icon("web");
+                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
+                    .collect::<Vec<Box<dyn Entry>>>(),
+            ),
+            ActiveMode::Web { modifier, .. } => (
+                self.plugin_matchers.get_plugin_icon("web"),
                 self.cache
                     .web_history(modifier)
                     .iter()
-                    .enumerate()
-                    .map(|(idx, entry)| Box::new(entry.clone()) as Box<dyn Entry2>)
-                    .collect()
-            }
-            ActiveMode::History => {
-                let icon = self.plugin_matchers.get_plugin_icon("desktop_entries");
+                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
+                    .collect(),
+            ),
+            ActiveMode::History => (
+                self.plugin_matchers.get_plugin_icon("desktop_entries"),
                 self.cache
                     .de_history()
                     .iter()
                     .cloned()
-                    .enumerate()
-                    .map(|(idx, entry)| Box::new(entry.clone()) as Box<dyn Entry2>)
-                    .collect()
-            }
-            _ => self
-                .pop_search
-                .iter()
-                .cloned()
-                .map(|entry| {
-                    let icon = match &THEME.icon_theme {
-                        Some(theme) => entry
-                            .category_icon
-                            .as_ref()
-                            .and_then(|source| IconPath::from_source(source, theme)),
-                        _ => None,
-                    };
-
-                    let idx = entry.id as usize;
-                    
-                    Box::new(PopSearchResult(entry)) as Box<dyn Entry2>
-                })
-                .collect(),
+                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
+                    .collect(),
+            ),
+            _ => (
+                None,
+                self.pop_search
+                    .iter()
+                    .cloned()
+                    .map(|entry| Box::new(PopSearchResult(entry)) as Box<dyn Entry>)
+                    .collect(),
+            ),
         };
+
+        self.plugin_icon = icon;
+        self.entries = entries;
 
         message
     }
@@ -415,7 +422,7 @@ impl Onagre {
     }
 
     fn complete(&mut self, fill: String) {
-        let filled = if THEME.plugin_hint().is_none() {
+        let filled = if self.get_theme().plugin_hint().is_none() {
             self.input_value.input_display = fill;
             let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
             self.input_value.input_display.clone()
@@ -509,7 +516,7 @@ impl Onagre {
                     self.pop_search.len()
                 }
             }
-            ActiveMode::History => self.cache.de_len(),
+            ActiveMode::History => self.cache.history_len(db::desktop_entry::COLLECTION),
             ActiveMode::DesktopEntry => self.pop_search.len(),
             ActiveMode::Web { modifier, .. } => self.cache.history_len(modifier),
         }

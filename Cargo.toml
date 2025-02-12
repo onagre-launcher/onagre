@@ -25,7 +25,13 @@ default = ["iced/wgpu"]
 debug = ["iced/debug"]
 
 [dependencies]
-iced = { version = "0.13.1", features = ["wgpu", "svg", "image", "tokio"] }
+iced = { version = "0.13.1", features = [
+    "wgpu",
+    "svg",
+    "image",
+    "tokio",
+    "advanced",
+] }
 iced_runtime = "0.13.2"
 tokio = { version = "1.29.1", features = ["process", "macros", "io-util"] }
 redb = "1.5.0"

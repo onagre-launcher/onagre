@@ -1,282 +1,161 @@
 // Silent rules
-WHITESPACE = _{ " " }
-COMMENT = _{ ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) | ("/*" ~ (!"*/" ~ ANY)* ~ "*/" ) }
-SEMICOLON = _{ ";" }
-DOUBLE_QUOTE = _{ "\"" }
+WHITESPACE      = _{ " " }
+COMMENT         = _{ ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) | ("/*" ~ (!"*/" ~ ANY)* ~ "*/") }
+SEMICOLON       = _{ ";" }
+DOUBLE_QUOTE    = _{ "\"" }
 DELIMITER_START = _{ "{" }
-DELIMITER_END = _{ "}" }
+DELIMITER_END   = _{ "}" }
 
 // Values
-px_value = ${ number ~ px  }
-px = _{ "px"? }
+px_value = ${ number ~ px }
+px       = _{ "px"? }
 
-percent_value = ${ (floating_number | number) ~ percent  }
-percent = _{ "%"? }
+percent_value = ${ (floating_number | number) ~ percent }
+percent       = _{ "%"? }
 
-string = ${ DOUBLE_QUOTE ~ inner ~ DOUBLE_QUOTE  }
-inner = @{ char* }
-char = {
+string = ${ DOUBLE_QUOTE ~ inner ~ DOUBLE_QUOTE }
+inner  = @{ char* }
+char   =  {
     !("\"" | "\\") ~ ANY
-    | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
-    | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+  | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
+  | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
 }
 
 bool = ${ "true" | "false" }
 
-align_value = ${  align_start | align_center | align_end | fill  }
-align_start = @{ "start" }
-align_end = @{ "end" }
+align_value  = ${ align_start | align_center | align_end | fill }
+align_start  = @{ "start" }
+align_end    = @{ "end" }
 align_center = @{ "center" }
 
-align_x_value = ${  left | center | right  }
-left   =  @{ "left" }
-center =  @{ "center" }
-right  =  @{ "right" }
+align_x_value = ${ left | center | right }
+left          = @{ "left" }
+center        = @{ "center" }
+right         = @{ "right" }
 
-align_y_value = ${  top | center | bottom  }
-top   =    @{ "top" }
-bottom  =  @{ "bottom" }
+align_y_value = ${ top | center | bottom }
+top           = @{ "top" }
+bottom        = @{ "bottom" }
 
-length_value = ${  (fill_portion ~ number) | fill | shrink | (number ~ px)  }
-fill_portion = @{ "fill-portion " }
-fill = @{ "fill" }
-shrink = @{ "shrink" }
-number = @{ NUMBER+ }
+length_value    = ${ (fill_portion ~ number) | fill | shrink | (number ~ px) }
+fill_portion    = @{ "fill-portion " }
+fill            = @{ "fill" }
+shrink          = @{ "shrink" }
+number          = @{ NUMBER+ }
 floating_number = @{ NUMBER+ ~ "." ~ NUMBER+ }
 
-hex_color = {"#" ~ ASCII_HEX_DIGIT+ }
+hex_color = { "#" ~ ASCII_HEX_DIGIT+ }
 
-EXIT_UNFOCUSED= _{ "--exit-unfocused"   ~ ":" }
-FONT_FAMILY   = _{ "--font-family"      ~ ":" }
-FONT_SIZE     = _{ "font-size"          ~ ":" }
-ICON_THEME    = _{ "--icon-theme"       ~ ":" }
-ICON_SIZE     = _{ "--icon-size"        ~ ":" }
-WINDOW_WIDTH  = _{ "width"              ~ ":" }
-WINDOW_HEIGHT = _{ "height"             ~ ":" }
-WIDTH         = _{ "--width"            ~ ":" }
-_WIDTH        = _{ "width"              ~ ":" }
-MARGIN        = _{ "margin"             ~ ":" }
-HEIGHT        = _{ "--height"           ~ ":" }
-SIZE          = _{ "size"               ~ ":" }
-BACKGROUND    = _{ "background"         ~ ":" }
-COLOR         = _{ "color"              ~ ":" }
-BORDER_COLOR  = _{ "border-color"       ~ ":" }
-BORDER_RADIUS = _{ "border-radius"      ~ ":" }
-BORDER_WIDTH  = _{ "border-width"       ~ ":" }
-PADDING       = _{ "padding"            ~ ":" }
-PADDING_LEFT  = _{ "padding-left"       ~ ":" }
-PADDING_RIGHT = _{ "padding-right"      ~ ":" }
-PADDING_BOTTOM= _{ "padding-bottom"     ~ ":" }
-PADDING_TOP   = _{ "padding-top"        ~ ":" }
-SPACING       = _{ "--spacing"          ~ ":" }
-ALIGN_ITEMS   = _{ "--align-items"      ~ ":" }
-ALIGN_X       = _{ "--align-x"          ~ ":" }
-ALIGN_Y       = _{ "--align-y"          ~ ":" }
-TEXT_WIDTH    = _{ "--text-width"       ~ ":" }
-PLACEHOLDER   = _{ "--placeholder-color"~ ":" }
-SELECTION     = _{ "--selection-color"  ~ ":" }
+EXIT_UNFOCUSED = _{ "--exit-unfocused" ~ ":" }
+FONT_FAMILY    = _{ "--font-family" ~ ":" }
+FONT_SIZE      = _{ "font-size" ~ ":" }
+ICON_THEME     = _{ "--icon-theme" ~ ":" }
+ICON_SIZE      = _{ "--icon-size" ~ ":" }
+WINDOW_WIDTH   = _{ "width" ~ ":" }
+WINDOW_HEIGHT  = _{ "height" ~ ":" }
+WIDTH          = _{ "--width" ~ ":" }
+_WIDTH         = _{ "width" ~ ":" }
+MARGIN         = _{ "margin" ~ ":" }
+HEIGHT         = _{ "--height" ~ ":" }
+SIZE           = _{ "size" ~ ":" }
+BACKGROUND     = _{ "background" ~ ":" }
+COLOR          = _{ "color" ~ ":" }
+BORDER_COLOR   = _{ "border-color" ~ ":" }
+BORDER_RADIUS  = _{ "border-radius" ~ ":" }
+BORDER_WIDTH   = _{ "border-width" ~ ":" }
+PADDING        = _{ "padding" ~ ":" }
+PADDING_LEFT   = _{ "padding-left" ~ ":" }
+PADDING_RIGHT  = _{ "padding-right" ~ ":" }
+PADDING_BOTTOM = _{ "padding-bottom" ~ ":" }
+PADDING_TOP    = _{ "padding-top" ~ ":" }
+SPACING        = _{ "--spacing" ~ ":" }
+ALIGN_ITEMS    = _{ "--align-items" ~ ":" }
+ALIGN_X        = _{ "--align-x" ~ ":" }
+ALIGN_Y        = _{ "--align-y" ~ ":" }
+TEXT_WIDTH     = _{ "--text-width" ~ ":" }
+PLACEHOLDER    = _{ "--placeholder-color" ~ ":" }
+SELECTION      = _{ "--selection-color" ~ ":" }
 
 // Attributes
-exit_unfocused      = { EXIT_UNFOCUSED   ~ bool          ~ SEMICOLON ~ NEWLINE* }
-font_family         = { FONT_FAMILY      ~ string        ~ SEMICOLON ~ NEWLINE* }
-font_size           = { FONT_SIZE        ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-icon_theme          = { ICON_THEME       ~ string        ~ SEMICOLON ~ NEWLINE* }
-height              = { HEIGHT           ~ length_value  ~ SEMICOLON ~ NEWLINE* }
-width               = { WIDTH            ~ length_value  ~ SEMICOLON ~ NEWLINE* }
-window_height       = { WINDOW_HEIGHT    ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-window_width        = { WINDOW_WIDTH     ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-icon_size           = { ICON_SIZE        ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-background          = { BACKGROUND       ~ hex_color     ~ SEMICOLON ~ NEWLINE* }
-color               = { COLOR            ~ hex_color     ~ SEMICOLON ~ NEWLINE*}
-border_color        = { BORDER_COLOR     ~ hex_color     ~ SEMICOLON ~ NEWLINE* }
-border_radius       = { BORDER_RADIUS    ~ percent_value ~ SEMICOLON ~ NEWLINE* }
-border_width        = { BORDER_WIDTH     ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-padding             = { PADDING          ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-padding_left        = { PADDING_LEFT     ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-padding_right       = { PADDING_RIGHT    ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-padding_bottom      = { PADDING_BOTTOM   ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-padding_top         = { PADDING_TOP      ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-spacing             = { SPACING          ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-align_items         = { ALIGN_ITEMS      ~ align_value   ~ SEMICOLON ~ NEWLINE* }
-align_x             = { ALIGN_X          ~ align_x_value ~ SEMICOLON ~ NEWLINE* }
-align_y             = { ALIGN_Y          ~ align_y_value ~ SEMICOLON ~ NEWLINE* }
-placeholder_color   = { PLACEHOLDER      ~ hex_color     ~ SEMICOLON ~ NEWLINE* }
-selection_color     = { SELECTION        ~ hex_color     ~ SEMICOLON ~ NEWLINE* }
-text_width          = { TEXT_WIDTH       ~ length_value  ~ SEMICOLON ~ NEWLINE* }
-scroller_width      = { _WIDTH           ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-scrollbar_width     = { _WIDTH           ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-scrollbar_margin    = { MARGIN           ~ px_value      ~ SEMICOLON ~ NEWLINE* }
-
-
+exit_unfocused    = { EXIT_UNFOCUSED ~ bool ~ SEMICOLON ~ NEWLINE* }
+font_family       = { FONT_FAMILY ~ string ~ SEMICOLON ~ NEWLINE* }
+font_size         = { FONT_SIZE ~ px_value ~ SEMICOLON ~ NEWLINE* }
+icon_theme        = { ICON_THEME ~ string ~ SEMICOLON ~ NEWLINE* }
+height            = { HEIGHT ~ length_value ~ SEMICOLON ~ NEWLINE* }
+width             = { WIDTH ~ length_value ~ SEMICOLON ~ NEWLINE* }
+window_height     = { WINDOW_HEIGHT ~ px_value ~ SEMICOLON ~ NEWLINE* }
+window_width      = { WINDOW_WIDTH ~ px_value ~ SEMICOLON ~ NEWLINE* }
+icon_size         = { ICON_SIZE ~ px_value ~ SEMICOLON ~ NEWLINE* }
+background        = { BACKGROUND ~ hex_color ~ SEMICOLON ~ NEWLINE* }
+color             = { COLOR ~ hex_color ~ SEMICOLON ~ NEWLINE* }
+border_color      = { BORDER_COLOR ~ hex_color ~ SEMICOLON ~ NEWLINE* }
+border_radius     = { BORDER_RADIUS ~ percent_value ~ SEMICOLON ~ NEWLINE* }
+border_width      = { BORDER_WIDTH ~ px_value ~ SEMICOLON ~ NEWLINE* }
+padding           = { PADDING ~ px_value ~ SEMICOLON ~ NEWLINE* }
+padding_left      = { PADDING_LEFT ~ px_value ~ SEMICOLON ~ NEWLINE* }
+padding_right     = { PADDING_RIGHT ~ px_value ~ SEMICOLON ~ NEWLINE* }
+padding_bottom    = { PADDING_BOTTOM ~ px_value ~ SEMICOLON ~ NEWLINE* }
+padding_top       = { PADDING_TOP ~ px_value ~ SEMICOLON ~ NEWLINE* }
+spacing           = { SPACING ~ px_value ~ SEMICOLON ~ NEWLINE* }
+align_items       = { ALIGN_ITEMS ~ align_value ~ SEMICOLON ~ NEWLINE* }
+align_x           = { ALIGN_X ~ align_x_value ~ SEMICOLON ~ NEWLINE* }
+align_y           = { ALIGN_Y ~ align_y_value ~ SEMICOLON ~ NEWLINE* }
+placeholder_color = { PLACEHOLDER ~ hex_color ~ SEMICOLON ~ NEWLINE* }
+selection_color   = { SELECTION ~ hex_color ~ SEMICOLON ~ NEWLINE* }
+text_width        = { TEXT_WIDTH ~ length_value ~ SEMICOLON ~ NEWLINE* }
+scroller_width    = { _WIDTH ~ px_value ~ SEMICOLON ~ NEWLINE* }
+scrollbar_width   = { _WIDTH ~ px_value ~ SEMICOLON ~ NEWLINE* }
+scrollbar_margin  = { MARGIN ~ px_value ~ SEMICOLON ~ NEWLINE* }
 
 // Selectors
 onagre_style = {
-    ".onagre"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ ( exit_unfocused | font_family | font_size | icon_theme | icon_size | window_height | window_width
-        | background | color | border_color | border_width | border_radius
-        | padding | padding_left | padding_top | padding_right | padding_bottom | container)*
-    ~ DELIMITER_END
+    ".onagre" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (exit_unfocused | font_family | font_size | icon_theme | icon_size | window_height | window_width | background | color | border_color | border_width | border_radius | padding | padding_left | padding_top | padding_right | padding_bottom | container)* ~ DELIMITER_END
 }
-container = {
-    ".container"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ ( background | color | border_color | border_width | border_radius
-        | padding | padding_left | padding_top | padding_right | padding_bottom | rows | search | scrollable)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+container    = {
+    ".container" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_width | border_radius | padding | padding_left | padding_top | padding_right | padding_bottom | rows | search | scrollable)* ~ DELIMITER_END ~ NEWLINE*
 }
 
 // Search
-search = {
-    ".search"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width
-    | padding | padding_left | padding_right | padding_bottom | padding_top
-    | spacing
-    | width | height |  align_x | align_y
-    | plugin_hint | bar )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+search      = {
+    ".search" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | spacing | width | height | align_x | align_y | plugin_hint | bar)* ~ DELIMITER_END ~ NEWLINE*
 }
 plugin_hint = {
-    ".plugin-hint"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | align_y | align_x
-    | font_size)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+    ".plugin-hint" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | width | height | align_y | align_x | font_size)* ~ DELIMITER_END ~ NEWLINE*
 }
-bar = {
-    ".input"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width
-        | text_width | selection_color | placeholder_color | font_size
-        | padding | padding_left | padding_right | padding_bottom | padding_top
-        | align_y | align_x
-        | width | height
-    )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+bar         = {
+    ".input" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | text_width | selection_color | placeholder_color | font_size | padding | padding_left | padding_right | padding_bottom | padding_top | align_y | align_x | width | height)* ~ DELIMITER_END ~ NEWLINE*
 }
 
 // Rows
-rows = {
-    ".rows"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height
-    | selected_row | default_row)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+rows            = {
+    ".rows" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | width | height | selected_row | default_row)* ~ DELIMITER_END ~ NEWLINE*
 }
-selected_row = {
-    ".row-selected"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width
-    | padding | padding_left | padding_right | padding_bottom | padding_top
-    | align_x | align_y
-    | width | height
-    | spacing
-    | description_row | title_row | category_icon | icon )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+selected_row    = {
+    ".row-selected" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | align_x | align_y | width | height | spacing | description_row | title_row | category_icon | icon)* ~ DELIMITER_END ~ NEWLINE*
 }
-default_row = {
-    ".row"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width
-    | padding | padding_left | padding_right | padding_bottom | padding_top
-    | width | height
-    | align_y | align_x
-    | spacing
-    | description_row | title_row | category_icon | icon )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+default_row     = {
+    ".row" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | width | height | align_y | align_x | spacing | description_row | title_row | category_icon | icon)* ~ DELIMITER_END ~ NEWLINE*
 }
 description_row = {
-    ".description"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height | align_y | align_x | font_size)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+    ".description" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | width | height | align_y | align_x | font_size)* ~ DELIMITER_END ~ NEWLINE*
 }
 
-title_row = {
-    ".title"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | width | height |  align_x | align_y | font_size)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+title_row     = {
+    ".title" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | width | height | align_x | align_y | font_size)* ~ DELIMITER_END ~ NEWLINE*
 }
-icon = {
-    ".icon"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | align_y | align_x | width | height | icon_size )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+icon          = {
+    ".icon" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | align_y | align_x | width | height | icon_size)* ~ DELIMITER_END ~ NEWLINE*
 }
 category_icon = {
-    ".category-icon"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ (background | color | border_color | border_radius | border_width | padding
-    | padding_left | padding_right | padding_bottom | padding_top
-    | align_y | align_x | width | height | icon_size )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+    ".category-icon" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | color | border_color | border_radius | border_width | padding | padding_left | padding_right | padding_bottom | padding_top | align_y | align_x | width | height | icon_size)* ~ DELIMITER_END ~ NEWLINE*
 }
 
 // Scrollbar
-scrollable =  {
-    ".scrollable"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ ( background | border_color | border_width | border_radius | scrollbar_width | scroller | scrollbar_margin)*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+scrollable = {
+    ".scrollable" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (background | border_color | border_width | border_radius | scrollbar_width | scroller | scrollbar_margin)* ~ DELIMITER_END ~ NEWLINE*
 }
-scroller =  {
-    ".scroller"
-    ~ NEWLINE*
-    ~ DELIMITER_START
-    ~ NEWLINE*
-    ~ ( color | border_color | border_width | border_radius | scroller_width )*
-    ~ DELIMITER_END
-    ~ NEWLINE*
+scroller   = {
+    ".scroller" ~ NEWLINE* ~ DELIMITER_START ~ NEWLINE* ~ (color | border_color | border_width | border_radius | scroller_width)* ~ DELIMITER_END ~ NEWLINE*
 }
 
 stylesheet = { SOI ~ NEWLINE* ~ onagre_style ~ NEWLINE* ~ EOI }

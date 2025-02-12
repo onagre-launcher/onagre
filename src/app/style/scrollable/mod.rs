@@ -2,16 +2,10 @@ use crate::app::style::rows::RowStyles;
 use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use crate::THEME;
 use iced::widget::container::Style;
 use iced::{Length, Vector};
 
 pub mod scroller;
-
-pub fn row_container_style(_: &iced::Theme) -> Style {
-    let theme = &THEME.app().rows;
-    theme.into()
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct RowContainerStyle {

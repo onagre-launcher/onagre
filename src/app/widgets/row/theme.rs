@@ -6,18 +6,23 @@ use iced::widget::text_input;
 use iced::Border;
 use iced::Color;
 
-use crate::app::style::{self};
+use crate::app::OnagreTheme;
 
+#[derive(Debug, Clone)]
 pub enum Class {
     Main,
+    AppContainer,
     Description { selected: bool },
     Title { selected: bool },
+    Row { selected: bool },
+    Rows,
     RowClickable,
-    Row,
     PluginHint,
+    SearchInput,
+    Icon { selected: bool },
 }
 
-impl container::Catalog for style::Theme {
+impl container::Catalog for OnagreTheme {
     type Class<'a> = Class;
 
     fn default<'a>() -> Self::Class<'a> {
@@ -26,23 +31,22 @@ impl container::Catalog for style::Theme {
 
     fn style(&self, class: &Self::Class<'_>) -> container::Style {
         match class {
-            Class::Main => self.into(),
-            Class::Description { selected } if *selected => {
-                (&self.app().rows.row_selected.description).into()
-            }
-            Class::Title { selected } if *selected => (&self.app().rows.row_selected.title).into(),
-            Class::Description { .. } => (&self.app().rows.row.description).into(),
-            Class::Title { .. } => (&self.app().rows.row.title).into(),
-            Class::Row { .. } => (&self.app().rows.row).into(),
-            Class::PluginHint { .. } => match self.app().search.plugin_hint.as_ref() {
+            Class::Main => self.0.as_ref().into(),
+            Class::AppContainer => self.0.app().into(),
+            Class::Description { selected } => self.0.description(*selected).into(),
+            Class::Title { selected } => self.0.title(*selected).into(),
+            Class::Rows => self.0.rows().into(),
+            Class::Row { selected } => self.0.row(*selected).into(),
+            Class::PluginHint { .. } => match self.0.app().search.plugin_hint.as_ref() {
                 Some(style) => style.into(),
-                None => (&self.app().search).into(),
+                None => self.0.search().into(),
             },
+            Class::SearchInput => self.0.search().into(),
             _ => unreachable!(),
         }
     }
 }
-impl button::Catalog for style::Theme {
+impl button::Catalog for OnagreTheme {
     type Class<'a> = Class;
 
     fn default<'a>() -> Self::Class<'a> {
@@ -63,31 +67,31 @@ impl button::Catalog for style::Theme {
     }
 }
 
-impl scrollable::Catalog for style::Theme {
+impl scrollable::Catalog for OnagreTheme {
     type Class<'a> = Class;
 
     fn default<'a>() -> Self::Class<'a> {
         Class::RowClickable
     }
 
-    fn style(&self, class: &Self::Class<'_>, status: scrollable::Status) -> scrollable::Style {
-        (&self.app().scrollable).into()
+    fn style(&self, _class: &Self::Class<'_>, _status: scrollable::Status) -> scrollable::Style {
+        (&self.0.app().scrollable).into()
     }
 }
 
-impl text_input::Catalog for style::Theme {
+impl text_input::Catalog for OnagreTheme {
     type Class<'a> = Class;
 
     fn default<'a>() -> Self::Class<'a> {
         Class::RowClickable
     }
 
-    fn style(&self, class: &Self::Class<'_>, status: text_input::Status) -> text_input::Style {
-        (&self.app().search.input).into()
+    fn style(&self, _: &Self::Class<'_>, _: text_input::Status) -> text_input::Style {
+        (&self.0.app().search.input).into()
     }
 }
 
-impl text::Catalog for style::Theme {
+impl text::Catalog for OnagreTheme {
     type Class<'a> = text::StyleFn<'a, Self>;
 
     fn default<'a>() -> Self::Class<'a> {
@@ -99,8 +103,8 @@ impl text::Catalog for style::Theme {
     }
 }
 
-pub fn text_default(theme: &style::Theme) -> text::Style {
+pub fn text_default(theme: &OnagreTheme) -> text::Style {
     text::Style {
-        color: Some(theme.color.into()),
+        color: Some(theme.0.color.into()),
     }
 }
