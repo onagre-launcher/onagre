@@ -70,17 +70,14 @@ fn description<'a>(
 }
 
 // TODO: simplyfy lifetime
-pub fn to_container<'a, 'b>(
-    layout: &'b RowStyles,
+pub fn to_container<'a>(
+    layout: &'a RowStyles,
     index: usize,
     selected: bool,
     entry: &'a dyn Entry,
     category_icon: Option<IconSource>,
     icon_theme: Option<&str>,
-) -> Container<'a, Message, OnagreTheme>
-where
-    'b: 'a,
-{
+) -> Container<'a, Message, OnagreTheme> {
     let column = iced::widget::column(vec![title(layout, entry, selected).into()]);
     let column = match description(layout, selected, entry) {
         Some(description) if !layout.hide_description => column.push(description),
