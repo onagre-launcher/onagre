@@ -24,7 +24,7 @@ pub fn to_scrollable<'a>(
                 layout,
                 idx,
                 selected(idx),
-                entry,
+                entry.as_ref(),
                 category_icon.clone(),
                 icon_theme,
             )
@@ -36,7 +36,7 @@ pub fn to_scrollable<'a>(
 
 fn title<'a>(
     layout: &'a RowStyles,
-    entry: &'a Box<dyn Entry>,
+    entry: &'a dyn Entry,
     selected: bool,
 ) -> Container<'a, Message, OnagreTheme> {
     container(iced::widget::row(vec![text(
@@ -56,7 +56,7 @@ fn title<'a>(
 fn description<'a>(
     layout: &'a RowStyles,
     selected: bool,
-    entry: &'a Box<dyn Entry>,
+    entry: &'a dyn Entry,
 ) -> Option<Container<'a, Message, OnagreTheme>> {
     entry.get_description().map(|description| {
         container(row!(text(description).style(text_default)))
@@ -74,7 +74,7 @@ pub fn to_container<'a, 'b>(
     layout: &'b RowStyles,
     index: usize,
     selected: bool,
-    entry: &'a Box<dyn Entry>,
+    entry: &'a dyn Entry,
     category_icon: Option<IconSource>,
     icon_theme: Option<&str>,
 ) -> Container<'a, Message, OnagreTheme>

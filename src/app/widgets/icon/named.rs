@@ -68,7 +68,7 @@ impl Named {
     #[must_use]
     pub fn path(&self) -> Option<PathBuf> {
         let name = &*self.name;
-        let theme = &*self.theme.as_deref().unwrap();
+        let theme = self.theme.as_deref().unwrap();
         let fallback = &self.fallback;
         let locate = |theme: &str, name| {
             let mut lookup = freedesktop_icons::lookup(name)

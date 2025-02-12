@@ -72,7 +72,7 @@ pub fn run(pre_value: Option<String>, theme: OnagreTheme) -> iced::Result {
     let default_font = font
         .as_deref()
         .map(Font::with_name)
-        .unwrap_or_else(|| Font::default());
+        .unwrap_or_default();
 
     iced::application("Onagre", Onagre::update, Onagre::view)
         .decorations(false)

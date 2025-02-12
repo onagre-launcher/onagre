@@ -2,7 +2,6 @@ use std::fmt::Debug;
 
 use onagre_launcher_toolkit::launcher::IconSource;
 use pop_entry::PopSearchResult;
-use tracing::info;
 
 use crate::db::{desktop_entry::DesktopEntryEntity, plugin::PluginCommandEntity, web::WebEntity};
 
