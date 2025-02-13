@@ -3,13 +3,12 @@ use std::process::exit;
 use std::sync::Arc;
 
 use entries::Entry;
-use iced::alignment::{Horizontal, Vertical};
 use iced::futures::channel::mpsc::{Sender, TrySendError};
 use iced::keyboard::key::Named;
 use iced::keyboard::Key;
 use iced::widget::column;
 use iced::widget::scrollable::{self, RelativeOffset};
-use iced::widget::{container, text_input, Row, Text};
+use iced::widget::{container, text_input};
 use iced::window::settings::PlatformSpecific;
 use iced::{
     event, keyboard, window, Element, Event, Font, Length, Pixels, Settings, Size, Subscription,
@@ -21,6 +20,7 @@ use subscriptions::pop_launcher::pop_launcher;
 use tracing::{debug, info, trace};
 use widgets::entries::theme::Class;
 use widgets::entries::to_scrollable;
+use widgets::search::search_bar;
 
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::mode::ActiveMode;
@@ -137,56 +137,12 @@ impl Onagre {
             .width(self.get_theme().app_container.rows.width)
             .height(self.get_theme().app_container.rows.height); // TODO: add this to stylesheet
 
-        let search_input_layout = self.get_theme().search_input();
-
-        let text_input = text_input("Search", &self.input_value.input_display)
-            .on_input(Message::InputChanged)
-            .id(INPUT_ID.clone())
-            .class(Class::SearchInput)
-            .padding(search_input_layout.padding.to_iced_padding())
-            .width(search_input_layout.text_width)
-            .size(search_input_layout.font_size);
-
-        let search_input = container(text_input)
-            .width(search_input_layout.width)
-            .height(search_input_layout.height)
-            .align_x(search_input_layout.align_x)
-            .align_y(search_input_layout.align_y)
-            .class(Class::SearchInput);
-
-        let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
-        // Either plugin_hint is enabled and we try to display it
-        // Or we display the normal search input
-        let search_bar = match self.get_theme().plugin_hint() {
-            None => search_bar.push(search_input),
-            Some(plugin_hint_style) => if !self.input_value.modifier_display.is_empty() {
-                let plugin_hint = container(
-                    Text::new(&self.input_value.modifier_display)
-                        .align_y(Vertical::Center)
-                        .align_x(Horizontal::Center)
-                        .size(plugin_hint_style.font_size),
-                )
-                .class(Class::PluginHint)
-                .width(plugin_hint_style.width)
-                .height(plugin_hint_style.height)
-                .align_y(plugin_hint_style.align_y)
-                .align_x(plugin_hint_style.align_x)
-                .padding(plugin_hint_style.padding.to_iced_padding());
-
-                search_bar.push(plugin_hint).push(search_input)
-            } else {
-                search_bar.push(search_input)
-            }
-            .spacing(self.get_theme().search().spacing),
-        };
-
-        let search_bar = container(search_bar)
-            .class(Class::SearchBar)
-            .align_x(self.get_theme().search().align_x)
-            .align_y(self.get_theme().search().align_y)
-            .padding(self.get_theme().search().padding.to_iced_padding())
-            .width(self.get_theme().search().width)
-            .height(self.get_theme().search().height);
+        let search_bar = search_bar(
+            INPUT_ID.clone(),
+            &self.input_value.input_display,
+            &self.input_value.modifier_display,
+            self.get_theme().search(),
+        );
 
         let app_container = container(column![search_bar, scrollable])
             .padding(self.get_theme().app().padding.to_iced_padding())
