@@ -7,11 +7,12 @@ use tracing::debug;
 pub struct WebEntity<'a> {
     pub query: Cow<'a, str>,
     pub kind: Cow<'a, str>,
+    pub icon: Option<Cow<'a, str>>,
     pub weight: u8,
 }
 
 impl WebEntity<'_> {
-    pub fn persist(query: &str, kind: &str, db: &Database) {
+    pub fn persist(query: &str, kind: &str, icon: Option<Cow<'_, str>>, db: &Database) {
         let command = db.get_by_key::<WebEntity>(kind, query);
         let weight = match command {
             None => 0,
@@ -21,6 +22,7 @@ impl WebEntity<'_> {
         let entity = WebEntity {
             kind: Cow::Borrowed(kind),
             query: Cow::Borrowed(query),
+            icon,
             weight,
         };
 

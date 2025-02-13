@@ -1,24 +1,56 @@
 use crate::app::cache::Cache;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::{match_web_plugins, Plugin};
-use onagre_launcher_toolkit::launcher::SearchResult;
+use crate::app::{Message, INPUT_ID};
+
+use iced::futures::channel::mpsc::Sender;
+use iced::widget::text_input;
+use iced::Task;
+use onagre_launcher_toolkit::launcher::{IconSource, Request, SearchResult};
+use std::collections::HashMap;
+use std::sync::Arc;
 use tracing::debug;
 
-use crate::app::{Message, INPUT_ID};
-use crate::icons::IconPath;
-use crate::THEME;
-use iced::widget::{scrollable, text_input};
-use std::collections::HashMap;
+use super::entries::Entry;
+use super::OnagreTheme;
 
 #[derive(Debug)]
-pub struct State<'a> {
+pub struct Onagre {
     pub input_value: SearchInput,
     pub selected: Selection,
-    pub cache: Cache<'a>,
+    pub cache: Cache,
     pub pop_search: Vec<SearchResult>,
-    pub scroll: scrollable::State,
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
+    pub request_tx: Option<Sender<Request>>,
+    pub entries: Vec<Box<dyn Entry>>,
+    pub plugin_icon: Option<IconSource>,
+    pub theme: OnagreTheme,
+}
+
+impl Onagre {
+    pub fn new(theme: OnagreTheme) -> Self {
+        Self {
+            input_value: SearchInput::default(),
+            selected: Selection::Reset,
+            cache: Cache::default(),
+            pop_search: Vec::new(),
+            exec_on_next_search: false,
+            plugin_matchers: PluginConfigCache::load(),
+            request_tx: None,
+            entries: vec![],
+            plugin_icon: None,
+            theme,
+        }
+    }
+
+    pub fn get_theme(&self) -> &crate::Theme {
+        self.theme.0.as_ref()
+    }
+
+    pub fn clone_theme(&self) -> Arc<crate::Theme> {
+        self.theme.0.clone()
+    }
 }
 
 #[derive(Debug)]
@@ -30,14 +62,6 @@ impl PluginConfigCache {
     pub fn load() -> Self {
         let mut cache = HashMap::new();
         for (path, config, regex) in onagre_launcher_toolkit::service::load::from_paths() {
-            let icon: Option<IconPath> = THEME.icon_theme.as_ref().and_then(|theme| {
-                config
-                    .icon
-                    .as_ref()
-                    .map(|source| (source, theme))
-                    .and_then(|(source, theme)| IconPath::from_source(source, theme))
-            });
-
             let name = path
                 .parent()
                 .expect("Plugin config should have a parent directory")
@@ -48,7 +72,7 @@ impl PluginConfigCache {
 
             let plugin = Plugin {
                 name: name.clone(),
-                icon,
+                icon: config.icon,
                 history: config.history,
                 help: config.query.help.map(|h| h.to_string()),
                 regex,
@@ -59,7 +83,7 @@ impl PluginConfigCache {
 
         PluginConfigCache { inner: cache }
     }
-    pub fn get_plugin_icon(&self, plugin_name: &str) -> Option<IconPath> {
+    pub fn get_plugin_icon(&self, plugin_name: &str) -> Option<IconSource> {
         self.inner.get(plugin_name).and_then(|de| de.icon.clone())
     }
 
@@ -81,20 +105,20 @@ pub enum Selection {
     PopLauncher(usize),
 }
 
-impl State<'_> {
+impl Onagre {
     pub fn get_active_mode(&self) -> &ActiveMode {
         &self.input_value.mode
     }
 
     pub fn get_input(&self) -> String {
-        if THEME.plugin_hint().is_none() {
+        if self.get_theme().plugin_hint().is_none() {
             self.input_value.input_display.clone()
         } else {
             self.input_value.pop_query.clone()
         }
     }
 
-    pub fn with_mode(mode_query: &str) -> Self {
+    pub fn with_mode(mode_query: &str, theme: OnagreTheme) -> Self {
         let plugin_matchers = PluginConfigCache::load();
         let plugin_split = match_web_plugins(mode_query).or_else(|| {
             plugin_matchers
@@ -116,11 +140,10 @@ impl State<'_> {
             .map(|query_data| query_data.query)
             .unwrap_or_default();
 
-        State {
+        Onagre {
             selected: Selection::History(0),
             cache: Default::default(),
             pop_search: Default::default(),
-            scroll: Default::default(),
             input_value: SearchInput {
                 mode,
                 modifier_display,                  // dgg
@@ -129,6 +152,10 @@ impl State<'_> {
             },
             exec_on_next_search: false,
             plugin_matchers,
+            request_tx: Default::default(),
+            entries: vec![],
+            plugin_icon: None,
+            theme,
         }
     }
 
@@ -174,7 +201,7 @@ impl State<'_> {
             self.input_value.mode = ActiveMode::from(query_data.clone());
             // If plugin-hint is disabled use the full input,
             // otherwise use the split value
-            self.input_value.input_display = if THEME.plugin_hint().is_none() {
+            self.input_value.input_display = if self.get_theme().plugin_hint().is_none() {
                 input.to_string()
             } else {
                 query_data.query
@@ -193,13 +220,13 @@ impl State<'_> {
     fn set_input_with_modifier(&mut self, input: &str, previous_modi: String) {
         if input.is_empty() {
             self.input_value.modifier_display = "".to_string();
-            self.input_value.input_display = if THEME.plugin_hint().is_none() {
+            self.input_value.input_display = if self.get_theme().plugin_hint().is_none() {
                 input.to_string()
             } else {
                 previous_modi
             };
             self.input_value.mode = ActiveMode::DesktopEntry;
-            let _: iced::Command<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
+            let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
         } else {
             self.input_value.input_display = input.to_string();
         }
@@ -212,18 +239,4 @@ pub struct SearchInput {
     pub modifier_display: String,
     pub input_display: String,
     pub pop_query: String,
-}
-
-impl Default for State<'_> {
-    fn default() -> Self {
-        State {
-            selected: Selection::History(0),
-            cache: Default::default(),
-            pop_search: Default::default(),
-            scroll: Default::default(),
-            input_value: SearchInput::default(),
-            exec_on_next_search: false,
-            plugin_matchers: PluginConfigCache::load(),
-        }
-    }
 }

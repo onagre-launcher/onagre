@@ -44,13 +44,11 @@ pub fn unwrap_attr_str(pair: Pair<'_, Rule>) -> &str {
 
 pub fn unwrap_attr_bool(pair: Pair<'_, Rule>) -> bool {
     let value = pair.into_inner().last().unwrap().as_str();
-
     value == "true"
 }
 
 pub fn unwrap_hex_color(pair: Pair<'_, Rule>) -> Result<OnagreColor, ConfigError> {
     let color = pair.into_inner().last().unwrap().as_str();
-
     OnagreColor::from(color)
 }
 

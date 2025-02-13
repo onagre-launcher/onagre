@@ -1,19 +1,19 @@
 use crate::app::mode::WEB_CONFIG;
-use crate::icons::IconPath;
+use onagre_launcher_toolkit::launcher::IconSource;
 use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Plugin {
     pub name: String,
-    pub icon: Option<IconPath>,
+    pub icon: Option<IconSource>,
     pub history: bool,
     pub help: Option<String>,
     pub regex: Option<Regex>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct QueryData {
-    pub icon: Option<IconPath>,
+    pub icon: Option<IconSource>,
     pub plugin_name: String,
     pub modifier: String,
     pub query: String,
@@ -108,8 +108,9 @@ impl Plugin {
 
 #[cfg(test)]
 mod test {
-    use crate::app::plugin_matchers::{Plugin, QueryData};
+    use crate::app::plugin_matchers::Plugin;
     use regex::Regex;
+    use speculoos::prelude::*;
 
     #[test]
     fn should_split_entry() {
@@ -123,16 +124,12 @@ mod test {
 
         let match_ = plugin.try_match("find some text");
 
-        assert_eq!(
-            match_,
-            Some(QueryData {
-                icon: None,
-                plugin_name: "find".to_string(),
-                modifier: "find".to_string(),
-                query: " some text".to_string(),
-                history: false,
-            })
-        );
+        assert_that!(match_)
+            .is_some()
+            .matches(|m| m.icon.is_none())
+            .matches(|m| m.plugin_name == "find")
+            .matches(|m| m.query == " some text")
+            .matches(|m| !m.history);
     }
 
     #[test]
@@ -147,7 +144,7 @@ mod test {
 
         let match_ = plugin.try_match("fin");
 
-        assert_eq!(match_, None);
+        assert_that!(match_).is_none();
     }
 
     #[test]
@@ -162,15 +159,12 @@ mod test {
 
         let match_ = plugin.try_match("find ");
 
-        assert_eq!(
-            match_,
-            Some(QueryData {
-                icon: None,
-                plugin_name: "find".to_string(),
-                modifier: "find".to_string(),
-                query: " ".to_string(),
-                history: false,
-            })
-        );
+        assert_that!(match_)
+            .is_some()
+            .matches(|m| m.icon.is_none())
+            .matches(|m| m.plugin_name == "find")
+            .matches(|m| m.query == " ")
+            .matches(|m| m.modifier == "find")
+            .matches(|m| !m.history);
     }
 }
