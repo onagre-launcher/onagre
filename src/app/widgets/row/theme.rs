@@ -21,6 +21,7 @@ pub enum Class {
     SearchInput,
     Icon { selected: bool },
     CategoryIcon { selected: bool },
+    SearchBar,
 }
 
 impl container::Catalog for OnagreTheme {
@@ -44,11 +45,13 @@ impl container::Catalog for OnagreTheme {
                 Some(style) => style.into(),
                 None => self.0.search().into(),
             },
-            Class::SearchInput => self.0.search().into(),
+            Class::SearchInput => self.0.search_input().into(),
+            Class::SearchBar => self.0.search().into(),
             _ => unreachable!(),
         }
     }
 }
+
 impl button::Catalog for OnagreTheme {
     type Class<'a> = Class;
 
@@ -86,7 +89,7 @@ impl text_input::Catalog for OnagreTheme {
     type Class<'a> = Class;
 
     fn default<'a>() -> Self::Class<'a> {
-        Class::RowClickable
+        Class::SearchInput
     }
 
     fn style(&self, _: &Self::Class<'_>, _: text_input::Status) -> text_input::Style {

@@ -3,9 +3,9 @@ use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
 use iced::border::Radius;
-use iced::widget::text_input;
-use iced::Length;
-use iced::{Background, Border};
+use iced::widget::{container, text_input};
+use iced::{Background, Border, Vector};
+use iced::{Length, Shadow};
 
 #[derive(Debug, PartialEq)]
 pub struct SearchInputStyles {
@@ -56,18 +56,24 @@ impl From<&SearchInputStyles> for text_input::Style {
     }
 }
 
-/*     fn disabled(&self, _style: &Self::Style) -> Appearance {
-        Appearance {
-            background: Background::Color(self.background.into()),
+impl From<&SearchInputStyles> for container::Style {
+    fn from(val: &SearchInputStyles) -> Self {
+        container::Style {
+            text_color: Some(val.placeholder_color.into()),
+            background: Some(Background::Color(val.background.into())),
             border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: Radius::from(val.border_radius),
             },
-            icon_color: Default::default(),
+            shadow: Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
         }
     }
-*/
+}
 
 impl Default for SearchInputStyles {
     fn default() -> Self {

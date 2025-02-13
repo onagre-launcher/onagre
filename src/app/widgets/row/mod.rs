@@ -4,7 +4,7 @@ use theme::{text_default, Class};
 
 use crate::app::{entries::Entry, style::rows::RowStyles, Message, OnagreTheme};
 
-use super::icon::Named;
+use super::icon::{IconFallback, Named};
 
 pub mod theme;
 
@@ -69,7 +69,6 @@ fn description<'a>(
     })
 }
 
-// TODO: simplyfy lifetime
 pub fn to_container<'a>(
     layout: &'a RowStyles,
     index: usize,
@@ -86,7 +85,7 @@ pub fn to_container<'a>(
 
     let icon = entry
         .get_icon()
-        .map(|source| Named::from_icon_source(source, icon_theme))
+        .map(|source| Named::from_icon_source(source, icon_theme).fallback(IconFallback::Default))
         .map(|i| Named::icon(i, selected).size(layout.icon.icon_size))
         .map(|icon| {
             container(icon)
@@ -98,7 +97,7 @@ pub fn to_container<'a>(
                 .padding(layout.icon.padding.to_iced_padding())
         });
     let category_icon = category_icon
-        .map(|source| Named::from_icon_source(source, icon_theme))
+        .map(|source| Named::from_icon_source(source, icon_theme).fallback(IconFallback::Default))
         .map(|i| Named::icon(i, selected).size(layout.category_icon.icon_size))
         .map(|icon| {
             container(icon)

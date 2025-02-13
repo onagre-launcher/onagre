@@ -11,7 +11,6 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 
-pub mod hint;
 pub mod input;
 
 #[derive(Debug, PartialEq)]

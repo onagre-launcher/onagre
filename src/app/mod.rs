@@ -69,10 +69,7 @@ pub fn run(pre_value: Option<String>, theme: OnagreTheme) -> iced::Result {
     debug!("Starting Onagre in debug mode");
     let font = FONT.get_or_init(|| theme.0.font.clone());
     info!("using font {font:?}");
-    let default_font = font
-        .as_deref()
-        .map(Font::with_name)
-        .unwrap_or_default();
+    let default_font = font.as_deref().map(Font::with_name).unwrap_or_default();
 
     iced::application("Onagre", Onagre::update, Onagre::view)
         .decorations(false)
@@ -140,19 +137,21 @@ impl Onagre {
             .width(self.get_theme().app_container.rows.width)
             .height(self.get_theme().app_container.rows.height); // TODO: add this to stylesheet
 
+        let search_input_layout = self.get_theme().search_input();
+
         let text_input = text_input("Search", &self.input_value.input_display)
             .on_input(Message::InputChanged)
             .id(INPUT_ID.clone())
-            // .style(&self.get_theme().search_input())
-            .padding(self.get_theme().search_input().padding.to_iced_padding())
-            .width(self.get_theme().search_input().text_width)
-            .size(self.get_theme().search_input().font_size);
+            .class(Class::SearchInput)
+            .padding(search_input_layout.padding.to_iced_padding())
+            .width(search_input_layout.text_width)
+            .size(search_input_layout.font_size);
 
         let search_input = container(text_input)
-            .width(self.get_theme().search_input().width)
-            .height(self.get_theme().search_input().height)
-            .align_x(self.get_theme().search_input().align_x)
-            .align_y(self.get_theme().search_input().align_y)
+            .width(search_input_layout.width)
+            .height(search_input_layout.height)
+            .align_x(search_input_layout.align_x)
+            .align_y(search_input_layout.align_y)
             .class(Class::SearchInput);
 
         let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
@@ -182,6 +181,7 @@ impl Onagre {
         };
 
         let search_bar = container(search_bar)
+            .class(Class::SearchBar)
             .align_x(self.get_theme().search().align_x)
             .align_y(self.get_theme().search().align_y)
             .padding(self.get_theme().search().padding.to_iced_padding())

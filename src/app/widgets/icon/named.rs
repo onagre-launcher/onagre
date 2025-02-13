@@ -26,6 +26,7 @@ pub struct Named {
     pub(super) theme: Option<Arc<str>>,
 
     /// Checks for a fallback if the icon was not found.
+    #[setters(strip_option)]
     pub fallback: Option<IconFallback>,
 
     /// Restrict the lookup to a given scale.
@@ -46,7 +47,11 @@ pub struct Named {
 impl Named {
     pub fn from_icon_source(value: IconSource, theme: Option<impl Into<Arc<str>>>) -> Self {
         match value {
-            IconSource::Name(name) | IconSource::Mime(name) => Named::new(name, theme),
+            IconSource::Name(name) => Named::new(name, theme),
+            IconSource::Mime(name) => {
+                let name = name.replace('/', "-");
+                Named::new(name, theme)
+            }
         }
     }
 
@@ -93,18 +98,21 @@ impl Named {
 
         // On failure, attempt to locate fallback icon.
         if result.is_none() {
+            let default_theme_gtk = freedesktop_icons::default_theme_gtk();
             if matches!(fallback, Some(IconFallback::Default)) {
                 for new_name in name.rmatch_indices('-').map(|(pos, _)| &name[..pos]) {
-                    result =
-                        freedesktop_icons::default_theme_gtk().and_then(|t| locate(&t, new_name));
+                    result = default_theme_gtk
+                        .as_ref()
+                        .and_then(|t| locate(&t, new_name));
                     if result.is_some() {
                         break;
                     }
                 }
             } else if let Some(IconFallback::Names(fallbacks)) = fallback {
                 for fallback in fallbacks {
-                    result = freedesktop_icons::default_theme_gtk()
-                        .and_then(|t| locate(&t, fallback.as_ref()));
+                    result = default_theme_gtk
+                        .as_ref()
+                        .and_then(|t| locate(t, fallback.as_ref()));
                     if result.is_some() {
                         break;
                     }
