@@ -1,6 +1,6 @@
 use iced::widget::svg;
 
-use crate::app::{widgets::row::theme::Class, OnagreTheme};
+use crate::app::{widgets::entries::theme::Class, OnagreTheme};
 
 impl svg::Catalog for OnagreTheme {
     type Class<'a> = Class;

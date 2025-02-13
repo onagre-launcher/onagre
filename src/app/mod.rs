@@ -19,8 +19,8 @@ use onagre_launcher_toolkit::launcher::{IconSource, Request, Response};
 use once_cell::sync::{Lazy, OnceCell};
 use subscriptions::pop_launcher::pop_launcher;
 use tracing::{debug, info, trace};
-use widgets::row::theme::Class;
-use widgets::row::to_scrollable;
+use widgets::entries::theme::Class;
+use widgets::entries::to_scrollable;
 
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::mode::ActiveMode;

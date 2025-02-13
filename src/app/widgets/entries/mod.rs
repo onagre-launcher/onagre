@@ -108,6 +108,7 @@ pub fn to_container<'a>(
                 .width(layout.category_icon.width)
                 .padding(layout.category_icon.padding.to_iced_padding())
         });
+
     let row = match (category_icon, icon) {
         (Some(category_icon), Some(icon)) => row![category_icon, icon, column],
         (None, Some(icon)) => row![icon, column],

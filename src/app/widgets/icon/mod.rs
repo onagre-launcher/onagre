@@ -1,6 +1,6 @@
 // Copyright 2022 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
-use super::row::theme::Class;
+use super::entries::theme::Class;
 use crate::app::OnagreTheme;
 use derive_setters::Setters;
 use iced::Rotation;
