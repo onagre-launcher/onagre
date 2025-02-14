@@ -1,33 +1,18 @@
-use std::path::PathBuf;
-use std::sync::Mutex;
+use std::{path::PathBuf, sync::Arc};
 
 use anyhow::anyhow;
+use app::OnagreTheme;
 use clap::Parser;
-use once_cell::sync::{Lazy, OnceCell};
 use tracing::{debug, info};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-use app::style::Theme;
+use app::style::{Scale, Theme};
 
 pub mod app;
 pub mod config;
 pub mod db;
 pub mod freedesktop;
-pub mod icons;
-
-pub static THEME_PATH: Lazy<Mutex<PathBuf>> = Lazy::new(|| {
-    Mutex::new(
-        dirs::config_dir()
-            .ok_or_else(|| anyhow!("Theme config not found"))
-            .map(|path| path.join("onagre").join("theme.scss"))
-            .unwrap(),
-    )
-});
-
-static THEME_SCALE: OnceCell<f32> = OnceCell::new();
-
-pub static THEME: Lazy<Theme> = Lazy::new(Theme::load);
 
 #[derive(Parser)]
 #[command(name = "onagre", author = "Paul D. <paul.delafosse@protonmail.com>")]
@@ -57,26 +42,33 @@ pub fn main() -> iced::Result {
     info!("Starting onagre");
     let cli = Cli::parse();
 
-    // User defined theme config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise
-    if let Some(theme_path) = cli.theme {
-        let path = theme_path.canonicalize();
-        if let Ok(path) = path {
-            *THEME_PATH.lock().unwrap() = path;
-        }
+    let theme_path = cli.theme.and_then(|path| {
+        info!("Using alternate theme : {path:?}");
+        path.canonicalize().ok()
+    });
 
-        info!("Using alternate theme : {:?}", THEME_PATH.lock().unwrap());
-    }
+    let theme_path = theme_path.unwrap_or_else(|| {
+        dirs::config_dir()
+            .ok_or_else(|| anyhow!("Theme config not found"))
+            .map(|path| path.join("onagre").join("theme.scss"))
+            .unwrap()
+    });
 
-    if let Some(scale) = cli.scale {
-        THEME_SCALE.get_or_init(|| scale);
+    let theme = Theme::load(theme_path);
+
+    let theme = if let Some(scale) = cli.scale {
         info!("Using scale value : {:?}", scale);
-    }
+        theme.scale(scale)
+    } else {
+        theme
+    };
+
+    let theme = Arc::new(theme);
 
     if let Some(mode) = cli.mode {
         debug!("Mode parameter: {:?}", mode);
-
-        app::run(Some(mode))
+        app::run(Some(mode), OnagreTheme(theme))
     } else {
-        app::run(None)
+        app::run(None, OnagreTheme(theme))
     }
 }

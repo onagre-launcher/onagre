@@ -3,6 +3,7 @@ use std::borrow::Cow;
 use std::cmp::Reverse;
 use std::fmt::Debug;
 use std::sync::Arc;
+use onagre_launcher_toolkit::launcher::IconSource;
 use tracing::{debug, trace};
 
 use redb::{ReadableTable, TableDefinition};
@@ -10,8 +11,6 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 pub mod desktop_entry;
-pub mod plugin;
-pub mod web;
 
 pub static DB: Lazy<Database> = Lazy::new(Database::default);
 
@@ -106,7 +105,14 @@ impl Database {
     }
 }
 
+// TODO: GET RID OF THIS  
 pub trait Entity<'a> {
     fn get_key(&self) -> Cow<'a, str>;
     fn get_weight(&self) -> u8;
+}
+
+fn icon_to_str(i: Option<&IconSource>) -> Option<Cow<str>> {
+    i.map(|i| match i {
+        IconSource::Name(name) | IconSource::Mime(name) => name.clone(),
+    })
 }

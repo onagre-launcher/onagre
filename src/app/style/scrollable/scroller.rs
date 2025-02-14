@@ -1,11 +1,10 @@
 use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
-use iced::widget::scrollable::Scrollbar;
+use iced::border::Radius;
+use iced::widget::scrollable;
+use iced::widget::scrollable::Rail;
 use iced::Background;
-use iced_core::border::Radius;
-use iced_core::Border;
-use iced_style::scrollable::{Appearance, StyleSheet};
-use iced_style::theme::Scrollable;
+use iced::Border;
 
 #[derive(Debug, PartialEq)]
 pub struct ScrollerStyles {
@@ -53,39 +52,43 @@ impl Default for ScrollerStyles {
     }
 }
 
-impl From<&ScrollerStyles> for Scrollable {
-    fn from(_: &ScrollerStyles) -> Self {
-        Scrollable::Default
-    }
-}
-
-impl StyleSheet for &ScrollerStyles {
-    type Style = iced::Theme;
-
-    fn active(&self, _: &Self::Style) -> Appearance {
-        Appearance {
+impl From<&ScrollerStyles> for scrollable::Style {
+    fn from(val: &ScrollerStyles) -> Self {
+        scrollable::Style {
             container: Default::default(),
-            scrollbar: Scrollbar {
-                background: Some(Background::Color(self.background.into())),
+            gap: None,
+            vertical_rail: Rail {
+                background: Some(Background::Color(val.background.into())),
                 border: Border {
-                    color: self.border_color.into(),
-                    width: self.border_width,
-                    radius: Radius::from(self.border_radius),
+                    color: val.border_color.into(),
+                    width: val.border_width,
+                    radius: Radius::from(val.border_radius),
                 },
-                scroller: iced::widget::scrollable::Scroller {
-                    color: self.scroller_color.into(),
+                scroller: scrollable::Scroller {
+                    color: val.scroller_color.into(),
                     border: Border {
-                        color: self.scroller_border_color.into(),
-                        width: self.scroller_border_width,
-                        radius: Radius::from(self.scroller_border_radius),
+                        color: val.scroller_border_color.into(),
+                        width: val.scroller_border_width,
+                        radius: Radius::from(val.scroller_border_radius),
                     },
                 },
             },
-            gap: None,
+            horizontal_rail: Rail {
+                background: Some(Background::Color(val.background.into())),
+                border: Border {
+                    color: val.border_color.into(),
+                    width: val.border_width,
+                    radius: Radius::from(val.border_radius),
+                },
+                scroller: scrollable::Scroller {
+                    color: val.scroller_color.into(),
+                    border: Border {
+                        color: val.scroller_border_color.into(),
+                        width: val.scroller_border_width,
+                        radius: Radius::from(val.scroller_border_radius),
+                    },
+                },
+            },
         }
-    }
-
-    fn hovered(&self, style: &Self::Style, _is_mouse_over_scrollbar: bool) -> Appearance {
-        self.active(style)
     }
 }

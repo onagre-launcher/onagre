@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::app::style::app::AppContainerStyles;
 use crate::app::style::rows::generic::GenericContainerStyle;
 use crate::app::style::scrollable::scroller::ScrollerStyles;
@@ -5,34 +7,40 @@ use crate::app::style::search::input::SearchInputStyles;
 use crate::app::style::search::SearchContainerStyles;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
-use crate::THEME_PATH;
-use crate::THEME_SCALE;
-use iced::widget::container::Appearance;
-use iced::Background;
-use iced_core::border::Radius;
-use iced_core::{Border, Length};
+use iced::daemon::DefaultStyle;
+use iced::widget::container;
+use iced::widget::container::Style;
+use iced::widget::text;
+use iced::Length;
+use iced::Vector;
+use rows::icon::IconStyle;
+use rows::RowStyles;
+use scrollable::RowContainerStyle;
 use tracing::{error, warn};
+
+use super::state::Onagre;
+use super::OnagreTheme;
 
 pub mod app;
 pub mod rows;
 pub mod scrollable;
 pub mod search;
 
+impl Onagre {
+    pub fn load_theme(&self) -> OnagreTheme {
+        self.theme.clone()
+    }
+}
+
 impl Theme {
-    pub fn load() -> Self {
-        let buf = THEME_PATH.lock().unwrap().clone();
-        let theme = crate::config::parse_file(&buf);
+    pub fn load(path: PathBuf) -> Self {
+        let theme = crate::config::parse_file(&path);
         if let Err(err) = &theme {
-            error!("Failed to parse theme {buf:?}: {err}");
+            error!("Failed to parse theme {path:?}: {err}");
             warn!("Failing back to default theme");
         };
 
-        let mut theme = theme.unwrap_or_default();
-        if let Some(scale) = THEME_SCALE.get() {
-            theme = theme.scale(*scale)
-        }
-
-        theme
+        theme.unwrap_or_default()
     }
 }
 
@@ -66,6 +74,15 @@ pub struct Theme {
 
     // Children
     pub app_container: AppContainerStyles,
+}
+
+impl DefaultStyle for OnagreTheme {
+    fn default_style(&self) -> iced::daemon::Appearance {
+        iced::daemon::Appearance {
+            background_color: self.0.background.into(),
+            text_color: self.0.color.into(),
+        }
+    }
 }
 
 impl Scale for Theme {
@@ -121,6 +138,34 @@ impl Theme {
     pub fn app(&self) -> &AppContainerStyles {
         &self.app_container
     }
+
+    pub fn rows(&self) -> &RowContainerStyle {
+        &self.app_container.rows
+    }
+
+    pub fn row(&self, selected: bool) -> &RowStyles {
+        if selected {
+            &self.app_container.rows.row_selected
+        } else {
+            &self.app_container.rows.row
+        }
+    }
+
+    pub fn title(&self, selected: bool) -> &GenericContainerStyle {
+        &self.row(selected).title
+    }
+
+    pub fn description(&self, selected: bool) -> &GenericContainerStyle {
+        &self.row(selected).description
+    }
+
+    pub fn icon(&self, selected: bool) -> &IconStyle {
+        &self.row(selected).icon
+    }
+
+    pub fn category_icon(&self, selected: bool) -> &IconStyle {
+        &self.row(selected).category_icon
+    }
 }
 
 impl Default for Theme {
@@ -130,8 +175,7 @@ impl Default for Theme {
             size: (450, 300),
             font: None,
             font_size: 18,
-            // TODO: default icon theme ?
-            icon_theme: Some("Papirus".to_string()),
+            icon_theme: freedesktop_icons::default_theme_gtk(),
             icon_size: 24,
             background: OnagreColor::DEFAULT_BACKGROUND,
             color: OnagreColor::DEFAULT_TEXT,
@@ -144,19 +188,29 @@ impl Default for Theme {
     }
 }
 
-impl iced::widget::container::StyleSheet for &Theme {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
-            background: Some(Background::Color(self.background.into())),
-            border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+impl From<&Theme> for container::Style {
+    fn from(val: &Theme) -> Self {
+        Style {
+            text_color: Some(val.color.into()),
+            background: Some(iced::Background::Color(val.background.into())),
+            border: iced::Border {
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: iced::border::Radius::from(val.border_radius),
             },
-            text_color: Some(self.color.into()),
-            shadow: Default::default(),
+            shadow: iced::Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
+        }
+    }
+}
+
+impl From<&Theme> for text::Style {
+    fn from(val: &Theme) -> Self {
+        text::Style {
+            color: Some(val.color.into()),
         }
     }
 }
