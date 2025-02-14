@@ -28,7 +28,6 @@ use crate::app::state::{Onagre, Selection};
 use crate::db;
 use crate::db::desktop_entry::DesktopEntryEntity;
 use crate::db::plugin::PluginCommandEntity;
-use crate::db::web::WebEntity;
 use crate::freedesktop::desktop::DesktopEntry;
 
 pub mod cache;
@@ -104,7 +103,7 @@ pub fn run(pre_value: Option<String>, theme: OnagreTheme) -> iced::Result {
         .theme(Onagre::load_theme)
         .run_with(|| {
             let onagre = if let Some(pre) = pre_value {
-                Onagre::with_mode(&pre, theme)
+                Onagre::start_with_mode(&pre, theme)
             } else {
                 Onagre::new(theme)
             };
@@ -137,10 +136,14 @@ impl Onagre {
             .width(self.get_theme().app_container.rows.width)
             .height(self.get_theme().app_container.rows.height); // TODO: add this to stylesheet
 
+        let input_display = self.active_mode.query();
+        let modifier = self.active_mode.modifier();
+        debug!("{modifier:?}{input_display}");
+        
         let search_bar = search_bar(
             INPUT_ID.clone(),
-            &self.input_value.input_display,
-            &self.input_value.modifier_display,
+            input_display,
+            modifier,
             self.get_theme().search(),
         );
 
@@ -198,7 +201,7 @@ impl Onagre {
                 Task::none()
             }
             Message::Click(row_idx) => {
-                match self.get_active_mode() {
+                match self.active_mode {
                     ActiveMode::History => self.selected = Selection::History(row_idx),
                     _ => self.selected = Selection::PopLauncher(row_idx),
                 }
@@ -206,7 +209,8 @@ impl Onagre {
                 self.on_execute()
             }
         };
-        let (icon, entries) = match self.get_active_mode() {
+        
+        let (icon, entries) = match &self.active_mode {
             ActiveMode::Plugin {
                 plugin_name,
                 history,
@@ -218,14 +222,6 @@ impl Onagre {
                     .iter()
                     .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
                     .collect::<Vec<Box<dyn Entry>>>(),
-            ),
-            ActiveMode::Web { modifier, .. } => (
-                self.plugin_matchers.get_plugin_icon("web"),
-                self.cache
-                    .web_history(modifier)
-                    .iter()
-                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
-                    .collect(),
             ),
             ActiveMode::History => (
                 self.plugin_matchers.get_plugin_icon("desktop_entries"),
@@ -265,7 +261,7 @@ impl Onagre {
     // in order to re-ask pop-launcher for the exact same entry
     fn current_entry(&self) -> Option<String> {
         let selected = self.selected();
-        match &self.get_active_mode() {
+        match &self.active_mode {
             ActiveMode::History => self
                 .cache
                 .de_history()
@@ -282,42 +278,32 @@ impl Onagre {
                         .map(|entry| entry.query.to_string()),
                 }
             }
-            ActiveMode::Web { modifier, .. } => {
-                // Get user input as pop-entry
-                match selected {
-                    None => self.pop_search.first().map(|entry| entry.name.clone()),
-                    Some(selected) => self
-                        .cache
-                        .web_history(modifier)
-                        .get(selected)
-                        .map(|entry| entry.query()),
-                }
-            }
             _pop_mode => None,
         }
     }
 
     fn on_input_changed(&mut self, input: String) -> Task<Message> {
-        self.set_input(&input);
-        self.selected = match self.get_active_mode() {
+        self.active_mode = self.plugin_matchers.get_active_mode(&input, &self.active_mode);
+        let mode = &self.active_mode;
+        
+        self.selected = match self.active_mode {
             // For those mode first line is unselected on change
             // We want to issue a pop-launcher search request to get the query at index 0 in
             // the next search response, then activate it
-            ActiveMode::Web { .. } | ActiveMode::History => Selection::Reset,
-            ActiveMode::Plugin { history, .. } if *history => Selection::Reset,
+            ActiveMode::History => Selection::Reset,
+            ActiveMode::Plugin {
+                history, isolate, ..
+            } if history && mode.is_empty_query() => Selection::Reset,
             _ => Selection::PopLauncher(0),
         };
 
         let _: Task<Message> = scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START);
 
-        match &self.get_active_mode() {
-            ActiveMode::History => {}
-            _ => {
-                let value = self.get_input();
-
-                self.pop_request(Request::Search(value))
-                    .expect("Unable to send search request to pop-launcher")
-            }
+        if !mode.is_empty_query() {
+            let query = mode.pop_query();
+            
+            self.pop_request(Request::Search(query))
+                .expect("Unable to send search request to pop-launcher")
         }
 
         text_input::focus(INPUT_ID.clone())
@@ -388,24 +374,20 @@ impl Onagre {
 
     fn complete(&mut self, fill: String) {
         let filled = if self.get_theme().plugin_hint().is_none() {
-            self.input_value.input_display = fill;
+            todo!("fill {fill}");
             let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
-            self.input_value.input_display.clone()
         } else {
-            let mode_prefix = &self.input_value.modifier_display;
-            let fill = fill
-                .strip_prefix(mode_prefix)
-                .expect("Auto-completion Error");
-            self.input_value.input_display = fill.into();
+            todo!("fill with modi {fill}");
             let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
-            self.input_value.input_display.clone()
         };
 
         let _ = self.on_input_changed(filled);
     }
 
     fn on_execute(&mut self) -> Task<Message> {
-        match &self.get_active_mode() {
+        let mode = &self.active_mode;
+
+        match mode {
             ActiveMode::Plugin {
                 plugin_name,
                 history,
@@ -413,7 +395,7 @@ impl Onagre {
             } if *history => {
                 PluginCommandEntity::persist(
                     plugin_name.as_str(),
-                    &self.get_input(),
+                    &mode.pop_query(),
                     &self.cache.db,
                 );
 
@@ -425,30 +407,9 @@ impl Onagre {
                     // Re ask pop-launcher for a stored query
                     self.exec_on_next_search = true;
                     let command = self.current_entry().unwrap();
-                    self.set_input(&command);
+                    self.active_mode = self.plugin_matchers.get_active_mode(&command, &self.active_mode);
                     self.pop_request(Request::Search(command))
                         .expect("Unable to send pop-launcher request");
-                }
-            }
-            ActiveMode::Web { modifier, .. } => {
-                let query = self.get_input();
-                let query = query.strip_prefix(modifier).unwrap();
-                let entry = &self.entries[self.selected().unwrap_or(0)];
-                let icon = entry.get_icon().map(|i| match i {
-                    IconSource::Name(i) | IconSource::Mime(i) => i,
-                });
-                WebEntity::persist(query, modifier.as_str(), icon, &self.cache.db);
-                // Running the user input query at index zero
-                if self.selected().is_none() {
-                    self.pop_request(Request::Activate(0))
-                        .expect("Unable to send pop-launcher request")
-                } else {
-                    // Re ask pop-launcher for a stored query
-                    let command = self.current_entry().unwrap();
-                    self.set_input(&command);
-                    self.exec_on_next_search = true;
-                    self.pop_request(Request::Search(command))
-                        .expect("Unable to send pop-launcher request")
                 }
             }
             ActiveMode::History => {
@@ -473,7 +434,10 @@ impl Onagre {
     }
 
     fn current_entries_len(&self) -> usize {
-        match &self.get_active_mode() {
+        let mode = &self.active_mode;
+        match mode {
+            ActiveMode::Default(_) =>
+                self.pop_search.len(),
             ActiveMode::Plugin {
                 plugin_name,
                 history,
@@ -486,8 +450,6 @@ impl Onagre {
                 }
             }
             ActiveMode::History => self.cache.history_len(db::desktop_entry::COLLECTION),
-            ActiveMode::DesktopEntry => self.pop_search.len(),
-            ActiveMode::Web { modifier, .. } => self.cache.history_len(modifier),
         }
     }
 

@@ -11,7 +11,7 @@ use super::entries::theme::Class;
 pub fn search_bar<'a>(
     input_id: Id,
     input_display: &'a str,
-    modifier_display: &'a str,
+    modifier_display: Option<&'a str>,
     layout: &'a SearchContainerStyles,
 ) -> Container<'a, Message, OnagreTheme> {
     let search_input_layout = &layout.input;
@@ -36,9 +36,9 @@ pub fn search_bar<'a>(
     // Or we display the normal search input
     let search_bar = match &layout.plugin_hint {
         None => search_bar.push(search_input),
-        Some(plugin_hint_style) => if !modifier_display.is_empty() {
+        Some(plugin_hint_style) => if modifier_display.is_some() {
             let plugin_hint = container(
-                Text::new(modifier_display)
+                Text::new(modifier_display.unwrap())
                     .align_y(Vertical::Center)
                     .align_x(Horizontal::Center)
                     .size(plugin_hint_style.font_size),
