@@ -105,6 +105,7 @@ impl Database {
     }
 }
 
+// TODO: GET RID OF THIS  
 pub trait Entity<'a> {
     fn get_key(&self) -> Cow<'a, str>;
     fn get_weight(&self) -> u8;

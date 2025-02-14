@@ -322,7 +322,7 @@ impl Onagre {
     }
 
     fn snap(&mut self) -> Task<Message> {
-        let total_items = self.current_entries_len() as f32;
+        let total_items = self.entries.len() as f32;
         let offset = (1.0 / total_items) * self.selected as f32;
         scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset { x: 0.0, y: offset })
     }
@@ -358,11 +358,7 @@ impl Onagre {
 
         Task::none()
     }
-
-    fn current_entries_len(&self) -> usize {
-        self.entries.len()
-    }
-
+    
     fn pop_request(&self, request: Request) -> Result<(), TrySendError<Request>> {
         let sender = self.request_tx.as_ref().unwrap();
         let mut sender = sender.clone();
@@ -376,7 +372,7 @@ impl Onagre {
     }
 
     fn inc_selected(&mut self) -> Task<Message> {
-        if self.selected + 1 >= self.current_entries_len() {
+        if self.selected + 1 >= self.entries.len() {
             return Task::none();
         }
 
