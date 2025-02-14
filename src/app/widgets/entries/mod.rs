@@ -1,5 +1,4 @@
 use iced::widget::{button, column, container, row, scrollable, text, Container, Scrollable};
-use onagre_launcher_toolkit::launcher::IconSource;
 use theme::{text_default, Class};
 
 use crate::app::{entries::Entry, style::rows::RowStyles, Message, OnagreTheme};
@@ -9,7 +8,6 @@ use super::icon::{IconFallback, Named};
 pub mod theme;
 
 pub fn to_scrollable<'a>(
-    category_icon: Option<IconSource>,
     layout: &'a RowStyles,
     entries: &'a [Box<dyn Entry>],
     selected: usize,
@@ -25,7 +23,6 @@ pub fn to_scrollable<'a>(
                 idx,
                 selected(idx),
                 entry.as_ref(),
-                category_icon.clone(),
                 icon_theme,
             )
         })
@@ -74,7 +71,6 @@ pub fn to_container<'a>(
     index: usize,
     selected: bool,
     entry: &'a dyn Entry,
-    category_icon: Option<IconSource>,
     icon_theme: Option<&str>,
 ) -> Container<'a, Message, OnagreTheme> {
     let column = iced::widget::column(vec![title(layout, entry, selected).into()]);
@@ -96,7 +92,7 @@ pub fn to_container<'a>(
                 .width(layout.icon.width)
                 .padding(layout.icon.padding.to_iced_padding())
         });
-    let category_icon = category_icon
+    let category_icon = entry.get_category_icon()
         .map(|source| Named::from_icon_source(source, icon_theme).fallback(IconFallback::Default))
         .map(|i| Named::icon(i, selected).size(layout.category_icon.icon_size))
         .map(|icon| {

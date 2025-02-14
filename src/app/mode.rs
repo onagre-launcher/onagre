@@ -1,10 +1,8 @@
 use onagre_launcher_toolkit::plugins::web::Config as WebConfig;
 use once_cell::sync::Lazy;
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ActiveMode {
-    #[default]
-    History,
     Default(String),
     Plugin {
         plugin_name: String,
@@ -18,7 +16,6 @@ pub enum ActiveMode {
 impl ActiveMode {
     pub fn is_empty_query(&self) -> bool {
         match self {
-            ActiveMode::History => true,
             ActiveMode::Default(query) => query.is_empty(),
             ActiveMode::Plugin { query, .. } => query.trim().is_empty(),
         }
@@ -26,7 +23,6 @@ impl ActiveMode {
 
     pub fn query (&self) -> &str {
         match self {
-            ActiveMode::History => "",
             ActiveMode::Default(query ) => query,
             ActiveMode::Plugin { query, .. } => query,
         }
@@ -34,14 +30,13 @@ impl ActiveMode {
 
     pub fn modifier(&self) -> Option<&str> {
         match self {
-            ActiveMode::History | ActiveMode::Default(_) => None,
+            ActiveMode::Default(_) => None,
             ActiveMode::Plugin { modifier, .. } => Some(modifier),
         }
     }
 
     pub fn pop_query(&self) -> String {
         match self {
-            ActiveMode::History => "".to_string(),
             ActiveMode::Default(query) => query.clone(),
             ActiveMode::Plugin {
                 modifier, query, ..

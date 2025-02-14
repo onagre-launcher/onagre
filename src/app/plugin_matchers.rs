@@ -24,7 +24,7 @@ impl Plugin {
         self.regex
             .as_ref()
             .and_then(|regex| regex.captures(text))
-            .and_then(|captures| captures.get(0))
+            .and_then(|captures| captures.get(1))
             .map(|m| m.as_str())
             .map(|modifier| QueryData {
                 plugin: self,

@@ -24,10 +24,9 @@ use widgets::search::search_bar;
 
 use crate::app::entries::pop_entry::PopSearchResult;
 use crate::app::mode::ActiveMode;
-use crate::app::state::{Onagre, Selection};
+use crate::app::state::Onagre;
 use crate::db;
-use crate::db::desktop_entry::DesktopEntryEntity;
-use crate::db::plugin::PluginCommandEntity;
+use crate::db::desktop_entry::{DesktopEntryEntity, DEFAULT_PLUGIN};
 use crate::freedesktop::desktop::DesktopEntry;
 
 pub mod cache;
@@ -117,10 +116,9 @@ impl Onagre {
         let layout = &self.theme.0.app_container.rows.row;
 
         let scroll = to_scrollable(
-            self.plugin_icon.clone(),
             layout,
             self.entries.as_slice(),
-            self.selected().unwrap_or(0),
+            self.selected,
             self.get_theme().icon_theme.as_deref(),
         );
 
@@ -139,7 +137,7 @@ impl Onagre {
         let input_display = self.active_mode.query();
         let modifier = self.active_mode.modifier();
         debug!("{modifier:?}{input_display}");
-        
+
         let search_bar = search_bar(
             INPUT_ID.clone(),
             input_display,
@@ -179,7 +177,8 @@ impl Onagre {
                     Response::Context { .. } => todo!("Discrete graphics is not implemented"),
                     Response::DesktopEntry { path, .. } => {
                         debug!("Launch DesktopEntry {path:?} via run_command");
-                        let _ = self.run_command(path);
+                        let current = &self.entries[self.selected];
+                        let _ = self.run_command(current.as_ref(), path);
                     }
                     Response::Update(search_updates) => {
                         if self.exec_on_next_search {
@@ -188,9 +187,16 @@ impl Onagre {
                                 .expect("Unable to send Activate request to pop-launcher");
                             return Task::none();
                         }
-                        self.pop_search = search_updates;
+                        self.entries = search_updates
+                            .iter()
+                            .cloned()
+                            .map(|entry| Box::new(PopSearchResult(entry)) as Box<dyn Entry>)
+                            .collect();
                     }
-                    Response::Fill(fill) => self.complete(fill),
+                    Response::Fill(fill) => {
+                        let _ = self.on_input_changed(fill);
+                        let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
+                    }
                 };
                 Task::none()
             }
@@ -200,50 +206,8 @@ impl Onagre {
                 }
                 Task::none()
             }
-            Message::Click(row_idx) => {
-                match self.active_mode {
-                    ActiveMode::History => self.selected = Selection::History(row_idx),
-                    _ => self.selected = Selection::PopLauncher(row_idx),
-                }
-
-                self.on_execute()
-            }
+            Message::Click(row_idx) => self.on_execute(),
         };
-        
-        let (icon, entries) = match &self.active_mode {
-            ActiveMode::Plugin {
-                plugin_name,
-                history,
-                ..
-            } if *history => (
-                self.plugin_matchers.get_plugin_icon(plugin_name),
-                self.cache
-                    .plugin_history(plugin_name)
-                    .iter()
-                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
-                    .collect::<Vec<Box<dyn Entry>>>(),
-            ),
-            ActiveMode::History => (
-                self.plugin_matchers.get_plugin_icon("desktop_entries"),
-                self.cache
-                    .de_history()
-                    .iter()
-                    .cloned()
-                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
-                    .collect(),
-            ),
-            _ => (
-                None,
-                self.pop_search
-                    .iter()
-                    .cloned()
-                    .map(|entry| Box::new(PopSearchResult(entry)) as Box<dyn Entry>)
-                    .collect(),
-            ),
-        };
-
-        self.plugin_icon = icon;
-        self.entries = entries;
 
         message
     }
@@ -257,51 +221,46 @@ fn subscription(_: &Onagre) -> Subscription<Message> {
 }
 
 impl Onagre {
-    // Only call this if we are using entries from the database
-    // in order to re-ask pop-launcher for the exact same entry
-    fn current_entry(&self) -> Option<String> {
-        let selected = self.selected();
-        match &self.active_mode {
-            ActiveMode::History => self
-                .cache
-                .de_history()
-                .get(selected.unwrap())
-                .map(|entry| entry.path.to_string_lossy().to_string()),
-            ActiveMode::Plugin { plugin_name, .. } => {
-                // Get user input as pop-entry
-                match selected {
-                    None => self.pop_search.first().map(|entry| entry.name.clone()),
-                    Some(selected) => self
-                        .cache
-                        .plugin_history(plugin_name)
-                        .get(selected)
-                        .map(|entry| entry.query.to_string()),
-                }
-            }
-            _pop_mode => None,
-        }
-    }
-
     fn on_input_changed(&mut self, input: String) -> Task<Message> {
-        self.active_mode = self.plugin_matchers.get_active_mode(&input, &self.active_mode);
+        self.active_mode = self
+            .plugin_matchers
+            .get_active_mode(&input, &self.active_mode);
         let mode = &self.active_mode;
-        
-        self.selected = match self.active_mode {
+        match mode {
             // For those mode first line is unselected on change
             // We want to issue a pop-launcher search request to get the query at index 0 in
             // the next search response, then activate it
-            ActiveMode::History => Selection::Reset,
             ActiveMode::Plugin {
                 history, isolate, ..
-            } if history && mode.is_empty_query() => Selection::Reset,
-            _ => Selection::PopLauncher(0),
+            } if !*isolate && *history && mode.query().is_empty() => {
+                self.entries = self
+                    .cache
+                    .plugin_history(DEFAULT_PLUGIN)
+                    .iter()
+                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
+                    .collect::<Vec<Box<dyn Entry>>>();
+            }
+            ActiveMode::Plugin {
+                plugin_name,
+                history,
+                isolate,
+                ..
+            } if *history && mode.is_empty_query() => {
+                self.entries = self
+                    .cache
+                    .plugin_history(plugin_name)
+                    .iter()
+                    .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
+                    .collect::<Vec<Box<dyn Entry>>>()
+            }
+            _ => { /*pop entry already set*/ }
         };
 
         let _: Task<Message> = scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START);
 
         if !mode.is_empty_query() {
             let query = mode.pop_query();
-            
+
             self.pop_request(Request::Search(query))
                 .expect("Unable to send search request to pop-launcher")
         }
@@ -309,14 +268,18 @@ impl Onagre {
         text_input::focus(INPUT_ID.clone())
     }
 
-    fn run_command<P: AsRef<Path>>(&self, desktop_entry_path: P) -> Task<Message> {
+    fn run_command<P: AsRef<Path>>(
+        &self,
+        entry: &dyn Entry,
+        desktop_entry_path: P,
+    ) -> Task<Message> {
         let desktop_entry = DesktopEntry::from_path(&desktop_entry_path).unwrap();
 
         DesktopEntryEntity::persist(
+            entry,
             &desktop_entry,
             desktop_entry_path.as_ref(),
-            &self.cache.db,
-            self.get_theme().icon_theme.as_deref(),
+            &self.cache.db
         );
 
         let argv = shell_words::split(&desktop_entry.exec);
@@ -338,20 +301,17 @@ impl Onagre {
     fn handle_input(&mut self, key_code: Key) -> Task<Message> {
         match key_code {
             Key::Named(Named::ArrowUp) => {
-                trace!("Selected line : {:?}", self.selected());
+                trace!("Selected line : {:?}", self.selected);
                 return self.dec_selected();
             }
             Key::Named(Named::ArrowDown) => {
-                trace!("Selected line : {:?}", self.selected());
+                trace!("Selected line : {:?}", self.selected);
                 return self.inc_selected();
             }
             Key::Named(Named::Enter) => return self.on_execute(),
-            Key::Named(Named::Tab) => {
-                if let Some(selected) = self.selected() {
-                    self.pop_request(Request::Complete(selected as u32))
-                        .expect("Unable to send request to pop-launcher");
-                }
-            }
+            Key::Named(Named::Tab) => self
+                .pop_request(Request::Complete(self.selected as u32))
+                .expect("Unable to send request to pop-launcher"),
             Key::Named(Named::Escape) => {
                 exit(0);
             }
@@ -363,25 +323,8 @@ impl Onagre {
 
     fn snap(&mut self) -> Task<Message> {
         let total_items = self.current_entries_len() as f32;
-        match self.selected() {
-            None => scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset::START),
-            Some(selected) => {
-                let offset = (1.0 / total_items) * selected as f32;
-                scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset { x: 0.0, y: offset })
-            }
-        }
-    }
-
-    fn complete(&mut self, fill: String) {
-        let filled = if self.get_theme().plugin_hint().is_none() {
-            todo!("fill {fill}");
-            let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
-        } else {
-            todo!("fill with modi {fill}");
-            let _: Task<Message> = text_input::move_cursor_to_end(INPUT_ID.clone());
-        };
-
-        let _ = self.on_input_changed(filled);
+        let offset = (1.0 / total_items) * self.selected as f32;
+        scrollable::snap_to(SCROLL_ID.clone(), RelativeOffset { x: 0.0, y: offset })
     }
 
     fn on_execute(&mut self) -> Task<Message> {
@@ -391,66 +334,33 @@ impl Onagre {
             ActiveMode::Plugin {
                 plugin_name,
                 history,
+                isolate,
                 ..
-            } if *history => {
-                PluginCommandEntity::persist(
-                    plugin_name.as_str(),
+            } if *history && *isolate && mode.is_empty_query() => {
+                let current = &self.entries[self.selected];
+                DesktopEntryEntity::persist_with_mode(
+                    current.as_ref(),
                     &mode.pop_query(),
                     &self.cache.db,
                 );
 
-                // Running the user input query at index zero
-                if self.selected().is_none() {
-                    self.pop_request(Request::Activate(0))
-                        .expect("Unable to send pop-launcher request")
-                } else {
-                    // Re ask pop-launcher for a stored query
-                    self.exec_on_next_search = true;
-                    let command = self.current_entry().unwrap();
-                    self.active_mode = self.plugin_matchers.get_active_mode(&command, &self.active_mode);
-                    self.pop_request(Request::Search(command))
-                        .expect("Unable to send pop-launcher request");
-                }
+                self.pop_request(Request::Activate(0))
+                    .expect("Unable to send pop-launcher request")
             }
-            ActiveMode::History => {
-                let path = self.current_entry();
-                let path = path.unwrap();
-                let _ = self.run_command(path);
-            }
-            _ => {
-                if self.selected().is_none() {
-                    self.pop_request(Request::Activate(0))
-                        .expect("Unable to send pop-launcher request")
-                } else {
-                    let selected = self.selected().unwrap() as u32;
-                    debug!("Activating pop entry at index {selected}");
-                    self.pop_request(Request::Activate(selected))
-                        .expect("Unable to send pop-launcher request")
-                }
-            }
+            mode => {
+                debug!("Activation with mode {mode:?}");
+                
+                self
+                    .pop_request(Request::Activate(0))
+                    .expect("Unable to send pop-launcher request")
+            },
         }
 
         Task::none()
     }
 
     fn current_entries_len(&self) -> usize {
-        let mode = &self.active_mode;
-        match mode {
-            ActiveMode::Default(_) =>
-                self.pop_search.len(),
-            ActiveMode::Plugin {
-                plugin_name,
-                history,
-                ..
-            } => {
-                if *history {
-                    self.cache.history_len(plugin_name)
-                } else {
-                    self.pop_search.len()
-                }
-            }
-            ActiveMode::History => self.cache.history_len(db::desktop_entry::COLLECTION),
-        }
+        self.entries.len()
     }
 
     fn pop_request(&self, request: Request) -> Result<(), TrySendError<Request>> {
@@ -460,48 +370,17 @@ impl Onagre {
         sender.try_send(request)
     }
 
-    fn selected(&self) -> Option<usize> {
-        match self.selected {
-            Selection::Reset => None,
-            Selection::History(idx) | Selection::PopLauncher(idx) => Some(idx),
-        }
-    }
-
     fn dec_selected(&mut self) -> Task<Message> {
-        match self.selected {
-            Selection::Reset => self.selected = Selection::Reset,
-            Selection::History(selected) => {
-                if selected > 0 {
-                    self.selected = Selection::History(selected - 1)
-                }
-            }
-            Selection::PopLauncher(selected) => {
-                if selected > 0 {
-                    self.selected = Selection::PopLauncher(selected - 1)
-                }
-            }
-        };
-
+        self.selected = self.selected.saturating_sub(1);
         self.snap()
     }
 
     fn inc_selected(&mut self) -> Task<Message> {
-        match self.selected {
-            Selection::Reset => self.selected = Selection::History(0),
-            Selection::History(selected) => {
-                let total_items = self.current_entries_len();
-                if total_items != 0 && selected < total_items - 1 {
-                    self.selected = Selection::History(selected + 1);
-                }
-            }
-            Selection::PopLauncher(selected) => {
-                let total_items = self.current_entries_len();
-                if total_items != 0 && selected < total_items - 1 {
-                    self.selected = Selection::PopLauncher(selected + 1);
-                }
-            }
-        };
+        if self.selected + 1 >= self.current_entries_len() {
+            return Task::none();
+        }
 
+        self.selected += 1;
         self.snap()
     }
 }

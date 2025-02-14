@@ -2,20 +2,19 @@ use crate::app::cache::Cache;
 use crate::app::mode::ActiveMode;
 use crate::app::plugin_matchers::Plugin;
 
-use iced::futures::channel::mpsc::Sender;
-use onagre_launcher_toolkit::launcher::{IconSource, Request, SearchResult};
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use super::entries::Entry;
 use super::OnagreTheme;
+use crate::db::desktop_entry::DEFAULT_PLUGIN;
+use iced::futures::channel::mpsc::Sender;
+use onagre_launcher_toolkit::launcher::{IconSource, Request};
+use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Onagre {
     pub active_mode: ActiveMode,
-    pub selected: Selection,
+    pub selected: usize,
     pub cache: Cache,
-    pub pop_search: Vec<SearchResult>,
     pub exec_on_next_search: bool,
     pub plugin_matchers: PluginConfigCache,
     pub request_tx: Option<Sender<Request>>,
@@ -26,15 +25,21 @@ pub struct Onagre {
 
 impl Onagre {
     pub fn new(theme: OnagreTheme) -> Self {
+        let cache = Cache::default();
+        let entries = cache
+            .plugin_history(DEFAULT_PLUGIN)
+            .iter()
+            .map(|entry| Box::new(entry.clone()) as Box<dyn Entry>)
+            .collect::<Vec<Box<dyn Entry>>>();
+        
         Self {
-            active_mode: ActiveMode::History,
-            selected: Selection::Reset,
-            cache: Cache::default(),
-            pop_search: Vec::new(),
+            active_mode: ActiveMode::Default("".to_string()),
+            selected: 0,
+            cache,
             exec_on_next_search: false,
             plugin_matchers: PluginConfigCache::load(),
             request_tx: None,
-            entries: vec![],
+            entries,
             plugin_icon: None,
             theme,
         }
@@ -94,7 +99,7 @@ impl PluginConfigCache {
             Some(modifier) => format!("{modifier}{query}"),
             None => query.to_string(),
         };
-        
+
         let plugin_split = self
             .inner
             .values()
@@ -111,45 +116,15 @@ impl PluginConfigCache {
 
         match mode {
             Some(mode) => mode,
-            None if query.is_empty() => ActiveMode::History,
             None => ActiveMode::Default(query.to_string()),
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum Selection {
-    // The selection is the content of the search bar, not something we got from pop-launcher
-    // moving down will change selection to `History(0)`
-    Reset,
-    // This means we are trying to activate and item from the history
-    // We need to issue a `Request::Search` before activating it.
-    History(usize),
-    // The selected item is one of the pop-launcher response items
-    // It's safe to call `Request::Activate`.
-    PopLauncher(usize),
-}
-
 impl Onagre {
     pub fn start_with_mode(query: &str, theme: OnagreTheme) -> Self {
-        let plugin_matchers = PluginConfigCache::load();
-
-        Onagre {
-            selected: Selection::History(0),
-            cache: Default::default(),
-            pop_search: Default::default(),
-            active_mode: ActiveMode::History,
-            exec_on_next_search: false,
-            plugin_matchers,
-            request_tx: Default::default(),
-            entries: vec![],
-            plugin_icon: None,
-            theme,
-        }
+        let mut onagre = Onagre::new(theme);
+        onagre.active_mode = ActiveMode::Default(query.to_string());
+        onagre
     }
-}
-
-#[derive(Debug, Default)]
-pub struct SearchInput {
-    pub mode: ActiveMode,
 }
