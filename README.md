@@ -132,7 +132,7 @@ Plugin with no prefix are enabled by default, there entry will be mixed in the s
 
 ## Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fallback to the default theme if none
+Onagre will look for a theme file in `$XDG_CONFIG_HOME/onagre/theme.scss` and will fallback to the default theme if none
 is found or if your theme contains syntax errors. To ensure your theme is correctly formatted run `onagre` from the terminal.
 
 For a detailed guide refer to [wiki -> theming](https://github.com/oknozor/onagre/wiki/Theming)

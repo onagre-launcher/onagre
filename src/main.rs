@@ -57,7 +57,7 @@ pub fn main() -> iced::Result {
     info!("Starting onagre");
     let cli = Cli::parse();
 
-    // User defined theme config, $XDG_CONFIG_DIR/onagre/theme.toml otherwise
+    // User defined theme config, $XDG_CONFIG_HOME/onagre/theme.toml otherwise
     if let Some(theme_path) = cli.theme {
         let path = theme_path.canonicalize();
         if let Ok(path) = path {
