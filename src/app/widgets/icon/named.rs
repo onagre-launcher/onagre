@@ -124,7 +124,7 @@ impl Named {
     pub fn handle(self) -> Handle {
         Handle {
             symbolic: self.symbolic,
-            data: super::Data::Name(self),
+            data: self,
         }
     }
 

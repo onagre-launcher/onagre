@@ -88,7 +88,7 @@ pub fn to_container<'a>(
         .map(|source| Named::from_icon_source(source, icon_theme).fallback(IconFallback::Default))
         .map(|i| Named::icon(i, selected).size(layout.icon.icon_size))
         .map(|icon| {
-            container(icon)
+            container(icon.class(Class::Icon { selected }))
                 .class(Class::Icon { selected })
                 .align_y(layout.icon.align_y)
                 .align_x(layout.icon.align_x)
@@ -105,7 +105,7 @@ pub fn to_container<'a>(
         })
         .map(|i| Named::icon(i, selected).size(layout.category_icon.icon_size))
         .map(|icon| {
-            container(icon)
+            container(icon.class(Class::CategoryIcon { selected }))
                 .class(Class::CategoryIcon { selected })
                 .align_y(layout.category_icon.align_y)
                 .align_x(layout.category_icon.align_x)
