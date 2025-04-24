@@ -15,24 +15,29 @@ and pop-launcher.
 """
 
 [profile.release]
+panic = "abort"
+opt-level = "s"
 codegen-units = 1
 lto = true
 
 [features]
-default = ["iced/wgpu", "iced/palette"]
+default = ["iced/wgpu"]
 debug = ["iced/debug"]
 
 [dependencies]
-iced = { version = "0.12.1", features = ["wgpu", "palette", "svg", "image", "tokio"] }
-iced_core = "0.12.3"
-iced_runtime = "0.12.1"
-iced_style = "0.12.1"
+iced = { version = "0.13.1", default-features = false, features = [
+    "svg",
+    "image",
+    "tokio",
+    "advanced",
+] }
+
 tokio = { version = "1.29.1", features = ["process", "macros", "io-util"] }
 redb = "1.5.0"
 
 onagre-launcher-toolkit = "0.1.2"
 clap = { version = "^4", features = ["derive"] }
-freedesktop-icons = "0.2.6"
+freedesktop-icons = "0.4.0"
 
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
@@ -47,9 +52,9 @@ serde_ini = "0.2.0"
 serde_json = "1.0.99"
 pest = "2.7.0"
 pest_derive = "2.7.0"
-ico = "0.3.0"
 regex = "1.8.4"
 shell-words = "^1"
+derive_setters = "0.1.6"
 
 [dev-dependencies]
 speculoos = "0.11.0"

@@ -15,6 +15,7 @@ pub struct DesktopEntry<'a> {
     pub name: Cow<'a, str>,
     pub exec: Cow<'a, str>,
     pub icon: Option<Cow<'a, str>>,
+    pub category_icon: Option<Cow<'a, str>>,
     pub actions: Option<Cow<'a, str>>,
     pub comment: Option<Cow<'a, str>>,
     pub keywords: Option<Cow<'a, str>>,
@@ -22,6 +23,7 @@ pub struct DesktopEntry<'a> {
 
 impl DesktopEntry<'_> {
     pub fn from_path<P: AsRef<Path>>(path: P) -> Option<Self> {
+        // TODO: remove icon from there
         std::fs::read_to_string(path)
             .map(|content| serde_ini::from_str::<DesktopEntryIni>(&content))
             .map(|ini| ini.ok())

@@ -2,10 +2,10 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 use iced::alignment::{Horizontal, Vertical};
-use iced::Length;
-use iced_core::border::Radius;
-use iced_core::{Background, Border, Color};
-use iced_style::text_input::{Appearance, StyleSheet};
+use iced::border::Radius;
+use iced::widget::{container, text_input};
+use iced::{Background, Border, Vector};
+use iced::{Length, Shadow};
 
 #[derive(Debug, PartialEq)]
 pub struct SearchInputStyles {
@@ -39,52 +39,38 @@ impl Scale for SearchInputStyles {
     }
 }
 
-impl Eq for SearchInputStyles {}
-
-impl StyleSheet for &SearchInputStyles {
-    type Style = iced::Theme;
-
-    fn active(&self, _: &Self::Style) -> Appearance {
-        Appearance {
-            background: Background::Color(self.background.into()),
+impl From<&SearchInputStyles> for text_input::Style {
+    fn from(val: &SearchInputStyles) -> Self {
+        text_input::Style {
+            background: Background::Color(val.background.into()),
             border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: Radius::from(val.border_radius),
             },
-            icon_color: Default::default(),
+            icon: Default::default(),
+            placeholder: val.placeholder_color.into(),
+            value: val.value_color.into(),
+            selection: val.selection_color.into(),
         }
     }
+}
 
-    fn focused(&self, style: &Self::Style) -> Appearance {
-        self.active(style)
-    }
-
-    fn placeholder_color(&self, _: &Self::Style) -> Color {
-        self.placeholder_color.into()
-    }
-
-    fn value_color(&self, _: &Self::Style) -> Color {
-        self.value_color.into()
-    }
-
-    fn disabled_color(&self, _style: &Self::Style) -> Color {
-        Color::TRANSPARENT
-    }
-
-    fn selection_color(&self, _: &Self::Style) -> Color {
-        self.selection_color.into()
-    }
-
-    fn disabled(&self, _style: &Self::Style) -> Appearance {
-        Appearance {
-            background: Background::Color(self.background.into()),
+impl From<&SearchInputStyles> for container::Style {
+    fn from(val: &SearchInputStyles) -> Self {
+        container::Style {
+            text_color: Some(val.placeholder_color.into()),
+            background: Some(Background::Color(val.background.into())),
             border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: Radius::from(val.border_radius),
             },
-            icon_color: Default::default(),
+            shadow: Shadow {
+                color: iced::Color::TRANSPARENT,
+                offset: Vector::ZERO,
+                blur_radius: 0.,
+            },
         }
     }
 }

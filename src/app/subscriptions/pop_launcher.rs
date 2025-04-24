@@ -1,17 +1,13 @@
-use iced::futures::channel::mpsc;
-use iced::futures::channel::mpsc::{channel, Sender};
-use iced::futures::stream::BoxStream;
-use iced::futures::{join, SinkExt, StreamExt};
-use iced::Subscription;
-use iced_core::event::Status;
-use iced_runtime::futures::futures::stream;
-use iced_runtime::futures::subscription::Recipe;
+use iced::futures::{channel::mpsc::channel, channel::mpsc::Receiver, channel::mpsc::Sender};
+use iced::futures::{join, SinkExt, Stream, StreamExt};
+use iced::stream as istream;
 use onagre_launcher_toolkit::launcher::{json_input_stream, Request, Response};
-use std::hash::Hash;
 use std::process::{exit, Stdio};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{ChildStderr, ChildStdin, ChildStdout, Command};
 use tracing::{debug, error};
+
+use crate::app::Message;
 
 // Whenever a message is red from pop-launcher stdout, send it to the subscription receiver
 async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
@@ -40,7 +36,7 @@ async fn handle_stderr(stderr: ChildStderr) {
 
 // Listen for incoming `pop_launcher::Request` from the receiver and forward them to
 // pop launcher stdin
-async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: mpsc::Receiver<Request>) {
+async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: Receiver<Request>) {
     while let Some(request) = request_rx.next().await {
         let request = serde_json::to_string(&request).unwrap();
         let request = format!("{}\n", request);
@@ -49,29 +45,8 @@ async fn handle_stdin(mut stdin: ChildStdin, mut request_rx: mpsc::Receiver<Requ
     }
 }
 
-pub struct PopLauncherSubscription;
-
-#[derive(Debug, Clone)]
-pub enum SubscriptionMessage {
-    Ready(Sender<Request>),
-    PopMessage(Response),
-}
-
-impl PopLauncherSubscription {
-    pub fn create() -> Subscription<SubscriptionMessage> {
-        Subscription::from_recipe(PopLauncherSubscription)
-    }
-}
-
-impl Recipe for PopLauncherSubscription {
-    type Output = SubscriptionMessage;
-
-    fn hash(&self, state: &mut iced_core::Hasher) {
-        std::any::TypeId::of::<Self>().hash(state);
-        "PopLauncherSubscription".hash(state)
-    }
-
-    fn stream(self: Box<Self>, _: BoxStream<(iced::Event, Status)>) -> BoxStream<Self::Output> {
+pub fn pop_launcher() -> impl Stream<Item = Message> {
+    istream::channel(100, |mut output| async move {
         debug!("Starting `pop-launcher` subscription");
         let Ok(child) = Command::new("pop-launcher")
             .stdin(Stdio::piped())
@@ -85,7 +60,7 @@ impl Recipe for PopLauncherSubscription {
             exit(1);
         };
 
-        let (response_tx, response_rx) = channel(32);
+        let (response_tx, mut response_rx) = channel(32);
         let (request_tx, request_rx) = channel(32);
 
         let stdout = child.stdout.unwrap();
@@ -100,8 +75,14 @@ impl Recipe for PopLauncherSubscription {
             join!(stdout_handle, stderr_handle, stdin_handle);
         });
 
-        let pop_response_rx = response_rx.map(SubscriptionMessage::PopMessage);
+        if let Err(err) = output.send(Message::PopLauncherReady(request_tx)).await {
+            error!("Pop launcher subscription error: {err}");
+        }
 
-        Box::pin(stream::iter(vec![SubscriptionMessage::Ready(request_tx)]).chain(pop_response_rx))
-    }
+        while let Some(message) = response_rx.next().await {
+            if let Err(err) = output.send(Message::PopMessage(message)).await {
+                error!("pop launcher error: {err}")
+            }
+        }
+    })
 }

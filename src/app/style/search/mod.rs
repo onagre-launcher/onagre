@@ -1,8 +1,8 @@
 use iced::alignment::{Horizontal, Vertical};
+use iced::border::Radius;
+use iced::widget::container;
 use iced::Length;
-use iced_core::border::Radius;
-use iced_core::{Background, Border};
-use iced_style::container::{Appearance, StyleSheet};
+use iced::{Background, Border};
 
 use input::SearchInputStyles;
 
@@ -11,7 +11,6 @@ use crate::app::style::Scale;
 use crate::config::color::OnagreColor;
 use crate::config::padding::OnagrePadding;
 
-pub mod hint;
 pub mod input;
 
 #[derive(Debug, PartialEq)]
@@ -50,17 +49,15 @@ impl Scale for SearchContainerStyles {
 
 impl Eq for SearchContainerStyles {}
 
-impl StyleSheet for &SearchContainerStyles {
-    type Style = iced::Theme;
-
-    fn appearance(&self, _: &Self::Style) -> Appearance {
-        Appearance {
-            text_color: Some(self.color.into()),
-            background: Some(Background::Color(self.background.into())),
+impl From<&SearchContainerStyles> for container::Style {
+    fn from(val: &SearchContainerStyles) -> Self {
+        container::Style {
+            text_color: Some(val.color.into()),
+            background: Some(Background::Color(val.background.into())),
             border: Border {
-                color: self.border_color.into(),
-                width: self.border_width,
-                radius: Radius::from(self.border_radius),
+                color: val.border_color.into(),
+                width: val.border_width,
+                radius: Radius::from(val.border_radius),
             },
             shadow: Default::default(),
         }

@@ -10,7 +10,7 @@ use pest::iterators::Pair;
 
 pub fn unwrap_attr_u16(pair: Pair<'_, Rule>) -> Result<u16, ConfigError> {
     pair.into_inner()
-        .last()
+        .next_back()
         .unwrap()
         .into_inner()
         .as_str()
@@ -20,7 +20,7 @@ pub fn unwrap_attr_u16(pair: Pair<'_, Rule>) -> Result<u16, ConfigError> {
 
 pub fn unwrap_attr_32(pair: Pair<'_, Rule>) -> Result<u32, ConfigError> {
     pair.into_inner()
-        .last()
+        .next_back()
         .unwrap()
         .into_inner()
         .as_str()
@@ -30,7 +30,7 @@ pub fn unwrap_attr_32(pair: Pair<'_, Rule>) -> Result<u32, ConfigError> {
 
 pub fn unwrap_attr_f32(pair: Pair<'_, Rule>) -> Result<f32, ConfigError> {
     pair.into_inner()
-        .last()
+        .next_back()
         .unwrap()
         .into_inner()
         .as_str()
@@ -39,23 +39,21 @@ pub fn unwrap_attr_f32(pair: Pair<'_, Rule>) -> Result<f32, ConfigError> {
 }
 
 pub fn unwrap_attr_str(pair: Pair<'_, Rule>) -> &str {
-    pair.into_inner().last().unwrap().into_inner().as_str()
+    pair.into_inner().next_back().unwrap().into_inner().as_str()
 }
 
 pub fn unwrap_attr_bool(pair: Pair<'_, Rule>) -> bool {
-    let value = pair.into_inner().last().unwrap().as_str();
-
+    let value = pair.into_inner().next_back().unwrap().as_str();
     value == "true"
 }
 
 pub fn unwrap_hex_color(pair: Pair<'_, Rule>) -> Result<OnagreColor, ConfigError> {
-    let color = pair.into_inner().last().unwrap().as_str();
-
+    let color = pair.into_inner().next_back().unwrap().as_str();
     OnagreColor::from(color)
 }
 
 pub fn unwrap_x(pair: Pair<'_, Rule>) -> Result<Horizontal, ConfigError> {
-    let alignment = pair.into_inner().last().unwrap();
+    let alignment = pair.into_inner().next_back().unwrap();
     let pair = alignment.into_inner().next().unwrap();
 
     match pair.as_rule() {
@@ -67,7 +65,7 @@ pub fn unwrap_x(pair: Pair<'_, Rule>) -> Result<Horizontal, ConfigError> {
 }
 
 pub fn unwrap_y(pair: Pair<'_, Rule>) -> Result<Vertical, ConfigError> {
-    let alignment = pair.into_inner().last().unwrap();
+    let alignment = pair.into_inner().next_back().unwrap();
     let pair = alignment.into_inner().next().unwrap();
 
     match pair.as_rule() {
@@ -79,7 +77,7 @@ pub fn unwrap_y(pair: Pair<'_, Rule>) -> Result<Vertical, ConfigError> {
 }
 
 pub fn unwrap_length(pair: Pair<'_, Rule>) -> Result<Length, ConfigError> {
-    let lenght = pair.into_inner().last().unwrap();
+    let lenght = pair.into_inner().next_back().unwrap();
     let mut lenght = lenght.into_inner();
     let pair = lenght.next().unwrap();
     Ok(match pair.as_rule() {

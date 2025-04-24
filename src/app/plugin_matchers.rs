@@ -1,115 +1,43 @@
-use crate::app::mode::WEB_CONFIG;
-use crate::icons::IconPath;
+use onagre_launcher_toolkit::launcher::IconSource;
 use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Plugin {
     pub name: String,
-    pub icon: Option<IconPath>,
+    pub icon: Option<IconSource>,
     pub history: bool,
+    pub isolate: bool,
     pub help: Option<String>,
     pub regex: Option<Regex>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct QueryData {
-    pub icon: Option<IconPath>,
-    pub plugin_name: String,
+#[derive(Debug, Clone)]
+pub struct QueryData<'a> {
+    pub plugin: &'a Plugin,
     pub modifier: String,
     pub query: String,
-    pub history: bool,
-}
-
-impl QueryData {
-    fn new_mode_web<S: AsRef<str>>(modifier: S, query: String) -> QueryData {
-        QueryData {
-            icon: None,
-            plugin_name: "web".to_string(),
-            modifier: modifier.as_ref().to_string(),
-            history: true,
-            query,
-        }
-    }
 }
 
 impl Plugin {
-    fn to_query_data(&self, query: String) -> QueryData {
-        QueryData {
-            icon: None,
-            plugin_name: self.name.clone(),
-            modifier: self.name.clone(),
-            query,
-            history: self.history,
-        }
-    }
-
-    fn get_query_data<S: AsRef<str>>(&self, modifier: S, query: String) -> QueryData {
-        QueryData {
-            icon: None,
-            plugin_name: self.name.clone(),
-            modifier: modifier.as_ref().to_string(),
-            query,
-            history: self.history,
-        }
-    }
-}
-
-pub fn match_web_plugins(text: &str) -> Option<QueryData> {
-    text.split_once(' ').and_then(|(mode, query)| {
-        if WEB_CONFIG.get(mode).is_some() {
-            Some(QueryData::new_mode_web(mode, query.to_string()))
-        } else {
-            None
-        }
-    })
-}
-
-impl Plugin {
-    pub fn try_match(&self, text: &str) -> Option<QueryData> {
-        self.match_plugin_help(text)
-            .or_else(|| self.match_plugin_regex(text))
-    }
-
-    fn match_plugin_regex(&self, text: &str) -> Option<QueryData> {
-        // A dirty fix to prevent looping between modifier and search display
-        // for the file mode, could this happen to other plugins ?
-        if text == "~" {
-            return None;
-        };
-
-        let is_match = self
-            .regex
+    pub fn matching(&self, text: &str) -> Option<QueryData> {
+        self.regex
             .as_ref()
-            .map(|regex| regex.is_match(text))
-            .unwrap_or(false);
-
-        if is_match {
-            self.help.as_ref().and_then(|mode| {
-                let query = text
-                    .strip_prefix(mode)
-                    .or_else(|| text.strip_prefix(&self.name))
-                    .unwrap_or("");
-                if !mode.is_empty() {
-                    Some(self.get_query_data(mode, query.to_string()))
-                } else {
-                    None
-                }
+            .and_then(|regex| regex.captures(text))
+            .and_then(|captures| captures.get(1))
+            .map(|m| m.as_str())
+            .map(|modifier| QueryData {
+                plugin: self,
+                modifier: modifier.to_string(),
+                query: text.strip_prefix(modifier).unwrap_or(text).to_string(),
             })
-        } else {
-            None
-        }
-    }
-
-    fn match_plugin_help(&self, text: &str) -> Option<QueryData> {
-        text.split_once(&self.name)
-            .map(|(_, query)| self.to_query_data(query.to_string()))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::app::plugin_matchers::{Plugin, QueryData};
+    use crate::app::plugin_matchers::Plugin;
     use regex::Regex;
+    use speculoos::prelude::*;
 
     #[test]
     fn should_split_entry() {
@@ -117,22 +45,20 @@ mod test {
             name: "find".to_string(),
             icon: None,
             history: false,
+            isolate: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
 
-        let match_ = plugin.try_match("find some text");
+        let match_ = plugin.matching("find some text");
 
-        assert_eq!(
-            match_,
-            Some(QueryData {
-                icon: None,
-                plugin_name: "find".to_string(),
-                modifier: "find".to_string(),
-                query: " some text".to_string(),
-                history: false,
-            })
-        );
+        assert_that!(match_)
+            .is_some()
+            .matches(|m| m.plugin.icon.is_none())
+            .matches(|m| m.plugin.name == "find")
+            .matches(|m| m.modifier == "find ")
+            .matches(|m| m.query == "some text")
+            .matches(|m| !m.plugin.history);
     }
 
     #[test]
@@ -141,13 +67,14 @@ mod test {
             name: "find".to_string(),
             icon: None,
             history: false,
+            isolate: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
 
-        let match_ = plugin.try_match("fin");
+        let match_ = plugin.matching("fin");
 
-        assert_eq!(match_, None);
+        assert_that!(match_).is_none();
     }
 
     #[test]
@@ -156,21 +83,35 @@ mod test {
             name: "find".to_string(),
             icon: None,
             history: false,
+            isolate: false,
             help: Some("find ".to_string()),
             regex: Some(Regex::new("^(find )+").unwrap()),
         };
 
-        let match_ = plugin.try_match("find ");
+        let match_ = plugin.matching("find ");
 
-        assert_eq!(
-            match_,
-            Some(QueryData {
-                icon: None,
-                plugin_name: "find".to_string(),
-                modifier: "find".to_string(),
-                query: " ".to_string(),
-                history: false,
-            })
-        );
+        assert_that!(match_)
+            .is_some()
+            .matches(|m| m.plugin.icon.is_none())
+            .matches(|m| m.plugin.name == "find")
+            .matches(|m| m.query == "")
+            .matches(|m| m.modifier == "find ")
+            .matches(|m| !m.plugin.history);
+    }
+
+    #[test]
+    fn should_capture() {
+        let regex = Regex::new("^(= )+").unwrap();
+        let cap = regex.captures("= 1");
+        let cap = cap.unwrap();
+        assert_eq!(cap.get(1).unwrap().as_str(), "= ");
+    }
+
+    #[test]
+    fn should_capture_web() {
+        let regex = Regex::new("^(ali |yt )+").unwrap();
+        let cap = regex.captures("yt gmilgram");
+        let cap = cap.unwrap();
+        assert_eq!(cap.get(1).unwrap().as_str(), "yt ");
     }
 }

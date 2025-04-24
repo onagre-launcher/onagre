@@ -37,7 +37,7 @@ impl OnagrePadding {
         left: 0,
     };
 
-    pub fn to_iced_padding(&self) -> Padding {
+    pub fn to_iced_padding(&self) -> iced::Padding {
         Padding {
             top: self.top as f32,
             right: self.right as f32,

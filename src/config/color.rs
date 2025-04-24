@@ -15,7 +15,7 @@ impl OnagreColor {
             r: 0.08235294,
             g: 0.08235294,
             b: 0.08235294,
-            a: 1.0,
+            a: 0.0,
         },
     };
 
@@ -149,7 +149,7 @@ impl From<OnagreColor> for Color {
 #[cfg(test)]
 mod test {
     use crate::config::color::OnagreColor;
-    use iced_core::Color;
+    use iced::Color;
 
     #[test]
     fn should_get_color_from_str() {
