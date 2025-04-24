@@ -23,7 +23,6 @@ pub struct Onagre {
     pub theme: OnagreTheme,
     pub input_id: text_input::Id,
     pub scroll_id: scrollable::Id,
-    backspace_pressed: bool,
 }
 
 impl Onagre {
@@ -43,7 +42,6 @@ impl Onagre {
             plugin_matchers: PluginConfigCache::load(),
             request_tx: None,
             entries,
-            backspace_pressed: false,
             theme,
             input_id: text_input::Id::unique(),
             scroll_id: scrollable::Id::unique(),
@@ -54,14 +52,7 @@ impl Onagre {
         let query = {
             let current = &self.active_mode;
             match current.modifier() {
-                Some(modifier) if query.is_empty() && !self.backspace_pressed => {
-                    self.backspace_pressed = true;
-                    modifier[..modifier.len()].to_string()
-                }
-                Some(modifier) if query.is_empty() => {
-                    self.backspace_pressed = false;
-                    modifier[..modifier.len() - 1].to_string()
-                }
+                Some(modifier) if query.is_empty() => modifier[..modifier.len() - 1].to_string(),
                 Some(modifier) => format!("{modifier}{query}"),
                 None => query.to_string(),
             }
@@ -91,11 +82,12 @@ impl Onagre {
 
     pub fn should_display_history_for(&self) -> Option<&str> {
         let mode = &self.active_mode;
+        let empty = mode.is_empty_query() && mode.modifier().is_none();
         match mode {
-            ActiveMode::Default(_) if mode.is_empty_query() => Some(DEFAULT_PLUGIN),
+            ActiveMode::Default(_) if empty => Some(DEFAULT_PLUGIN),
             ActiveMode::Plugin {
                 history, isolate, ..
-            } if !*isolate && *history => Some(DEFAULT_PLUGIN),
+            } if !*isolate && *history && empty => Some(DEFAULT_PLUGIN),
             ActiveMode::Plugin {
                 plugin_name,
                 history,

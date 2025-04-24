@@ -242,11 +242,15 @@ impl Onagre {
 
         let _: Task<Message> = scrollable::snap_to(self.scroll_id.clone(), RelativeOffset::START);
 
-        if !mode.is_empty_query() {
-            let query = mode.pop_query();
-
+        let do_query = |query| {
             self.pop_request(Request::Search(query))
                 .expect("Unable to send search request to pop-launcher")
+        };
+
+        match mode {
+            mode::ActiveMode::Default(_) if !mode.is_empty_query() => do_query(mode.pop_query()),
+            mode::ActiveMode::Plugin { .. } => do_query(mode.pop_query()),
+            _ => {}
         }
 
         text_input::focus(self.input_id.clone())

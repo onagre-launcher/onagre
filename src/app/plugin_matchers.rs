@@ -98,4 +98,20 @@ mod test {
             .matches(|m| m.modifier == "find ")
             .matches(|m| !m.plugin.history);
     }
+
+    #[test]
+    fn should_capture() {
+        let regex = Regex::new("^(= )+").unwrap();
+        let cap = regex.captures("= 1");
+        let cap = cap.unwrap();
+        assert_eq!(cap.get(1).unwrap().as_str(), "= ");
+    }
+
+    #[test]
+    fn should_capture_web() {
+        let regex = Regex::new("^(ali |yt )+").unwrap();
+        let cap = regex.captures("yt gmilgram");
+        let cap = cap.unwrap();
+        assert_eq!(cap.get(1).unwrap().as_str(), "yt ");
+    }
 }
