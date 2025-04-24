@@ -1,4 +1,5 @@
 use iced::widget::svg;
+use tracing::error;
 
 use crate::app::{widgets::entries::theme::Class, OnagreTheme};
 
@@ -10,14 +11,14 @@ impl svg::Catalog for OnagreTheme {
     }
 
     fn style(&self, class: &Self::Class<'_>, _status: svg::Status) -> svg::Style {
-        let Class::Icon { .. } = class else {
-            panic!("attempted to set an invalid icon class")
-        };
-
-        svg::Style {
-            // TODO: a style dedicated to symbolic icons
-            color: None,
-            // color: Some(self.0.row(*selected).icon.color.into()),
+        match class {
+            Class::Icon { .. } => svg::Style { color: None },
+            Class::CategoryIcon { selected } => {
+                let color = Some(self.0.row(*selected).category_icon.color.into());
+                error!("{color:?}");
+                svg::Style { color }
+            }
+            _ => unreachable!("attempted to set an invalid icon class"),
         }
     }
 }

@@ -1,4 +1,5 @@
 use iced::widget::{button, column, container, row, scrollable, text, Container, Scrollable};
+use onagre_launcher_toolkit::launcher::IconSource;
 use theme::{text_default, Class};
 
 use crate::app::{entries::Entry, style::rows::RowStyles, Message, OnagreTheme};
@@ -12,12 +13,22 @@ pub fn to_scrollable<'a>(
     entries: &'a [Box<dyn Entry>],
     selected: usize,
     icon_theme: Option<&'a str>,
+    plugin_icon: Option<&'a IconSource>,
 ) -> Scrollable<'a, Message, OnagreTheme> {
     let selected = |idx| idx == selected;
     let children: Vec<Container<Message, OnagreTheme>> = entries
         .iter()
         .enumerate()
-        .map(|(idx, entry)| to_container(layout, idx, selected(idx), entry.as_ref(), icon_theme))
+        .map(|(idx, entry)| {
+            to_container(
+                layout,
+                idx,
+                selected(idx),
+                entry.as_ref(),
+                icon_theme,
+                plugin_icon,
+            )
+        })
         .collect();
 
     scrollable(column(children.into_iter().map(Into::into))).class(Class::RowClickable)
@@ -64,6 +75,7 @@ pub fn to_container<'a>(
     selected: bool,
     entry: &'a dyn Entry,
     icon_theme: Option<&str>,
+    plugin_icon: Option<&IconSource>,
 ) -> Container<'a, Message, OnagreTheme> {
     let column = iced::widget::column(vec![title(layout, entry, selected).into()]);
     let column = match description(layout, selected, entry) {
@@ -86,7 +98,11 @@ pub fn to_container<'a>(
         });
     let category_icon = entry
         .get_category_icon()
-        .map(|source| Named::from_icon_source(source, icon_theme).fallback(IconFallback::Default))
+        .as_ref()
+        .or(plugin_icon)
+        .map(|source| {
+            Named::from_icon_source(source.clone(), icon_theme).fallback(IconFallback::Default)
+        })
         .map(|i| Named::icon(i, selected).size(layout.category_icon.icon_size))
         .map(|icon| {
             container(icon)

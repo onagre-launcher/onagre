@@ -32,6 +32,7 @@ pub fn search_bar<'a>(
         .class(Class::SearchInput);
 
     let search_bar = Row::new().width(Length::Fill).height(Length::Fill);
+
     // Either plugin_hint is enabled and we try to display it
     // Or we display the normal search input
     let search_bar = match &layout.plugin_hint {

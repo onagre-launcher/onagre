@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Clone)]
+use onagre_launcher_toolkit::launcher::IconSource;
+
+#[derive(Debug, Clone)]
 pub enum ActiveMode {
     Default(String),
     Plugin {
@@ -7,6 +9,7 @@ pub enum ActiveMode {
         query: String,
         history: bool,
         isolate: bool,
+        plugin_icon: Option<IconSource>,
     },
 }
 
@@ -29,6 +32,13 @@ impl ActiveMode {
         match self {
             ActiveMode::Default(_) => None,
             ActiveMode::Plugin { modifier, .. } => Some(modifier),
+        }
+    }
+
+    pub fn plugin_icon(&self) -> Option<&IconSource> {
+        match self {
+            ActiveMode::Default(_) => None,
+            ActiveMode::Plugin { plugin_icon, .. } => plugin_icon.as_ref(),
         }
     }
 

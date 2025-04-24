@@ -9,9 +9,6 @@ use tracing::{debug, error};
 
 use crate::app::Message;
 
-#[derive(Debug, Clone)]
-pub enum SubscriptionMessage {}
-
 // Whenever a message is red from pop-launcher stdout, send it to the subscription receiver
 async fn handle_stdout(stdout: ChildStdout, mut sender: Sender<Response>) {
     let mut stream = json_input_stream::<_, Response>(stdout);

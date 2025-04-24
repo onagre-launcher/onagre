@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::path::Path;
 use std::process::exit;
 use std::sync::Arc;
@@ -14,7 +15,7 @@ use iced::{
     event, keyboard, window, Element, Event, Font, Length, Pixels, Settings, Size, Subscription,
     Task,
 };
-use onagre_launcher_toolkit::launcher::{Request, Response};
+use onagre_launcher_toolkit::launcher::{IconSource, Request, Response};
 use once_cell::sync::OnceCell;
 use subscriptions::pop_launcher::pop_launcher;
 use tracing::{debug, info, trace};
@@ -109,11 +110,18 @@ impl Onagre {
     fn view(&self) -> Element<Message, OnagreTheme> {
         let layout = &self.theme.0.app_container.rows.row;
 
+        let plugin_icon =
+            self.active_mode
+                .plugin_icon()
+                .or(Some(&IconSource::Name(Cow::Borrowed(
+                    "new-window-symbolic",
+                ))));
         let scroll = to_scrollable(
             layout,
             self.entries.as_slice(),
             self.selected,
             self.get_theme().icon_theme.as_deref(),
+            plugin_icon,
         )
         .id(self.scroll_id.clone());
 

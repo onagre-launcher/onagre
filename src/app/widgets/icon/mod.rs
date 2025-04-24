@@ -13,7 +13,7 @@ mod theme;
 
 pub use handle::{from_svg_bytes, Data, Handle};
 pub use named::{IconFallback, Named};
-///
+
 /// Create an [`Icon`] from a pre-existing [`Handle`]
 pub fn icon(handle: Handle, selected: bool) -> Icon {
     Icon {

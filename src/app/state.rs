@@ -20,7 +20,6 @@ pub struct Onagre {
     pub plugin_matchers: PluginConfigCache,
     pub request_tx: Option<Sender<Request>>,
     pub entries: Vec<Box<dyn Entry>>,
-    pub plugin_icon: Option<IconSource>,
     pub theme: OnagreTheme,
     pub input_id: text_input::Id,
     pub scroll_id: scrollable::Id,
@@ -44,7 +43,6 @@ impl Onagre {
             plugin_matchers: PluginConfigCache::load(),
             request_tx: None,
             entries,
-            plugin_icon: None,
             backspace_pressed: false,
             theme,
             input_id: text_input::Id::unique(),
@@ -82,6 +80,7 @@ impl Onagre {
             query: split.query.clone(),
             history: split.plugin.history,
             isolate: split.plugin.isolate,
+            plugin_icon: split.plugin.icon.clone(),
         });
 
         self.active_mode = match mode {

@@ -65,7 +65,7 @@ impl Named {
             fallback: Some(IconFallback::Default),
             size: None,
             scale: None,
-            prefer_svg: false,
+            prefer_svg: true,
             theme,
         }
     }
