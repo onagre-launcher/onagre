@@ -81,7 +81,7 @@ To get help about a plugin usage, just type "?" in Onagre to display the bundled
 
 ## Configuration and Theming
 
-Onagre will look for a theme file in `$XDG_CONFIG_DIR/onagre/theme.scss` and will fall back to the default theme if none
+Onagre will look for a theme file in `$XDG_CONFIG_HOME/onagre/theme.scss` and will fall back to the default theme if none
 is found or if your theme contains syntax errors. To ensure your theme is correctly formatted run `onagre` from the terminal.
 
 A `.scss` extension is used for configuration in order to get syntax highlighting,
