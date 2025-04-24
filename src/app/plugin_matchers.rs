@@ -56,8 +56,8 @@ mod test {
             .is_some()
             .matches(|m| m.plugin.icon.is_none())
             .matches(|m| m.plugin.name == "find")
-            .matches(|m| m.modifier == "find")
-            .matches(|m| m.query == " some text")
+            .matches(|m| m.modifier == "find ")
+            .matches(|m| m.query == "some text")
             .matches(|m| !m.plugin.history);
     }
 

@@ -4,7 +4,7 @@ use super::entries::theme::Class;
 use crate::app::OnagreTheme;
 use derive_setters::Setters;
 use iced::Rotation;
-use iced::{ContentFit, Length, Rectangle};
+use iced::{ContentFit, Length};
 use std::ffi::OsStr;
 
 mod handle;

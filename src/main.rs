@@ -47,7 +47,6 @@ pub fn main() -> iced::Result {
         path.canonicalize().ok()
     });
 
-
     let theme_path = theme_path.unwrap_or_else(|| {
         dirs::config_dir()
             .ok_or_else(|| anyhow!("Theme config not found"))
