@@ -1,4 +1,5 @@
 /target
+/result
 .fleet
 .idea
 flamegraph.svg
